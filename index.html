@@ -132,7 +132,18 @@ main { padding-block: 40px 72px; min-height: 70vh; }
 .chips .lab { font-family: var(--mono); font-size: 11px; text-transform: uppercase; color: var(--muted); margin-right: 4px; letter-spacing: .06em; }
 .chip { font: inherit; font-size: 14px; font-weight: 500; padding: 5px 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 99px; cursor: pointer; }
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
-.search { margin-left: auto; min-width: 0; }
+.search { margin-left: auto; min-width: 0; position: relative; }
+.sug { position: absolute; right: 0; top: calc(100% + 6px); width: min(380px, 92vw); max-height: 62vh; overflow-y: auto; margin: 0; padding: 6px; list-style: none; background: var(--surface); border: 1px solid var(--line); border-radius: 3px; box-shadow: 0 18px 40px -18px rgba(0,0,0,.45); z-index: 30; }
+.sug[hidden] { display: none; }
+.sug .hd { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 10px 10px 4px; }
+.sug li[data-k] { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 2px; cursor: pointer; font-size: 15px; }
+.sug li[data-k]:hover, .sug li[aria-selected="true"] { background: var(--line); }
+.sug .sth { width: 36px; height: 36px; flex: none; overflow: hidden; background: var(--line); }
+.sug .sth svg, .sug .sth img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.sug .stx { min-width: 0; overflow-wrap: anywhere; }
+.sug .sts { display: block; font-size: 12px; color: var(--muted); }
+.sug b { font-weight: 800; }
+.sug .none { padding: 12px 10px; font-size: 14px; color: var(--muted); }
 .search input { font: inherit; font-size: 14px; padding: 7px 12px; width: min(100%, 240px); border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 2px; }
 .count { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 20px; }
 .empty { color: var(--muted); padding-block: 48px; }
@@ -241,6 +252,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
   .filters { gap: 12px 16px; }
   .chip { padding: 8px 14px; }
   .search { margin-left: 0; width: 100%; }
+  .sug { left: 0; right: 0; width: auto; }
   .search input { width: 100%; }
   .search input, .signup input, .form input, .form textarea { font-size: 16px; }
   .prose p:first-child { font-size: 19px; }
@@ -3737,7 +3749,7 @@ function home() {
     '<p class="eyebrow">Latest release &middot; <span class="cat">' + catNo(r) + '</span></p><h1>' + r.artist + '</h1><p class="ttl">' + r.title + '</p><p class="sub">' + r.sub + '</p>' +
     '<div class="actions"><a class="btn solid" href="#release-' + r.id + '">Listen &amp; buy</a><a class="btn" href="#catalog">Browse the catalog</a></div>' +
     '<p class="intro">Electronic music for DJs and fans. Every release is available to preview, then buy as high-resolution audio or on vinyl.</p></div></section>' +
-    '<section class="block" data-home="1"><div class="sec-head"><h2>Recent releases</h2><a class="more" href="#catalog">Full catalog</a></div><div class="filters">' + labelChips() + chips('fmt', ['All', 'Digital', 'Vinyl']) + '</div><div id="results"></div></section>' +
+    '<section class="block" data-home="1"><div class="sec-head"><h2>Recent releases</h2><a class="more" href="#catalog">Full catalog</a></div><div class="filters">' + labelChips() + chips('fmt', ['All', 'Digital', 'Vinyl']) + '<div class="search"><input id="q" type="search" placeholder="Search artist, title or track" aria-label="Search the catalog by artist, title or track" value="' + F.q.replace(/"/g, '&quot;') + '"></div></div><div id="results"></div></section>' +
     '<section class="block"><div class="sec-head"><h2>Artists</h2><a class="more" href="#artists">All artists</a></div><div class="wall">' +
     artists().sort(function (x, y) { return y.rels.length - x.rels.length; }).slice(0, 30).sort(function (x, y) { return x.name < y.name ? -1 : 1; }).map(function (a) { return '<a href="#artists">' + a.name + '<sup>' + a.rels.length + '</sup></a>'; }).join('') + '</div></section>';
 }
@@ -3760,6 +3772,71 @@ function inOrder(list) {
   list = list.slice(); slots.forEach(function (i, k) { list[i] = ltd[k]; });
   return list;
 }
+/* ---------- search suggestions (type "dale" and Billy Dalessandro appears) ---------- */
+var SUG = { items: [], i: -1 };
+function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+function hl(name, q) { var i = name.toLowerCase().indexOf(q); return i < 0 ? esc(name) : esc(name.slice(0, i)) + '<b>' + esc(name.slice(i, i + q.length)) + '</b>' + esc(name.slice(i + q.length)); }
+function rank(name, q) {
+  var n = name.toLowerCase();
+  if (n.indexOf(q) === 0) return 0;
+  if (n.split(/[\s(\-\/,.]+/).some(function (w) { return w.indexOf(q) === 0; })) return 1;
+  return n.indexOf(q) > -1 ? 2 : -1;
+}
+function findSuggestions(raw) {
+  var q = raw.trim().toLowerCase(), out = [];
+  if (q.length < 2) return out;
+  var a = artists().map(function (x) { return { x: x, k: rank(x.name, q) }; }).filter(function (o) { return o.k > -1; })
+    .sort(function (m, n) { return m.k - n.k || n.x.rels.length - m.x.rels.length; }).slice(0, 4);
+  var rl = R.map(function (r) { return { r: r, k: rank(r.title, q) }; }).filter(function (o) { return o.k > -1; })
+    .sort(function (m, n) { return m.k - n.k; }).slice(0, 4);
+  var tr = [], seen = {};
+  R.forEach(function (r) { r.tracks.forEach(function (t) {
+    var k = rank(t.t, q), key = t.t.toLowerCase() + '|' + r.id;
+    if (k > -1 && t.t.toLowerCase() !== r.title.toLowerCase() && !seen[key]) { seen[key] = 1; tr.push({ t: t, r: r, k: k }); }
+  }); });
+  tr.sort(function (m, n) { return m.k - n.k; }); tr = tr.slice(0, 4);
+  if (a.length) { out.push({ hd: 'Artists' }); a.forEach(function (o) { out.push({ type: 'artist', html: hl(o.x.name, q) + '<span class="sts">' + o.x.rels.length + (o.x.rels.length === 1 ? ' release' : ' releases') + '</span>', name: o.x.name }); }); }
+  if (rl.length) { out.push({ hd: 'Releases' }); rl.forEach(function (o) { out.push({ type: 'release', th: o.r, html: hl(o.r.title, q) + '<span class="sts">' + esc(o.r.artist) + (o.r.cat ? ' &middot; ' + esc(o.r.cat) : '') + '</span>', id: o.r.id }); }); }
+  if (tr.length) { out.push({ hd: 'Tracks' }); tr.forEach(function (o) { out.push({ type: 'release', html: hl(o.t.t, q) + (o.t.m && o.t.m !== 'Original Mix' ? ' <span class="sts" style="display:inline">(' + esc(o.t.m) + ')</span>' : '') + '<span class="sts">on ' + esc(o.r.title) + ' &middot; ' + esc(o.r.artist) + '</span>', id: o.r.id }); }); }
+  return out;
+}
+function sugBox() { return document.getElementById('sug'); }
+function hideSug() { var b = sugBox(), i = document.getElementById('q'); if (b) b.hidden = true; if (i) i.setAttribute('aria-expanded', 'false'); SUG.i = -1; }
+function showSug() {
+  var b = sugBox(), inp = document.getElementById('q'); if (!b || !inp) return;
+  var list = findSuggestions(inp.value); SUG.items = []; SUG.i = -1;
+  if (!list.length) { if (inp.value.trim().length < 2) { hideSug(); return; } b.innerHTML = '<li class="none" role="presentation">No suggestions. Press Enter to search anyway.</li>'; b.hidden = false; inp.setAttribute('aria-expanded', 'true'); return; }
+  b.innerHTML = list.map(function (it) {
+    if (it.hd) return '<li class="hd" role="presentation">' + it.hd + '</li>';
+    SUG.items.push(it);
+    return '<li role="option" id="sug-' + (SUG.items.length - 1) + '" data-k="' + (SUG.items.length - 1) + '" aria-selected="false">' + (it.th ? '<span class="sth">' + cover(it.th) + '</span>' : '') + '<span class="stx">' + it.html + '</span></li>';
+  }).join('');
+  b.hidden = false; inp.setAttribute('aria-expanded', 'true');
+}
+function pickSug(k) {
+  var it = SUG.items[k], inp = document.getElementById('q'); if (!it) return;
+  hideSug();
+  if (it.type === 'artist') { inp.value = it.name; F.q = it.name; F.n = 24; paintResults(); }
+  else location.hash = '#release-' + it.id;
+}
+function moveSug(d) {
+  if (!SUG.items.length) return;
+  SUG.i = (SUG.i + d + SUG.items.length) % SUG.items.length;
+  SUG.items.forEach(function (_, k) { var e = document.getElementById('sug-' + k); if (e) e.setAttribute('aria-selected', k === SUG.i); });
+  var cur = document.getElementById('sug-' + SUG.i); if (cur) { cur.scrollIntoView({ block: 'nearest' }); document.getElementById('q').setAttribute('aria-activedescendant', cur.id); }
+}
+function enhanceSearch() {
+  var inp = document.getElementById('q'); if (!inp || document.getElementById('sug')) return;
+  var ul = document.createElement('ul'); ul.id = 'sug'; ul.className = 'sug'; ul.setAttribute('role', 'listbox'); ul.setAttribute('aria-label', 'Search suggestions'); ul.hidden = true;
+  inp.parentNode.appendChild(ul);
+  inp.setAttribute('role', 'combobox'); inp.setAttribute('aria-autocomplete', 'list'); inp.setAttribute('aria-controls', 'sug'); inp.setAttribute('aria-expanded', 'false'); inp.setAttribute('autocomplete', 'off');
+  inp.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowDown') { e.preventDefault(); if (sugBox().hidden) showSug(); moveSug(1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); moveSug(-1); }
+    else if (e.key === 'Enter') { if (SUG.i > -1 && !sugBox().hidden) { e.preventDefault(); pickSug(SUG.i); } else hideSug(); }
+    else if (e.key === 'Escape') hideSug();
+  });
+}
 function paintResults() {
   var q = F.q.trim().toLowerCase();
   var list = R.filter(function (r) {
@@ -3769,7 +3846,7 @@ function paintResults() {
   list = inOrder(list);
   var isHome = !!view.querySelector('[data-home]'), total = list.length, lim = isHome ? 6 : F.n;
   list = list.slice(0, lim);
-  document.getElementById('results').innerHTML = list.length ? '<div class="grid">' + list.map(card).join('') + '</div>' + (isHome && total > lim ? '<p class="more-wrap"><a class="btn solid" href="#catalog">View all ' + total + ' ' + (F.label !== 'All' ? F.label + ' ' : '') + (F.fmt !== 'All' ? F.fmt.toLowerCase() + ' ' : '') + 'releases &rarr;</a></p>' : '') + (!isHome && total > lim ? '<p class="more-wrap"><button class="btn" type="button" id="show-more">Show more (' + (total - lim) + ' left)</button></p>' : '') : '<p class="empty">No releases match. Clear a filter or try another search.</p>';
+  document.getElementById('results').innerHTML = list.length ? '<div class="grid">' + list.map(card).join('') + '</div>' + (isHome && total > lim ? '<p class="more-wrap"><a class="btn solid" href="#catalog">View all ' + total + ' ' + (F.label !== 'All' ? F.label + ' ' : '') + (F.fmt !== 'All' ? F.fmt.toLowerCase() + ' ' : '') + 'releases' + (F.q.trim() ? ' matching &ldquo;' + F.q.trim().replace(/</g, '&lt;') + '&rdquo;' : '') + ' &rarr;</a></p>' : '') + (!isHome && total > lim ? '<p class="more-wrap"><button class="btn" type="button" id="show-more">Show more (' + (total - lim) + ' left)</button></p>' : '') : '<p class="empty">No releases match. Clear a filter or try another search.</p>';
 }
 
 function trackRow(t) {
@@ -3843,6 +3920,7 @@ function route() {
   }
   var key = h.indexOf('release-') === 0 ? 'catalog' : h.indexOf('about') === 0 ? 'about' : h;
   document.querySelectorAll('#nav [data-r]').forEach(function (a) { if (a.dataset.r === key) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+  enhanceSearch();
   fitHero();
   window.scrollTo(0, 0);
 }
@@ -3869,11 +3947,14 @@ document.addEventListener('click', function (e) {
   if (fl) F.label = fl.getAttribute('data-filter');
   var a = e.target.closest && e.target.closest('a[href^="#"]');
   if (a && a.getAttribute('href') === (location.hash || '#home')) { e.preventDefault(); route(); }
+  var sg = e.target.closest && e.target.closest('#sug li[data-k]');
+  if (sg) pickSug(+sg.getAttribute('data-k'));
+  else if (!(e.target.closest && e.target.closest('.search'))) hideSug();
   var c = e.target.closest && e.target.closest('.chip');
   if (e.target.closest && e.target.closest('#show-more')) { F.n += 24; paintResults(); }
   if (c) { F.n = 24; F[c.dataset.g] = c.dataset.v; document.querySelectorAll('.chip[data-g="' + c.dataset.g + '"]').forEach(function (x) { x.setAttribute('aria-pressed', x === c); }); paintResults(); }
 });
-document.addEventListener('input', function (e) { if (e.target.id === 'q') { F.n = 24; F.q = e.target.value; paintResults(); } });
+document.addEventListener('input', function (e) { if (e.target.id === 'q') { F.n = 24; F.q = e.target.value; paintResults(); showSug(); } });
 document.addEventListener('submit', function (e) {
   e.preventDefault();
   if (e.target.id === 'signup') document.getElementById('su-status').textContent = 'Prototype only. The mailing list is not connected yet.';
