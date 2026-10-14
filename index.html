@@ -201,6 +201,36 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
 .prose.long p:first-child { font-size: 19px; line-height: 1.55; color: var(--ink); }
 .prose.ph p { font-size: 17px; }
 
+/* phones and small tablets */
+.menu-btn { display: none; font: inherit; font-size: 14px; font-weight: 600; align-items: center; gap: 10px; padding: 8px 12px; border: 1.5px solid var(--ink); background: none; color: var(--ink); border-radius: 2px; cursor: pointer; }
+.menu-btn .bars { width: 16px; height: 2px; background: currentColor; box-shadow: 0 -5px 0 currentColor, 0 5px 0 currentColor; }
+@media (max-width: 899px) {
+  main { padding-block: 24px 56px; }
+  .block { margin-top: 48px; }
+  .top .wrap { flex-wrap: nowrap; padding-block: 10px; }
+  .logo { height: 30px; }
+  .tools { flex-wrap: nowrap; gap: 6px 10px; }
+  .menu-btn { display: inline-flex; }
+  #theme-label { display: none; }
+  nav { display: none; position: absolute; left: 0; right: 0; top: 100%; flex-direction: column; flex-wrap: nowrap; gap: 0; background: var(--bg); border-bottom: 1px solid var(--line); padding-block: 4px 10px; max-height: calc(100dvh - 64px); overflow-y: auto; }
+  .top[data-nav="true"] nav { display: flex; }
+  nav > a, .dd-btn { width: 100%; padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 17px; }
+  .dd-btn { justify-content: space-between; }
+  nav > a[aria-current="page"], .dd-btn[aria-current="page"] { color: var(--ink); font-weight: 700; border-bottom-color: var(--line); }
+  .menu { position: static; border: 0; box-shadow: none; background: transparent; max-width: none; min-width: 0; padding: 0 0 6px 14px; }
+  nav .menu a { padding: 12px 0; font-size: 16px; color: var(--muted); }
+  nav .menu a.sub { padding-left: 16px; }
+  .meta strong { font-size: 15px; }
+  .meta .ttl { font-size: 14px; }
+  .filters { gap: 12px 16px; }
+  .chip { padding: 8px 14px; }
+  .search { margin-left: 0; width: 100%; }
+  .search input { width: 100%; }
+  .search input, .signup input, .form input, .form textarea { font-size: 16px; }
+  .prose p:first-child { font-size: 19px; }
+  .hero .actions .btn { flex: 1 1 auto; justify-content: center; }
+}
+
 @media (prefers-reduced-motion: reduce) { .art svg { transition: none; } .card:hover .art svg { transform: none; } }
 </style>
 
@@ -214,6 +244,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
     <div class="tools">
       <nav id="nav" aria-label="Main"></nav>
       <button class="theme" id="theme" type="button" role="switch" aria-checked="false" aria-label="Dark mode"><span class="track"></span><span id="theme-label">Light</span></button>
+      <button class="menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav"><span class="bars" aria-hidden="true"></span><span>Menu</span></button>
     </div>
   </div>
 </header>
