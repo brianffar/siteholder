@@ -183,6 +183,7 @@ main { padding-block: 40px 72px; min-height: 70vh; }
 .list-row h3 { font-size: 22px; font-weight: 800; text-transform: uppercase; font-stretch: 75%; }
 .list-row .rels { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 15px; color: var(--muted); }
 .list-row .rels a:hover { color: var(--accent); }
+.list-row .rels .rmx { font-size: 12px; opacity: .75; }
 .mix { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; gap: 16px; align-items: center; padding-block: 14px; border-bottom: 1px solid var(--line); }
 .mix .art { width: 72px; }
 .mix h3 { font-size: 18px; font-weight: 700; }
@@ -3768,10 +3769,30 @@ var F = { label: 'All', fmt: 'All', q: '', n: 24 };
 function card(r) {
   return '<a class="card" href="#release-' + r.id + '"><div class="art">' + cover(r) + '</div><div class="meta"><div class="row"><span class="cat">' + catNo(r) + '</span><span class="fmt">' + r.fmtName + '</span></div><strong>' + r.artist + '</strong><span class="ttl">' + r.title + '</span></div></a>';
 }
+/* Remixer credits: mix name on a track -> artist name(s). Mix names that are not a person (e.g. "Dub") are left out. */
+var REMIX_NAME = {
+  "ATOM's Drunken Mumble ReRub": 'ATOM', "Alicia Hush's Giddy Down Remix": 'Alicia Hush', 'Billy Dalessandro\'s "Facet Style" Remix': 'Billy Dalessandro',
+  "Billy Dalessandro's Pimps n' Hoes Remix": 'Billy Dalessandro', 'Dispater\'s "Dis Body" Remix': 'Dispater', 'Jason Emsley\'s "Medicated" Remix': 'Jason Emsley',
+  'Noah Pred\'s "Flux Capacitor" Remix': 'Noah Pred', "Soultek's Walking In His Sleep Mix": 'Soultek', "Tyrone's Digital Exclusive Remix": 'Tyrone',
+  'Brian Ffar vs. Huge Hephner Remix': ['Brian Ffar', 'Huge Hephner'], 'Stefny Remix': 'Stefny Winter', 'Slutbox Mix': 'Slutbox'
+};
+var REMIX_SKIP = { 'Dub': 1, 'Original Mix': 1, 'Digital Exclusive Remix': 1, 'Lick It, Smack It, Rub It Down Remix': 1, 'Afraid Of The Dark Remix': 1, 'Jason Short jRemix - Digital Exclusive': 1, "Yes Ma'am Remix": 1 };
+function remixers(mix) {
+  if (!mix || REMIX_SKIP[mix]) return [];
+  if (REMIX_NAME[mix]) return [].concat(REMIX_NAME[mix]);
+  var mm = /^(.+?) Remix$/.exec(mix);
+  return mm ? [mm[1]] : [];
+}
 function artists() {
-  var m = {};
-  R.forEach(function (r) { r.artists.forEach(function (n) { if (n !== 'Various Artists') (m[n] = m[n] || []).push(r); }); });
-  return Object.keys(m).sort(byName).map(function (n) { return { name: n, rels: m[n] }; });
+  var m = {}, canon = {}, seen = {};
+  function add(n, r, remix) {
+    var k = n.toLowerCase(); n = canon[k] || (canon[k] = n);
+    var s = seen[n] = seen[n] || {}, e = m[n] = m[n] || [];
+    if (!s[r.id]) { s[r.id] = remix ? 'remix' : 'main'; e.push(r); } else if (!remix) s[r.id] = 'main';
+  }
+  R.forEach(function (r) { r.artists.forEach(function (n) { if (n !== 'Various Artists') add(n, r, false); }); });
+  R.forEach(function (r) { r.tracks.forEach(function (t) { remixers(t.m).forEach(function (n) { add(n, r, true); }); }); });
+  return Object.keys(m).sort(byName).map(function (n) { return { name: n, rels: m[n], kind: seen[n] }; });
 }
 /* A to Z, ignoring case and a leading "The" */
 function sortKey(n) { return n.toLowerCase().replace(/^the\s+/, ''); }
@@ -3907,7 +3928,7 @@ function artistsView() {
   var jump = '<div class="az" role="navigation" aria-label="Jump to a letter">' + all.map(function (L) { return groups[L] ? '<button type="button" data-az="' + L + '">' + L + '</button>' : '<button type="button" disabled>' + L + '</button>'; }).join('') + '</div>';
   return '<h1 class="page-title">Artists</h1><p class="count">' + list.length + ' artists, A to Z</p>' + jump + '<div class="list">' + letters.map(function (L) {
     return '<h2 class="list-letter" id="az-' + L + '">' + L + '</h2>' + groups[L].map(function (a) {
-      return '<div class="list-row"><h3>' + a.name + '<sup class="n">' + a.rels.length + '</sup></h3><div class="rels">' + a.rels.map(function (r) { return '<a href="#release-' + r.id + '">' + r.title + '</a>'; }).join('') + '</div></div>';
+      return '<div class="list-row"><h3>' + a.name + '<sup class="n">' + a.rels.length + '</sup></h3><div class="rels">' + a.rels.map(function (r) { return '<a href="#release-' + r.id + '">' + r.title + (a.kind[r.id] === 'remix' ? ' <span class="rmx">(remix)</span>' : '') + '</a>'; }).join('') + '</div></div>';
     }).join('');
   }).join('') + '</div>';
 }
