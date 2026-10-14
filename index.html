@@ -174,6 +174,12 @@ main { padding-block: 40px 72px; min-height: 70vh; }
 .list { border-top: 1px solid var(--line); }
 .list-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px 24px; padding-block: 18px; border-bottom: 1px solid var(--line); }
 @media (min-width: 700px) { .list-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); } }
+.az { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 12px; }
+.az button { font-family: var(--mono); font-size: 13px; width: 34px; height: 34px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 2px; cursor: pointer; }
+.az button:hover:not(:disabled) { border-color: var(--ink); }
+.az button:disabled { opacity: .3; cursor: default; }
+.list-letter { font-family: var(--mono); font-size: 14px; font-weight: 500; color: var(--accent); padding-top: 28px; margin: 0; scroll-margin-top: 96px; }
+.list-row h3 sup.n { font-family: var(--mono); font-size: 11px; font-weight: 400; color: var(--accent); margin-left: 6px; }
 .list-row h3 { font-size: 22px; font-weight: 800; text-transform: uppercase; font-stretch: 75%; }
 .list-row .rels { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 15px; color: var(--muted); }
 .list-row .rels a:hover { color: var(--accent); }
@@ -729,7 +735,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
    "Donk Boys",
    "Quell",
    "James Welsh",
-   "V-Sexion",
+   "V.Sexion",
    "Ntanos"
   ],
   "label": "Siteholder",
@@ -807,7 +813,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
     "m": "Original Mix",
     "bpm": 123,
     "k": "A min",
-    "a": "V-Sexion, Ntanos"
+    "a": "V.Sexion, Ntanos"
    },
    {
     "t": "She's My Pink Panther",
@@ -3740,8 +3746,11 @@ function card(r) {
 function artists() {
   var m = {};
   R.forEach(function (r) { r.artists.forEach(function (n) { if (n !== 'Various Artists') (m[n] = m[n] || []).push(r); }); });
-  return Object.keys(m).sort().map(function (n) { return { name: n, rels: m[n] }; });
+  return Object.keys(m).sort(byName).map(function (n) { return { name: n, rels: m[n] }; });
 }
+/* A to Z, ignoring case and a leading "The" */
+function sortKey(n) { return n.toLowerCase().replace(/^the\s+/, ''); }
+function byName(a, b) { return sortKey(a).localeCompare(sortKey(b)); }
 
 function home() {
   var r = R[0];
@@ -3751,7 +3760,7 @@ function home() {
     '<p class="intro">Electronic music for DJs and fans. Every release is available to preview, then buy as high-resolution audio or on vinyl.</p></div></section>' +
     '<section class="block" data-home="1"><div class="sec-head"><h2>Recent releases</h2><a class="more" href="#catalog">Full catalog</a></div><div class="filters">' + labelChips() + chips('fmt', ['All', 'Digital', 'Vinyl']) + '<div class="search"><input id="q" type="search" placeholder="Search artist, title or track" aria-label="Search the catalog by artist, title or track" value="' + F.q.replace(/"/g, '&quot;') + '"></div></div><div id="results"></div></section>' +
     '<section class="block"><div class="sec-head"><h2>Artists</h2><a class="more" href="#artists">All artists</a></div><div class="wall">' +
-    artists().sort(function (x, y) { return y.rels.length - x.rels.length; }).slice(0, 30).sort(function (x, y) { return x.name < y.name ? -1 : 1; }).map(function (a) { return '<a href="#artists">' + a.name + '<sup>' + a.rels.length + '</sup></a>'; }).join('') + '</div></section>';
+    artists().sort(function (x, y) { return y.rels.length - x.rels.length; }).slice(0, 30).sort(function (x, y) { return byName(x.name, y.name); }).map(function (a) { return '<a href="#artists">' + a.name + '<sup>' + a.rels.length + '</sup></a>'; }).join('') + '</div></section>';
 }
 
 function chips(group, opts, title) {
@@ -3867,8 +3876,14 @@ function release(id) {
 }
 
 function artistsView() {
-  return '<h1 class="page-title">Artists</h1><div class="list">' + artists().map(function (a) {
-    return '<div class="list-row"><h3>' + a.name + '</h3><div class="rels">' + a.rels.map(function (r) { return '<a href="#release-' + r.id + '">' + r.title + '</a>'; }).join('') + '</div></div>';
+  var list = artists(), groups = {}, letters = [];
+  list.forEach(function (a) { var L = sortKey(a.name).charAt(0).toUpperCase(); if (!/[A-Z]/.test(L)) L = '#'; if (!groups[L]) { groups[L] = []; letters.push(L); } groups[L].push(a); });
+  var all = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  var jump = '<div class="az" role="navigation" aria-label="Jump to a letter">' + all.map(function (L) { return groups[L] ? '<button type="button" data-az="' + L + '">' + L + '</button>' : '<button type="button" disabled>' + L + '</button>'; }).join('') + '</div>';
+  return '<h1 class="page-title">Artists</h1><p class="count">' + list.length + ' artists, A to Z</p>' + jump + '<div class="list">' + letters.map(function (L) {
+    return '<h2 class="list-letter" id="az-' + L + '">' + L + '</h2>' + groups[L].map(function (a) {
+      return '<div class="list-row"><h3>' + a.name + '<sup class="n">' + a.rels.length + '</sup></h3><div class="rels">' + a.rels.map(function (r) { return '<a href="#release-' + r.id + '">' + r.title + '</a>'; }).join('') + '</div></div>';
+    }).join('');
   }).join('') + '</div>';
 }
 
@@ -3947,6 +3962,8 @@ document.addEventListener('click', function (e) {
   if (fl) F.label = fl.getAttribute('data-filter');
   var a = e.target.closest && e.target.closest('a[href^="#"]');
   if (a && a.getAttribute('href') === (location.hash || '#home')) { e.preventDefault(); route(); }
+  var az = e.target.closest && e.target.closest('[data-az]');
+  if (az) { var tgt = document.getElementById('az-' + az.getAttribute('data-az')); if (tgt) tgt.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   var sg = e.target.closest && e.target.closest('#sug li[data-k]');
   if (sg) pickSug(+sg.getAttribute('data-k'));
   else if (!(e.target.closest && e.target.closest('.search'))) hideSug();
