@@ -1489,7 +1489,7 @@ function cover(r) {
   for (i = al.length - 1; i >= 0; i--) { t += '<text x="6" y="' + y.toFixed(1) + '" font-size="8.4" fill="#fff" style="font-weight:800;font-stretch:75%">' + al[i] + '</text>'; y -= 8.6; }
   return '<svg viewBox="0 0 100 100" role="img" aria-label="Placeholder cover for ' + r.title + ' by ' + r.artist + '" font-family="Archivo, Arial, sans-serif"><defs>' + defs + '</defs>' + s +
     '<rect y="38" width="100" height="62" fill="url(#' + id + 's)"/>' +
-    '<rect width="100" height="30" fill="url(#' + id + 't)"/>' + (r.label === 'UnCut' || r.label === 'UnCut Ltd' ? '<use href="#sh-logo-uncut" x="5" y="3.5" width="22" height="14.7"/>' : '<use href="#sh-logo" x="5" y="4.5" width="24" height="13.6"/>') + t + '</svg>';
+    '<rect width="100" height="30" fill="url(#' + id + 't)"/>' + (r.label === 'UnCut' || r.label === 'UnCut Ltd' || (r.fmt === 'Digital' && r.label !== 'Facet') ? '<use href="#sh-logo-uncut" x="5" y="3.5" width="22" height="14.7"/>' : '<use href="#sh-logo" x="5" y="4.5" width="24" height="13.6"/>') + t + '</svg>';
 }
 
 /* ---------- views ---------- */
