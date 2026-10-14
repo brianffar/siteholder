@@ -97,6 +97,8 @@ main { padding-block: 40px 72px; min-height: 70vh; }
 .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 16px; }
 @media (min-width: 900px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px 28px; } }
 .card { display: block; min-width: 0; }
+.art img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.more-wrap { text-align: center; margin-top: 32px; }
 .art { aspect-ratio: 1; width: 100%; background: var(--line); overflow: hidden; }
 .art svg { display: block; width: 100%; height: 100%; transition: transform .5s cubic-bezier(.2,.7,.2,1); }
 .card:hover .art svg { transform: scale(1.035); }
@@ -245,7 +247,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
 <body>
 
 
-<div class="proto wrap">Prototype. Release names come from the old site; cover art, catalogue numbers, label assignments and links are placeholders. Only the About text and podcast names are real.</div>
+<div class="proto wrap">Prototype. Releases, artists, dates and labels are real, from Beatport and Discogs. Cover art, tracklists and direct store links are still placeholders.</div>
 
 <header class="top">
   <div class="wrap">
@@ -295,28 +297,1117 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
   </div>
 </footer>
 
+<script type="application/json" id="releases">[
+ {
+  "title": "Don't Wait For Me",
+  "artists": [
+   "Magnanime"
+  ],
+  "label": "Siteholder",
+  "cat": "SH039",
+  "date": "2015",
+  "fmt": "Vinyl",
+  "id": "don-t-wait-for-me",
+  "artist": "Magnanime"
+ },
+ {
+  "title": "Aceed",
+  "artists": [
+   "Brock Ferrar"
+  ],
+  "label": "Siteholder",
+  "cat": "SH038",
+  "date": "2014-10-31",
+  "fmt": "Digital",
+  "id": "aceed",
+  "artist": "Brock Ferrar"
+ },
+ {
+  "title": "Surge",
+  "artists": [
+   "Haruyuki Yokoyama"
+  ],
+  "label": "Siteholder",
+  "cat": "SH037",
+  "date": "2014-10-03",
+  "fmt": "Digital",
+  "id": "surge",
+  "artist": "Haruyuki Yokoyama"
+ },
+ {
+  "title": "You Know How We Get Down",
+  "artists": [
+   "Chris Larsen"
+  ],
+  "label": "Siteholder",
+  "cat": "",
+  "date": "2014-07-07",
+  "fmt": "Digital",
+  "id": "you-know-how-we-get-down",
+  "artist": "Chris Larsen"
+ },
+ {
+  "title": "PEONS",
+  "artists": [
+   "Ombossa"
+  ],
+  "label": "Siteholder",
+  "cat": "SH035",
+  "date": "2014-04-01",
+  "fmt": "Digital",
+  "id": "peons",
+  "artist": "Ombossa"
+ },
+ {
+  "title": "Lucid Dreaming",
+  "artists": [
+   "Brojanowski"
+  ],
+  "label": "Siteholder",
+  "cat": "",
+  "date": "2013-12-16",
+  "fmt": "Digital",
+  "id": "lucid-dreaming",
+  "artist": "Brojanowski"
+ },
+ {
+  "title": "Loaded Machine",
+  "artists": [
+   "Kaiq"
+  ],
+  "label": "Siteholder",
+  "cat": "",
+  "date": "2013-10-14",
+  "fmt": "Digital",
+  "id": "loaded-machine",
+  "artist": "Kaiq"
+ },
+ {
+  "title": "Dream Dream",
+  "artists": [
+   "Miro Pajic"
+  ],
+  "label": "Siteholder",
+  "cat": "",
+  "date": "2013-08-05",
+  "fmt": "Digital",
+  "id": "dream-dream",
+  "artist": "Miro Pajic"
+ },
+ {
+  "title": "P.C. For You, From Us",
+  "artists": [
+   "Javier Orduna",
+   "Inigo Oruezabal"
+  ],
+  "label": "Siteholder",
+  "cat": "SH030",
+  "date": "2013-05-06",
+  "fmt": "Digital",
+  "id": "p-c-for-you-from-us",
+  "artist": "Javier Orduna, Inigo Oruezabal"
+ },
+ {
+  "title": "Girls Hate Boys",
+  "artists": [
+   "Ombossa"
+  ],
+  "label": "Siteholder",
+  "cat": "SH029",
+  "date": "2013-03-04",
+  "fmt": "Digital",
+  "id": "girls-hate-boys",
+  "artist": "Ombossa"
+ },
+ {
+  "title": "A Wife For Objecto Phil",
+  "artists": [
+   "Dry But Funky"
+  ],
+  "label": "Siteholder",
+  "cat": "",
+  "date": "2013-02-04",
+  "fmt": "Digital",
+  "id": "a-wife-for-objecto-phil",
+  "artist": "Dry But Funky"
+ },
+ {
+  "title": "Bootysm",
+  "artists": [
+   "Billy Dalessandro"
+  ],
+  "label": "Siteholder",
+  "cat": "SH033",
+  "date": "2013",
+  "fmt": "Vinyl",
+  "id": "bootysm",
+  "artist": "Billy Dalessandro"
+ },
+ {
+  "title": "Siteholder Gems Volume 3",
+  "artists": [
+   "Haruyuki Yokoyama",
+   "Tyrone",
+   "Colourblind",
+   "Billy Dalessandro",
+   "Huge Hephner",
+   "Jonas Sella",
+   "Crazy Larry",
+   "Bumpin' Ugly",
+   "BeleeJean",
+   "Brian Ffar",
+   "Donk Boys",
+   "Quell",
+   "James Welsh",
+   "V-Sexion",
+   "Ntanos"
+  ],
+  "label": "Siteholder",
+  "cat": "",
+  "date": "2012-12-25",
+  "fmt": "Digital",
+  "id": "siteholder-gems-volume-3",
+  "artist": "Various Artists"
+ },
+ {
+  "title": "For My Homies",
+  "artists": [
+   "Chris Larsen"
+  ],
+  "label": "Siteholder",
+  "cat": "",
+  "date": "2012-11-12",
+  "fmt": "Digital",
+  "id": "for-my-homies",
+  "artist": "Chris Larsen"
+ },
+ {
+  "title": "Balls Of Fire",
+  "artists": [
+   "Billy Dalessandro"
+  ],
+  "label": "Siteholder",
+  "cat": "",
+  "date": "2012-10-22",
+  "fmt": "Digital",
+  "id": "balls-of-fire",
+  "artist": "Billy Dalessandro"
+ },
+ {
+  "title": "The Hat In The Cat",
+  "artists": [
+   "Jonas Sella"
+  ],
+  "label": "Siteholder",
+  "cat": "SH025",
+  "date": "2012-07-30",
+  "fmt": "Digital",
+  "id": "the-hat-in-the-cat",
+  "artist": "Jonas Sella"
+ },
+ {
+  "title": "All In Your Head",
+  "artists": [
+   "Colourblind"
+  ],
+  "label": "Siteholder",
+  "cat": "",
+  "date": "2012-05-07",
+  "fmt": "Digital",
+  "id": "all-in-your-head",
+  "artist": "Colourblind"
+ },
+ {
+  "title": "Siteholder Gems Volume 2",
+  "artists": [
+   "Brian Ffar",
+   "Slutbox",
+   "Billy Dalessandro",
+   "Paneoh",
+   "Huge Hephner",
+   "ana+one",
+   "Tyrone",
+   "Victor Gonzales",
+   "The Shocker",
+   "Galuszka",
+   "Crazy Larry"
+  ],
+  "label": "Siteholder",
+  "cat": "",
+  "date": "2012-03-14",
+  "fmt": "Digital",
+  "id": "siteholder-gems-volume-2",
+  "artist": "Various Artists"
+ },
+ {
+  "title": "Blur",
+  "artists": [
+   "Haruyuki Yokoyama"
+  ],
+  "label": "Siteholder",
+  "cat": "",
+  "date": "2012-02-20",
+  "fmt": "Digital",
+  "id": "blur",
+  "artist": "Haruyuki Yokoyama"
+ },
+ {
+  "title": "Restid",
+  "artists": [
+   "Kretipleti"
+  ],
+  "label": "Siteholder",
+  "cat": "SH022",
+  "date": "2012-01-23",
+  "fmt": "Digital",
+  "id": "restid",
+  "artist": "Kretipleti"
+ },
+ {
+  "title": "Siteholder Gems Volume 1",
+  "artists": [
+   "Brian Ffar",
+   "Bumpin' Ugly",
+   "Tyrone",
+   "Huge Hephner",
+   "Kaiq",
+   "Billy Dalessandro",
+   "Haruyuki Yokoyama",
+   "Galuszka",
+   "Paneoh",
+   "Marc Cotterell"
+  ],
+  "label": "Siteholder",
+  "cat": "",
+  "date": "2011-12-23",
+  "fmt": "Digital",
+  "id": "siteholder-gems-volume-1",
+  "artist": "Various Artists"
+ },
+ {
+  "title": "Skipping Stones After Dark",
+  "artists": [
+   "Brian Ffar"
+  ],
+  "label": "Siteholder",
+  "cat": "SH021",
+  "date": "2011-12-05",
+  "fmt": "Digital",
+  "id": "skipping-stones-after-dark",
+  "artist": "Brian Ffar"
+ },
+ {
+  "title": "I Live In Spandex",
+  "artists": [
+   "Stefny Winter"
+  ],
+  "label": "Siteholder",
+  "cat": "",
+  "date": "2011-10-31",
+  "fmt": "Digital",
+  "id": "i-live-in-spandex",
+  "artist": "Stefny Winter"
+ },
+ {
+  "title": "Hentai House",
+  "artists": [
+   "Billy Dalessandro"
+  ],
+  "label": "Siteholder",
+  "cat": "",
+  "date": "2011-09-19",
+  "fmt": "Digital",
+  "id": "hentai-house",
+  "artist": "Billy Dalessandro"
+ },
+ {
+  "title": "Kissing Booth Criminal",
+  "artists": [
+   "Alicia Hush"
+  ],
+  "label": "Siteholder",
+  "cat": "SH018",
+  "date": "2011-08-22",
+  "fmt": "Digital",
+  "id": "kissing-booth-criminal",
+  "artist": "Alicia Hush"
+ },
+ {
+  "title": "Air Dance",
+  "artists": [
+   "Peacock"
+  ],
+  "label": "Siteholder",
+  "cat": "SH017",
+  "date": "2011-07-20",
+  "fmt": "Digital",
+  "id": "air-dance",
+  "artist": "Peacock"
+ },
+ {
+  "title": "Balls In Your Face",
+  "artists": [
+   "Billy Dalessandro"
+  ],
+  "label": "Siteholder",
+  "cat": "SH016",
+  "date": "2011-04-04",
+  "fmt": "Digital",
+  "id": "balls-in-your-face",
+  "artist": "Billy Dalessandro"
+ },
+ {
+  "title": "Indoor League",
+  "artists": [
+   "James Welsh"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC039",
+  "date": "2011-03-14",
+  "fmt": "Digital",
+  "id": "indoor-league",
+  "artist": "James Welsh"
+ },
+ {
+  "title": "Rustbelt",
+  "artists": [
+   "Noah Pred"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC038",
+  "date": "2011-02-14",
+  "fmt": "Digital",
+  "id": "rustbelt",
+  "artist": "Noah Pred"
+ },
+ {
+  "title": "Time Machine",
+  "artists": [
+   "Kaiq"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC037",
+  "date": "2011-01-14",
+  "fmt": "Digital",
+  "id": "time-machine",
+  "artist": "Kaiq"
+ },
+ {
+  "title": "Micro Piano",
+  "artists": [
+   "Zarbeat"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC036",
+  "date": "2010-12-17",
+  "fmt": "Digital",
+  "id": "micro-piano",
+  "artist": "Zarbeat"
+ },
+ {
+  "title": "Reversible",
+  "artists": [
+   "Paneoh"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC035",
+  "date": "2010-11-19",
+  "fmt": "Digital",
+  "id": "reversible",
+  "artist": "Paneoh"
+ },
+ {
+  "title": "Drunk Elephants",
+  "artists": [
+   "Sheezy"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC034",
+  "date": "2010-10-15",
+  "fmt": "Digital",
+  "id": "drunk-elephants",
+  "artist": "Sheezy"
+ },
+ {
+  "title": "Stripped",
+  "artists": [
+   "Peacock"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC033",
+  "date": "2010-09-10",
+  "fmt": "Digital",
+  "id": "stripped",
+  "artist": "Peacock"
+ },
+ {
+  "title": "Elastic",
+  "artists": [
+   "Haruyuki Yokoyama"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC032",
+  "date": "2010-08-06",
+  "fmt": "Digital",
+  "id": "elastic",
+  "artist": "Haruyuki Yokoyama"
+ },
+ {
+  "title": "Desert Hire",
+  "artists": [
+   "Colliders"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC031",
+  "date": "2010-07-02",
+  "fmt": "Digital",
+  "id": "desert-hire",
+  "artist": "Colliders"
+ },
+ {
+  "title": "Drunk Lover",
+  "artists": [
+   "Tyrone"
+  ],
+  "label": "Siteholder",
+  "cat": "SH015",
+  "date": "2010-03-19",
+  "fmt": "Digital",
+  "id": "drunk-lover",
+  "artist": "Tyrone"
+ },
+ {
+  "title": "Sight In Sight",
+  "artists": [
+   "Zarbeat"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC030",
+  "date": "2010-03-05",
+  "fmt": "Digital",
+  "id": "sight-in-sight",
+  "artist": "Zarbeat"
+ },
+ {
+  "title": "Strombooty EP",
+  "artists": [
+   "Billy Dalessandro"
+  ],
+  "label": "Siteholder",
+  "cat": "SH014",
+  "date": "2010-02-12",
+  "fmt": "Digital",
+  "id": "strombooty-ep",
+  "artist": "Billy Dalessandro"
+ },
+ {
+  "title": "Wetfood EP",
+  "artists": [
+   "Slutbox"
+  ],
+  "label": "Siteholder",
+  "cat": "SH013",
+  "date": "2009-10-30",
+  "fmt": "Digital",
+  "id": "wetfood-ep",
+  "artist": "Slutbox"
+ },
+ {
+  "title": "Money Talks",
+  "artists": [
+   "Huge Hephner"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC029",
+  "date": "2009-10-23",
+  "fmt": "Digital",
+  "id": "money-talks",
+  "artist": "Huge Hephner"
+ },
+ {
+  "title": "Antisystem EP",
+  "artists": [
+   "Pablo Rez"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC028",
+  "date": "2009-09-18",
+  "fmt": "Digital",
+  "id": "antisystem-ep",
+  "artist": "Pablo Rez"
+ },
+ {
+  "title": "The Lake Effect - Part 2",
+  "artists": [
+   "Galuszka"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC027",
+  "date": "2009-08-14",
+  "fmt": "Digital",
+  "id": "the-lake-effect-part-2",
+  "artist": "Galuszka"
+ },
+ {
+  "title": "The Lake Effect - Part 1",
+  "artists": [
+   "Galuszka"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC026",
+  "date": "2009-07-17",
+  "fmt": "Digital",
+  "id": "the-lake-effect-part-1",
+  "artist": "Galuszka"
+ },
+ {
+  "title": "Hold Me Tight",
+  "artists": [
+   "Donk Boys"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC025",
+  "date": "2009-06-19",
+  "fmt": "Digital",
+  "id": "hold-me-tight",
+  "artist": "Donk Boys"
+ },
+ {
+  "title": "Shift EP",
+  "artists": [
+   "Jason Emsley"
+  ],
+  "label": "Siteholder",
+  "cat": "SH012",
+  "date": "2009-05-29",
+  "fmt": "Digital",
+  "id": "shift-ep",
+  "artist": "Jason Emsley"
+ },
+ {
+  "title": "Places EP",
+  "artists": [
+   "Marc Cotterell"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC024",
+  "date": "2009-05-15",
+  "fmt": "Digital",
+  "id": "places-ep",
+  "artist": "Marc Cotterell"
+ },
+ {
+  "title": "Do It EP",
+  "artists": [
+   "Victor Gonzales"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC023",
+  "date": "2009-04-17",
+  "fmt": "Digital",
+  "id": "do-it-ep",
+  "artist": "Victor Gonzales"
+ },
+ {
+  "title": "Touch Sensitive EP",
+  "artists": [
+   "Tyrone"
+  ],
+  "label": "Siteholder",
+  "cat": "SH011",
+  "date": "2009-03-27",
+  "fmt": "Digital",
+  "id": "touch-sensitive-ep",
+  "artist": "Tyrone"
+ },
+ {
+  "title": "Not Alone EP",
+  "artists": [
+   "Darkmaze"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC022",
+  "date": "2009-03-13",
+  "fmt": "Digital",
+  "id": "not-alone-ep",
+  "artist": "Darkmaze"
+ },
+ {
+  "title": "Effectinmotion EP",
+  "artists": [
+   "V-Sexion",
+   "Ntanos"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC021",
+  "date": "2009-02-20",
+  "fmt": "Digital",
+  "id": "effectinmotion-ep",
+  "artist": "V-Sexion, Ntanos"
+ },
+ {
+  "title": "Shapes & Sizes",
+  "artists": [
+   "Yeti Quest",
+   "Adjective",
+   "PerSe",
+   "Pacific Atlas",
+   "Steve Edwards",
+   "Massif",
+   "Ditech",
+   "Billy Dalessandro",
+   "Brian Ffar",
+   "Expander"
+  ],
+  "label": "Facet",
+  "cat": "FAC001",
+  "date": "2009-02-14",
+  "fmt": "Digital",
+  "id": "shapes-sizes",
+  "artist": "Various Artists"
+ },
+ {
+  "title": "Billy Bought A Laser EP",
+  "artists": [
+   "Brian Ffar"
+  ],
+  "label": "Siteholder",
+  "cat": "SH010",
+  "date": "2009-02-06",
+  "fmt": "Digital",
+  "id": "billy-bought-a-laser-ep",
+  "artist": "Brian Ffar"
+ },
+ {
+  "title": "La Voix Amicale EP",
+  "artists": [
+   "ana+one"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC020",
+  "date": "2009-01-16",
+  "fmt": "Digital",
+  "id": "la-voix-amicale-ep",
+  "artist": "ana+one"
+ },
+ {
+  "title": "Uncut Premium Part Four",
+  "artists": [
+   "Various Artists"
+  ],
+  "label": "UnCut Ltd",
+  "cat": "SHUCLTD004",
+  "date": "2009",
+  "fmt": "Vinyl",
+  "id": "uncut-premium-part-four",
+  "artist": "Various Artists"
+ },
+ {
+  "title": "Uncut Premium Part Six",
+  "artists": [
+   "Various Artists"
+  ],
+  "label": "UnCut Ltd",
+  "cat": "SHUCLTD006",
+  "date": "2009",
+  "fmt": "Vinyl",
+  "id": "uncut-premium-part-six",
+  "artist": "Various Artists"
+ },
+ {
+  "title": "Mirapex EP",
+  "artists": [
+   "Crazy Larry"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC019",
+  "date": "2008-12-12",
+  "fmt": "Digital",
+  "id": "mirapex-ep",
+  "artist": "Crazy Larry"
+ },
+ {
+  "title": "Roniti EP",
+  "artists": [
+   "BeleeJean"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC018",
+  "date": "2008-11-14",
+  "fmt": "Digital",
+  "id": "roniti-ep",
+  "artist": "BeleeJean"
+ },
+ {
+  "title": "Bring The Bling EP",
+  "artists": [
+   "Galuszka"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC017",
+  "date": "2008-10-17",
+  "fmt": "Digital",
+  "id": "bring-the-bling-ep",
+  "artist": "Galuszka"
+ },
+ {
+  "title": "Hiato EP",
+  "artists": [
+   "Michael Louis"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC016",
+  "date": "2008-09-26",
+  "fmt": "Digital",
+  "id": "hiato-ep",
+  "artist": "Michael Louis"
+ },
+ {
+  "title": "Bang Bang Cowboy EP",
+  "artists": [
+   "Tyrone"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC015",
+  "date": "2008-09-05",
+  "fmt": "Digital",
+  "id": "bang-bang-cowboy-ep",
+  "artist": "Tyrone"
+ },
+ {
+  "title": "Nymphotech LP",
+  "artists": [
+   "Huge Hephner"
+  ],
+  "label": "Siteholder",
+  "cat": "SH008/009",
+  "date": "2008-08-15",
+  "fmt": "Digital",
+  "id": "nymphotech-lp",
+  "artist": "Huge Hephner"
+ },
+ {
+  "title": "Heritage EP",
+  "artists": [
+   "Victor Gonzales"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC014",
+  "date": "2008-07-18",
+  "fmt": "Digital",
+  "id": "heritage-ep",
+  "artist": "Victor Gonzales"
+ },
+ {
+  "title": "Sheezah EP",
+  "artists": [
+   "Bumpin' Ugly"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC013",
+  "date": "2008-06-27",
+  "fmt": "Digital",
+  "id": "sheezah-ep",
+  "artist": "Bumpin' Ugly"
+ },
+ {
+  "title": "Backseat Driver EP",
+  "artists": [
+   "Slutbox"
+  ],
+  "label": "Siteholder",
+  "cat": "SH007",
+  "date": "2008-06-06",
+  "fmt": "Digital",
+  "id": "backseat-driver-ep",
+  "artist": "Slutbox"
+ },
+ {
+  "title": "Dirty Snitch EP",
+  "artists": [
+   "Galuszka"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC012",
+  "date": "2008-05-23",
+  "fmt": "Digital",
+  "id": "dirty-snitch-ep",
+  "artist": "Galuszka"
+ },
+ {
+  "title": "Tumble Dry Low EP",
+  "artists": [
+   "Pablo Rez",
+   "Brad Miner",
+   "Quell",
+   "Andrew Grant",
+   "Dif"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC011",
+  "date": "2008-04-25",
+  "fmt": "Digital",
+  "id": "tumble-dry-low-ep",
+  "artist": "Various Artists"
+ },
+ {
+  "title": "Pimp Slappin EP",
+  "artists": [
+   "Huge Hephner"
+  ],
+  "label": "Siteholder",
+  "cat": "SH006",
+  "date": "2008-04-11",
+  "fmt": "Digital",
+  "id": "pimp-slappin-ep",
+  "artist": "Huge Hephner"
+ },
+ {
+  "title": "In The Dark - The Remixes",
+  "artists": [
+   "Billy Dalessandro"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC010",
+  "date": "2008-03-28",
+  "fmt": "Digital",
+  "id": "in-the-dark-the-remixes",
+  "artist": "Billy Dalessandro"
+ },
+ {
+  "title": "Are You There EP",
+  "artists": [
+   "Billy Dalessandro"
+  ],
+  "label": "Siteholder",
+  "cat": "SH005",
+  "date": "2008-02-29",
+  "fmt": "Digital",
+  "id": "are-you-there-ep",
+  "artist": "Billy Dalessandro"
+ },
+ {
+  "title": "The Big Blue EP",
+  "artists": [
+   "Billy Dalessandro"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC009",
+  "date": "2008-02-15",
+  "fmt": "Digital",
+  "id": "the-big-blue-ep",
+  "artist": "Billy Dalessandro"
+ },
+ {
+  "title": "Filthy Fibber EP",
+  "artists": [
+   "Slutbox"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC008",
+  "date": "2008-01-18",
+  "fmt": "Digital",
+  "id": "filthy-fibber-ep",
+  "artist": "Slutbox"
+ },
+ {
+  "title": "Ballroom Hustler",
+  "artists": [
+   "Brian Ffar"
+  ],
+  "label": "Siteholder",
+  "cat": "SH004",
+  "date": "2008-01-09",
+  "fmt": "Digital",
+  "id": "ballroom-hustler",
+  "artist": "Brian Ffar"
+ },
+ {
+  "title": "Uncut Premium Part One",
+  "artists": [
+   "Various Artists"
+  ],
+  "label": "UnCut Ltd",
+  "cat": "SHUCLTD001",
+  "date": "2008",
+  "fmt": "Vinyl",
+  "id": "uncut-premium-part-one",
+  "artist": "Various Artists"
+ },
+ {
+  "title": "Uncut Premium Part Two",
+  "artists": [
+   "Various Artists"
+  ],
+  "label": "UnCut Ltd",
+  "cat": "SHUCLTD002",
+  "date": "2008",
+  "fmt": "Vinyl",
+  "id": "uncut-premium-part-two",
+  "artist": "Various Artists"
+ },
+ {
+  "title": "Uncut Premium Part Three",
+  "artists": [
+   "Various Artists"
+  ],
+  "label": "UnCut Ltd",
+  "cat": "SHUCLTD003",
+  "date": "2008",
+  "fmt": "Vinyl",
+  "id": "uncut-premium-part-three",
+  "artist": "Various Artists"
+ },
+ {
+  "title": "Uncut Premium Part Five",
+  "artists": [
+   "Various Artists"
+  ],
+  "label": "UnCut Ltd",
+  "cat": "SHUCLTD005",
+  "date": "2008",
+  "fmt": "Vinyl",
+  "id": "uncut-premium-part-five",
+  "artist": "Various Artists"
+ },
+ {
+  "title": "Triangelen EP",
+  "artists": [
+   "Donk Boys"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC007",
+  "date": "2007-12-21",
+  "fmt": "Digital",
+  "id": "triangelen-ep",
+  "artist": "Donk Boys"
+ },
+ {
+  "title": "Work Me EP",
+  "artists": [
+   "Bumpin' Ugly"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC006",
+  "date": "2007-11-23",
+  "fmt": "Digital",
+  "id": "work-me-ep",
+  "artist": "Bumpin' Ugly"
+ },
+ {
+  "title": "Shogun Beatboxin EP",
+  "artists": [
+   "Takeshi Miyazi",
+   "Galuszka",
+   "The Shocker"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC005",
+  "date": "2007-10-19",
+  "fmt": "Digital",
+  "id": "shogun-beatboxin-ep",
+  "artist": "Various Artists"
+ },
+ {
+  "title": "Teflon Villain EP",
+  "artists": [
+   "Brian Ffar"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC004",
+  "date": "2007-09-21",
+  "fmt": "Digital",
+  "id": "teflon-villain-ep",
+  "artist": "Brian Ffar"
+ },
+ {
+  "title": "Dead By Night EP",
+  "artists": [
+   "DimDJ"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC003",
+  "date": "2007-08-17",
+  "fmt": "Digital",
+  "id": "dead-by-night-ep",
+  "artist": "DimDJ"
+ },
+ {
+  "title": "Nitrogen 2 Oxygen 1 EP",
+  "artists": [
+   "Slutbox"
+  ],
+  "label": "Siteholder",
+  "cat": "SH003",
+  "date": "2007-08-05",
+  "fmt": "Digital",
+  "id": "nitrogen-2-oxygen-1-ep",
+  "artist": "Slutbox"
+ },
+ {
+  "title": "The Booty Drop EP",
+  "artists": [
+   "Huge Hephner"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC002",
+  "date": "2007-07-20",
+  "fmt": "Digital",
+  "id": "the-booty-drop-ep",
+  "artist": "Huge Hephner"
+ },
+ {
+  "title": "Spotted Cow EP",
+  "artists": [
+   "Daniel Mnookin"
+  ],
+  "label": "UnCut",
+  "cat": "SHUC001",
+  "date": "2007-07-03",
+  "fmt": "Digital",
+  "id": "spotted-cow-ep",
+  "artist": "Daniel Mnookin"
+ },
+ {
+  "title": "Mining For Rough",
+  "artists": [
+   "Billy Dalessandro",
+   "Brian Ffar",
+   "Slutbox"
+  ],
+  "label": "Siteholder",
+  "cat": "SH002",
+  "date": "2007-03-08",
+  "fmt": "Digital",
+  "id": "mining-for-rough",
+  "artist": "Various Artists"
+ },
+ {
+  "title": "Don't Sleep EP",
+  "artists": [
+   "Billy Dalessandro"
+  ],
+  "label": "Siteholder",
+  "cat": "SH001",
+  "date": "2006-12-05",
+  "fmt": "Digital",
+  "id": "don-t-sleep-ep",
+  "artist": "Billy Dalessandro"
+ }
+]</script>
 <script>
-/* ---------- sample data ---------- */
-var R = [
-  { id:'sh009', artist:'Brock Ferrar', title:'Aceed', sub:'Billy Dalessandro & Alicia Hush remixes', label:'Siteholder', fmt:'Digital',
-    tracks:['Aceed (Original Mix)','Aceed (Billy Dalessandro Remix)','Aceed (Alicia Hush Remix)'], pat:'stripes', c:['#14181f','#c8102e','#e9e4dc'] },
-  { id:'sh008', artist:'Haruyuki Yokoyama', title:'Surge', sub:'Billy Dalessandro & Demas remixes', label:'UnCut', fmt:'Digital',
-    tracks:['Surge (Original Mix)','Surge (Billy Dalessandro Remix)','Surge (Demas Remix)'], pat:'blobs', c:['#2b2350','#8f7fc9','#cfc6f0'] },
-  { id:'sh007', artist:'Chris Larsen', title:'You Know How We Get Down', sub:'Billy Dalessandro remix', label:'Siteholder', fmt:'Digital',
-    tracks:['You Know How We Get Down (Original Mix)','You Know How We Get Down (Billy Dalessandro Remix)'], pat:'stripes', c:['#d9d6cf','#1b1b1d','#8a8780'] },
-  { id:'sh006', artist:'Ombossa, Peons', title:'Dette Odieuse', sub:'with Booty Vandalism and Squeeze It Rub It', label:'Facet', fmt:'Digital',
-    tracks:['Dette Odieuse','Booty Vandalism','Squeeze It Rub It'], pat:'blocks', c:['#0e0e10','#d9b94a','#6d6a5f'] },
-  { id:'sh005', artist:'Brojanowski', title:'Lucid Dreaming', sub:'Remix by Brian Ffar', label:'UnCut', fmt:'Digital',
-    tracks:['Lucid Dreaming (Original Mix)','Lucid Dreaming (Brian Ffar Remix)'], pat:'rings', c:['#14040f','#e0409a','#7a1b55'] },
-  { id:'sh004', artist:'KAIQ', title:'Loaded Machine', sub:'Billy Dalessandro remix', label:'Siteholder', fmt:'Digital',
-    tracks:['Loaded Machine (Original Mix)','Loaded Machine (Billy Dalessandro Remix)'], pat:'neon', c:['#05070f','#37d4ff','#1a4f8c'] },
-  { id:'sh003', artist:'Miro Pajic', title:'Dream Dream', sub:'', label:'Facet', fmt:'Digital',
-    tracks:['Dream Dream (Original Mix)'], pat:'paint', c:['#c9c9ee','#f2d76b','#4a63d8'] },
-  { id:'sh002', artist:'Siteholder', title:'Vinyl Pressing 02', sub:'Placeholder title', label:'UnCut Ltd', fmt:'Vinyl',
-    tracks:['A1 Placeholder','B1 Placeholder'], pat:'vinyl', c:['#1f6b4a','#d9423a','#f0b429'] },
-  { id:'sh001', artist:'Siteholder', title:'Vinyl Pressing 01', sub:'Placeholder title', label:'UnCut Ltd', fmt:'Vinyl',
-    tracks:['A1 Placeholder','B1 Placeholder'], pat:'vinyl', c:['#dcdcdc','#f4f4f2','#9a9a9a'] }
-];
+/* ---------- release data (the JSON block above the script) ---------- */
+var PATS = ['stripes', 'blobs', 'rings', 'neon', 'blocks', 'paint'];
+var PALS = [['#14181f','#c8102e','#e9e4dc'], ['#2b2350','#8f7fc9','#cfc6f0'], ['#d9d6cf','#1b1b1d','#8a8780'], ['#0e0e10','#d9b94a','#6d6a5f'],
+            ['#14040f','#e0409a','#7a1b55'], ['#05070f','#37d4ff','#1a4f8c'], ['#c9c9ee','#f2d76b','#4a63d8'], ['#10261c','#3fbf7f','#c9f0dc'],
+            ['#2a1208','#ff7a2f','#f3d9c4'], ['#1a1a2e','#e94560','#f1e9da']];
+var R = JSON.parse(document.getElementById('releases').textContent).map(function (r) {
+  var h = hash(r.id);
+  r.sub = r.sub || ''; r.tracks = r.tracks || [];
+  r.pat = r.pat || (r.fmt === 'Vinyl' ? 'vinyl' : PATS[h % PATS.length]);
+  r.c = r.c || PALS[(h >>> 4) % PALS.length];
+  return r;
+});
 var byId = {}; R.forEach(function (r) { byId[r.id] = r; });
 
 /* labels and sublabels: each gets its own About page and a catalog filter */
@@ -354,7 +1445,14 @@ function buildNav() {
     if (e.key === 'Escape') document.querySelectorAll('.dd').forEach(function (d) { d.setAttribute('data-open', 'false'); d.querySelector('.dd-btn').setAttribute('aria-expanded', 'false'); });
   });
 }
-function catNo(r) { return r.id.toUpperCase().replace('SH', 'SH-'); }
+function catNo(r) { return r.cat || r.label; }
+var MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fmtDate(d) { var p = String(d).split('-'); return p.length < 3 ? p[0] : MON[+p[1] - 1] + ' ' + (+p[2]) + ', ' + p[0]; }
+function storeLinks(r) {
+  var q = encodeURIComponent((r.artist === 'Various Artists' ? '' : r.artist + ' ') + r.title);
+  if (r.fmt === 'Vinyl') return '<a class="btn solid" href="' + (r.discogs || 'https://www.discogs.com/search/?type=release&q=' + q) + '" target="_blank" rel="noopener">Discogs</a>';
+  return '<a class="btn solid" href="' + (r.beatport || 'https://www.beatport.com/search/releases?q=' + q) + '" target="_blank" rel="noopener">Beatport</a>';
+}
 
 /* ---------- procedural placeholder covers ---------- */
 function hash(s) { var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
@@ -362,6 +1460,7 @@ function rng(seed) { var s = seed >>> 0; return function () { s = (s + 0x6D2B79F
 function wrap(s, n) { var w = s.split(' '), L = [], cur = ''; w.forEach(function (x) { if ((cur + ' ' + x).trim().length > n && cur) { L.push(cur); cur = x; } else cur = (cur + ' ' + x).trim(); }); if (cur) L.push(cur); return L; }
 var uid = 0;
 function cover(r) {
+  if (r.img) return '<img src="' + r.img + '" alt="' + r.title + ' by ' + r.artist + '" loading="lazy">';
   var id = 'c' + (uid++), g = rng(hash(r.id)), a = r.c[0], b = r.c[1], c = r.c[2], s = '';
   var defs = '<linearGradient id="' + id + 's" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".72"/></linearGradient>' +
              '<filter id="' + id + 'b" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="7"/></filter>' +
@@ -385,7 +1484,7 @@ function cover(r) {
     s += '<rect width="100" height="100" fill="' + a + '"/>';
     for (var x = 0; x < 5; x++) for (var y = 0; y < 4; y++) { var k = g(); s += '<rect x="' + (x * 20 + 1) + '" y="' + (y * 16 + 1) + '" width="18" height="14" fill="' + (k > .66 ? b : k > .33 ? c : '#222226') + '" opacity="' + (0.5 + g() * 0.5).toFixed(2) + '"/>'; }
   } else if (r.pat === 'vinyl') {
-    s += '<rect width="100" height="100" fill="' + (r.id === 'sh001' ? '#d4d6d8' : '#0f1012') + '"/><circle cx="50" cy="46" r="36" fill="#0a0a0b"/>';
+    s += '<rect width="100" height="100" fill="' + (hash(r.id) % 2 ? '#d4d6d8' : '#0f1012') + '"/><circle cx="50" cy="46" r="36" fill="#0a0a0b"/>';
     for (i = 1; i < 6; i++) s += '<circle cx="50" cy="46" r="' + (11 + i * 4.6) + '" fill="none" stroke="#26272a" stroke-width=".5"/>';
     s += '<circle cx="50" cy="46" r="11" fill="' + b + '"/><circle cx="50" cy="46" r="4" fill="' + c + '" opacity=".9"/><circle cx="50" cy="46" r="1.2" fill="' + a + '"/>';
   }
@@ -400,14 +1499,14 @@ function cover(r) {
 
 /* ---------- views ---------- */
 var view = document.getElementById('view');
-var F = { label: 'All', fmt: 'All', q: '' };
+var F = { label: 'All', fmt: 'All', q: '', n: 24 };
 
 function card(r) {
   return '<a class="card" href="#release-' + r.id + '"><div class="art">' + cover(r) + '</div><div class="meta"><div class="row"><span class="cat">' + catNo(r) + '</span><span class="fmt">' + r.fmt + '</span></div><strong>' + r.artist + '</strong><span class="ttl">' + r.title + '</span></div></a>';
 }
 function artists() {
   var m = {};
-  R.forEach(function (r) { r.artist.split(', ').concat(r.sub ? [] : []).forEach(function (n) { (m[n] = m[n] || []).push(r); }); });
+  R.forEach(function (r) { r.artists.forEach(function (n) { if (n !== 'Various Artists') (m[n] = m[n] || []).push(r); }); });
   return Object.keys(m).sort().map(function (n) { return { name: n, rels: m[n] }; });
 }
 
@@ -419,7 +1518,7 @@ function home() {
     '<p class="intro">Electronic music for DJs and fans. Every release is available to preview, then buy as high-resolution audio or on vinyl.</p></div></section>' +
     '<section class="block" data-home="1"><div class="sec-head"><h2>Recent releases</h2><a class="more" href="#catalog">Full catalog</a></div><div class="filters">' + labelChips() + '</div><div id="results"></div></section>' +
     '<section class="block"><div class="sec-head"><h2>Artists</h2><a class="more" href="#artists">All artists</a></div><div class="wall">' +
-    artists().map(function (a) { return '<a href="#artists">' + a.name + '<sup>' + a.rels.length + '</sup></a>'; }).join('') + '</div></section>';
+    artists().sort(function (x, y) { return y.rels.length - x.rels.length; }).slice(0, 30).sort(function (x, y) { return x.name < y.name ? -1 : 1; }).map(function (a) { return '<a href="#artists">' + a.name + '<sup>' + a.rels.length + '</sup></a>'; }).join('') + '</div></section>';
 }
 
 function chips(group, opts, title) {
@@ -438,20 +1537,21 @@ function paintResults() {
     return inLabel(r) && (F.fmt === 'All' || r.fmt === F.fmt) && (!q || (r.artist + ' ' + r.title + ' ' + r.sub).toLowerCase().indexOf(q) > -1);
   });
   var cEl = document.getElementById('count'); if (cEl) cEl.textContent = list.length + (list.length === 1 ? ' release' : ' releases');
-  if (view.querySelector('[data-home]')) list = list.slice(0, 6);
-  document.getElementById('results').innerHTML = list.length ? '<div class="grid">' + list.map(card).join('') + '</div>' : '<p class="empty">No releases match. Clear a filter or try another search.</p>';
+  var total = list.length, lim = view.querySelector('[data-home]') ? 6 : F.n;
+  list = list.slice(0, lim);
+  document.getElementById('results').innerHTML = list.length ? '<div class="grid">' + list.map(card).join('') + '</div>' + (total > lim && lim === F.n ? '<p class="more-wrap"><button class="btn" type="button" id="show-more">Show more (' + (total - lim) + ' left)</button></p>' : '') : '<p class="empty">No releases match. Clear a filter or try another search.</p>';
 }
 
 function release(id) {
   var r = byId[id]; if (!r) return notFound();
-  var more = R.filter(function (x) { return x.id !== r.id; }).slice(0, 3);
+  var ix = R.indexOf(r), more = [1, 2, 3].map(function (k) { return R[(ix + k) % R.length]; });
   return '<a class="back" href="#catalog">&larr; Catalog</a><section class="rel"><div class="art">' + cover(r) + '</div><div>' +
     '<p class="eyebrow"><span class="cat">' + catNo(r) + '</span> &middot; ' + r.label + '</p><h1>' + r.title + '</h1><p class="artist">' + r.artist + '</p>' +
     (r.sub ? '<p class="ttl" style="color:var(--muted);margin-top:4px">' + r.sub + '</p>' : '') +
-    '<dl class="facts"><dt>Label</dt><dd><a class="more" href="#about-' + labelId(r.label) + '">' + r.label + '</a></dd><dt>Format</dt><dd>' + r.fmt + '</dd><dt>Cat. no.</dt><dd>' + catNo(r) + '</dd></dl>' +
-    '<div class="buy"><a class="btn solid" href="https://bandcamp.com" target="_blank" rel="noopener">Bandcamp</a><a class="btn" href="https://www.beatport.com" target="_blank" rel="noopener">Beatport</a><a class="btn" href="https://www.traxsource.com" target="_blank" rel="noopener">Traxsource</a><a class="btn" href="https://www.discogs.com" target="_blank" rel="noopener">Discogs</a></div>' +
-    '<p class="buy-note">Store buttons are placeholders. Each release would link to its own page.</p>' +
-    '<ol class="tracks">' + r.tracks.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ol></div></section>' +
+    '<dl class="facts"><dt>Label</dt><dd><a class="more" href="#about-' + labelId(r.label) + '">' + r.label + '</a></dd><dt>Released</dt><dd>' + fmtDate(r.date) + '</dd><dt>Format</dt><dd>' + r.fmt + '</dd>' + (r.cat ? '<dt>Cat. no.</dt><dd>' + r.cat + '</dd>' : '') + '</dl>' +
+    '<div class="buy">' + storeLinks(r) + '</div>' +
+    (r.fmt === 'Vinyl' ? '' : '<p class="buy-note">This button opens a Beatport search for the release. Direct links come next.</p>') +
+    (r.tracks.length ? '<ol class="tracks">' + r.tracks.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ol>' : '') + '</div></section>' +
     '<section class="block"><div class="sec-head"><h2>More releases</h2><a class="more" href="#catalog">Full catalog</a></div><div class="grid">' + more.map(card).join('') + '</div></section>';
 }
 
@@ -536,9 +1636,10 @@ document.addEventListener('click', function (e) {
   var a = e.target.closest && e.target.closest('a[href^="#"]');
   if (a && a.getAttribute('href') === (location.hash || '#home')) { e.preventDefault(); route(); }
   var c = e.target.closest && e.target.closest('.chip');
-  if (c) { F[c.dataset.g] = c.dataset.v; document.querySelectorAll('.chip[data-g="' + c.dataset.g + '"]').forEach(function (x) { x.setAttribute('aria-pressed', x === c); }); paintResults(); }
+  if (e.target.closest && e.target.closest('#show-more')) { F.n += 24; paintResults(); }
+  if (c) { F.n = 24; F[c.dataset.g] = c.dataset.v; document.querySelectorAll('.chip[data-g="' + c.dataset.g + '"]').forEach(function (x) { x.setAttribute('aria-pressed', x === c); }); paintResults(); }
 });
-document.addEventListener('input', function (e) { if (e.target.id === 'q') { F.q = e.target.value; paintResults(); } });
+document.addEventListener('input', function (e) { if (e.target.id === 'q') { F.n = 24; F.q = e.target.value; paintResults(); } });
 document.addEventListener('submit', function (e) {
   e.preventDefault();
   if (e.target.id === 'signup') document.getElementById('su-status').textContent = 'Prototype only. The mailing list is not connected yet.';
