@@ -102,7 +102,7 @@ main { padding-block: 40px 72px; min-height: 70vh; }
 
 /* home hero */
 .hero { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; align-items: end; }
-@media (min-width: 900px) { .hero { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 56px; } }
+@media (min-width: 900px) { .hero { grid-template-columns: var(--hero-art, 380px) minmax(0, 1fr); gap: 56px; align-items: start; } }
 .hero .art { box-shadow: 0 24px 60px -28px rgba(0,0,0,.45); }
 .hero h1 { font-size: clamp(40px, 6vw, 76px); font-weight: 800; font-stretch: 75%; line-height: .95; letter-spacing: -0.02em; text-transform: uppercase; margin-block: 12px 8px; overflow-wrap: anywhere; }
 .hero .ttl { font-size: 20px; color: var(--muted); }
@@ -500,8 +500,18 @@ function route() {
   }
   var key = h.indexOf('release-') === 0 ? 'catalog' : h.indexOf('about') === 0 ? 'about' : h;
   document.querySelectorAll('#nav [data-r]').forEach(function (a) { if (a.dataset.r === key) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+  fitHero();
   window.scrollTo(0, 0);
 }
+/* desktop: make the featured cover as tall as the text beside it */
+function fitHero() {
+  var h = view.querySelector('.hero'); if (!h) return;
+  if (window.innerWidth < 900) { h.style.removeProperty('--hero-art'); return; }
+  var t = h.children[1];
+  for (var i = 0; i < 3; i++) h.style.setProperty('--hero-art', Math.max(260, Math.min(520, Math.round(t.getBoundingClientRect().height))) + 'px');
+}
+window.addEventListener('resize', fitHero);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitHero);
 window.addEventListener('hashchange', route);
 document.addEventListener('click', function (e) {
   var hdr = document.querySelector('.top'), mb = e.target.closest && e.target.closest('#menu-btn');
