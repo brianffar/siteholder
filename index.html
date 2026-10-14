@@ -331,8 +331,6 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
 <body>
 
 
-<div class="proto wrap">Prototype. Releases, artists, dates and labels are real, from Beatport and Discogs. Cover art and direct store links are still placeholders.</div>
-
 <header class="top">
   <div class="wrap">
     <a class="brand" href="#home" aria-label="Siteholder Records home">
@@ -370,14 +368,14 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
       </div>
       <div>
         <h4>Mailing list</h4>
-        <form class="signup" id="signup">
+        <form class="signup" id="signup"><input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
           <input id="su-email" type="email" placeholder="Email address" aria-label="Email address" required>
           <button class="btn solid" type="submit">Join</button>
         </form>
         <p class="status" id="su-status" role="status"></p>
       </div>
     </div>
-    <p class="legal">Siteholder Records. Prototype layout.</p>
+    <p class="legal">&copy; Siteholder Records, Chicago.</p>
   </div>
 </footer>
 
@@ -494,7 +492,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
    "Chris Larsen"
   ],
   "label": "Siteholder",
-  "cat": "",
+  "cat": "SH036",
   "date": "2014-07-07",
   "fmt": "Digital",
   "id": "you-know-how-we-get-down",
@@ -566,7 +564,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
    "Brojanowski"
   ],
   "label": "Siteholder",
-  "cat": "",
+  "cat": "SH034",
   "date": "2013-12-16",
   "fmt": "Digital",
   "id": "lucid-dreaming",
@@ -599,7 +597,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
    "Kaiq"
   ],
   "label": "Siteholder",
-  "cat": "",
+  "cat": "SH032",
   "date": "2013-10-14",
   "fmt": "Digital",
   "id": "loaded-machine",
@@ -632,7 +630,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
    "Miro Pajic"
   ],
   "label": "Siteholder",
-  "cat": "",
+  "cat": "SH031",
   "date": "2013-08-05",
   "fmt": "Digital",
   "id": "dream-dream",
@@ -744,7 +742,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
    "Dry But Funky"
   ],
   "label": "Siteholder",
-  "cat": "",
+  "cat": "SH028",
   "date": "2013-02-04",
   "fmt": "Digital",
   "id": "a-wife-for-objecto-phil",
@@ -947,7 +945,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
    "Chris Larsen"
   ],
   "label": "Siteholder",
-  "cat": "",
+  "cat": "SH027",
   "date": "2012-11-12",
   "fmt": "Digital",
   "id": "for-my-homies",
@@ -980,7 +978,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
    "Billy Dalessandro"
   ],
   "label": "Siteholder",
-  "cat": "",
+  "cat": "SH026",
   "date": "2012-10-22",
   "fmt": "Digital",
   "id": "balls-of-fire",
@@ -1052,7 +1050,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
    "Colourblind"
   ],
   "label": "Siteholder",
-  "cat": "",
+  "cat": "SH024",
   "date": "2012-05-07",
   "fmt": "Digital",
   "id": "all-in-your-head",
@@ -1201,7 +1199,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
    "Haruyuki Yokoyama"
   ],
   "label": "Siteholder",
-  "cat": "",
+  "cat": "SH023",
   "date": "2012-02-20",
   "fmt": "Digital",
   "id": "blur",
@@ -1421,7 +1419,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
    "Stefny Winter"
   ],
   "label": "Siteholder",
-  "cat": "",
+  "cat": "SH020",
   "date": "2011-10-31",
   "fmt": "Digital",
   "id": "i-live-in-spandex",
@@ -1466,7 +1464,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
    "Billy Dalessandro"
   ],
   "label": "Siteholder",
-  "cat": "",
+  "cat": "SH019",
   "date": "2011-09-19",
   "fmt": "Digital",
   "id": "hentai-house",
@@ -2649,7 +2647,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
   "fmt": "Vinyl",
   "id": "uncut-premium-part-six",
   "artist": "Various Artists",
-  "img": "images/uncut-premium-part-six.jpg",
+  "img": "images/labels/uncut-premium-part-six.webp",
   "tracks": [
    {
     "t": "And Now Meet Massif",
@@ -2669,7 +2667,8 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
     "bpm": 125,
     "a": "Marc Cotterell"
    }
-  ]
+  ],
+  "labelImg": "images/labels/uncut-premium-part-six.webp"
  },
  {
   "title": "Mirapex",
@@ -2941,7 +2940,8 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
    }
   ],
   "img": "images/nymphotech-lp.jpg",
-  "labelImg": "images/labels/nymphotech-lp.webp"
+  "labelImg": "images/labels/nymphotech-lp.webp",
+  "dateYear": true
  },
  {
   "title": "Heritage",
@@ -3479,7 +3479,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
   "fmt": "Vinyl",
   "id": "uncut-premium-part-two",
   "artist": "Various Artists",
-  "img": "images/uncut-premium-part-two.jpg",
+  "img": "images/labels/uncut-premium-part-two.webp",
   "tracks": [
    {
     "t": "Precision",
@@ -3500,7 +3500,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
     "a": "Brian Ffar"
    }
   ],
-  "labelImg": "images/labels/uncut-premium-part-two.jpg"
+  "labelImg": "images/labels/uncut-premium-part-two.webp"
  },
  {
   "title": "Uncut Premium Part Three",
@@ -3515,7 +3515,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
   "fmt": "Vinyl",
   "id": "uncut-premium-part-three",
   "artist": "Various Artists",
-  "img": "images/uncut-premium-part-three.jpg",
+  "img": "images/labels/uncut-premium-part-three.webp",
   "tracks": [
    {
     "t": "Dance With Me",
@@ -3536,7 +3536,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
     "a": "Galuszka"
    }
   ],
-  "labelImg": "images/labels/uncut-premium-part-three.jpg"
+  "labelImg": "images/labels/uncut-premium-part-three.webp"
  },
  {
   "title": "Uncut Premium Part Five",
@@ -4045,6 +4045,7 @@ function vinylLabel(r) {
 }
 function cover(r) {
   /* in the Vinyl view, a release with real label art shows the record; otherwise a real cover wins */
+  if (r.labelImg && r.img === r.labelImg) return vinylLabel(r);
   if (r.img && !(r.labelImg && r.vinyl && F.fmt === 'Vinyl')) return '<img src="' + r.img + '" alt="' + r.title + ' by ' + r.artist + '" loading="lazy">';
   if (r.pat === 'vinyl') return vinylLabel(r);
   var id = 'c' + (uid++), g = rng(hash(r.id)), a = r.c[0], b = r.c[1], c = r.c[2], s = '';
@@ -4229,7 +4230,7 @@ function release(id) {
   return '<a class="back" href="#catalog">&larr; Catalog</a><section class="rel"><div class="art">' + cover(r) + '</div><div>' +
     '<p class="eyebrow">' + (r.cat ? '<span class="cat">' + r.cat + '</span> &middot; ' : '') + r.label + '</p><h1>' + r.title + '</h1><p class="artist">' + r.artist + '</p>' +
     (r.sub ? '<p class="ttl" style="color:var(--muted);margin-top:4px">' + r.sub + '</p>' : '') +
-    '<dl class="facts"><dt>Label</dt><dd><a class="more" href="#about-' + labelId(r.label) + '">' + r.label + '</a></dd><dt>Released</dt><dd>' + fmtDate(r.date) + '</dd><dt>Format</dt><dd>' + r.fmtName + '</dd>' + (r.cat ? '<dt>Cat. no.</dt><dd>' + r.cat + '</dd>' : '') + '</dl>' +
+    '<dl class="facts"><dt>Label</dt><dd><a class="more" href="#about-' + labelId(r.label) + '">' + r.label + '</a></dd><dt>Released</dt><dd>' + fmtDate(r.dateYear ? String(r.date).slice(0, 4) : r.date) + '</dd><dt>Format</dt><dd>' + r.fmtName + '</dd>' + (r.cat ? '<dt>Cat. no.</dt><dd>' + r.cat + '</dd>' : '') + '</dl>' +
     '<div class="buy">' + storeLinks(r) + '</div>' +
     (!r.digital ? '' : '<p class="buy-note">This button opens a Beatport search for the release. Direct links come next.</p>') +
     (r.tracks.length ? '<ol class="tracks">' + r.tracks.map(trackRow).join('') + '</ol>' : '') + '</div></section>' +
@@ -4281,6 +4282,10 @@ function artistsView() {
   }).join('') + '</div>';
 }
 
+/* Form service: paste the Formspree form address between the quotes, e.g. 'https://formspree.io/f/abcdwxyz'. */
+var FORM_ENDPOINT = '';
+var CONTACT_EMAIL = 'info@siteholderrecords.com';
+
 var PODCASTS = [
   { n: '10', guest: 'Brojanowski', pat: 'blocks', c: ['#14181f', '#37d4ff', '#c8102e'] },
   { n: '09', guest: 'Kaiq', pat: 'stripes', c: ['#14181f', '#f2a33a', '#e9e4dc'] },
@@ -4319,7 +4324,7 @@ function aboutView(h) {
 
 function contact() {
   return '<h1 class="page-title">Contact</h1><div class="prose"><p>Demos, licensing and press all start here.</p><p>Send a private streaming link, not an attachment, and tell us a little about the track.</p></div>' +
-    '<form class="form" id="contact-form"><label for="c-name">Name<input id="c-name" type="text" required></label><label for="c-email">Email<input id="c-email" type="email" required></label>' +
+    '<form class="form" id="contact-form"><input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px"><label for="c-name">Name<input id="c-name" type="text" required></label><label for="c-email">Email<input id="c-email" type="email" required></label>' +
     '<label for="c-msg">Message or demo link<textarea id="c-msg" rows="5" required></textarea></label><div><button class="btn solid" type="submit">Send</button></div><p class="status" id="c-status" role="status"></p></form>';
 }
 
@@ -4381,8 +4386,21 @@ document.addEventListener('click', function (e) {
 document.addEventListener('input', function (e) { if (e.target.id === 'q') { F.n = 24; F.q = e.target.value; paintResults(); showSug(); } });
 document.addEventListener('submit', function (e) {
   e.preventDefault();
-  if (e.target.id === 'signup') document.getElementById('su-status').textContent = 'Prototype only. The mailing list is not connected yet.';
-  if (e.target.id === 'contact-form') document.getElementById('c-status').textContent = 'Prototype only. This form does not send anything yet.';
+  var f = e.target, isC = f.id === 'contact-form', isS = f.id === 'signup';
+  if (!isC && !isS) return;
+  var st = document.getElementById(isC ? 'c-status' : 'su-status'), btn = f.querySelector('button[type=submit]');
+  var data = isC ? { name: document.getElementById('c-name').value, email: document.getElementById('c-email').value, message: document.getElementById('c-msg').value, _subject: 'Siteholder website: message from ' + document.getElementById('c-name').value }
+                 : { email: document.getElementById('su-email').value, message: 'Please add me to the mailing list.', _subject: 'Siteholder website: mailing list signup' };
+  if (f.querySelector('[name=_gotcha]') && f.querySelector('[name=_gotcha]').value) return;
+  if (!FORM_ENDPOINT) { /* no form service connected yet: open the visitor's own email app instead */
+    location.href = 'mailto:' + CONTACT_EMAIL + '?subject=' + encodeURIComponent(data._subject) + '&body=' + encodeURIComponent((data.name ? data.name + '\n' : '') + data.email + '\n\n' + data.message);
+    st.textContent = 'Opening your email app. You can also write to ' + CONTACT_EMAIL + '.'; return;
+  }
+  btn.disabled = true; st.textContent = 'Sending...';
+  fetch(FORM_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(data) })
+    .then(function (res) { if (!res.ok) throw new Error('bad'); f.reset(); st.textContent = isC ? 'Thanks. Your message was sent.' : 'Thanks. You are on the list.'; })
+    .catch(function () { st.textContent = 'Sorry, that did not send. Please email ' + CONTACT_EMAIL + ' directly.'; })
+    .then(function () { btn.disabled = false; });
 });
 
 /* light / dark switch: follows the device until the visitor picks one */
