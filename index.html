@@ -247,11 +247,21 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
 
 /* label about pages */
 .tabs { display: flex; flex-wrap: wrap; gap: 4px 26px; border-bottom: 1px solid var(--line); margin-bottom: 32px; }
-.tabs a { padding: 8px 0; margin-bottom: -1px; color: var(--muted); font-weight: 500; border-bottom: 2px solid transparent; }
+.tabs a, .tabs .tab { padding: 8px 0; margin-bottom: -1px; color: var(--muted); font-weight: 500; border-bottom: 2px solid transparent; }
 .tabs a:hover { color: var(--ink); }
 .tabs a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--ink); }
 .prose.long p:first-child { font-size: 19px; line-height: 1.55; color: var(--ink); }
 .prose.ph p { font-size: 17px; }
+.tabs .tab { font: inherit; background: none; border: 0; border-bottom: 2px solid transparent; cursor: pointer; }
+.tabs .tab:hover { color: var(--ink); }
+.lab { padding-top: 40px; margin-top: 8px; border-top: 1px solid var(--line); scroll-margin-top: 90px; }
+.lab:first-of-type { border-top: 0; padding-top: 8px; }
+.lab.sub { margin-left: 0; }
+@media (min-width: 800px) { .lab.sub { padding-left: 28px; border-left: 2px solid var(--line); border-top: 0; margin-top: 28px; padding-top: 4px; } }
+.lab-title { margin: 6px 0 18px; font-size: clamp(28px, 4vw, 44px); font-weight: 800; font-stretch: 75%; text-transform: uppercase; letter-spacing: -0.02em; line-height: 1; }
+.lab-title .label-logo { max-height: 72px; }
+.lab-more { margin-top: 18px; }
+
 
 /* phones and small tablets */
 .menu-btn { display: none; font: inherit; font-size: 14px; font-weight: 600; align-items: center; gap: 10px; padding: 8px 12px; border: 1.5px solid var(--ink); background: none; color: var(--ink); border-radius: 2px; cursor: pointer; }
@@ -3707,10 +3717,11 @@ LABELS.forEach(function (L) { labelById[L.id] = L; labelByName[L.name] = L; });
 function labelId(n) { return (labelByName[n] || LABELS[0]).id; }
 function labelOpts() { return ['All'].concat(LABELS.map(function (L) { return L.name; })); }
 /* picking a label also shows its sublabels; picking a sublabel shows only that one */
-function inLabel(r) {
-  if (F.label === 'All' || r.label === F.label) return true;
+function inLabel(r, name) {
+  var want = name || F.label;
+  if (want === 'All' || r.label === want) return true;
   var L = labelByName[r.label];
-  while (L && L.parent) { if (L.parent === F.label) return true; L = labelByName[L.parent]; }
+  while (L && L.parent) { if (L.parent === want) return true; L = labelByName[L.parent]; }
   return false;
 }
 function labelChips() {
@@ -3722,8 +3733,7 @@ function buildNav() {
   var nav = document.getElementById('nav');
   function dd(key, label, items) { return '<div class="dd" data-open="false"><button class="dd-btn" type="button" data-r="' + key + '" aria-haspopup="true" aria-expanded="false">' + label + '<span class="car" aria-hidden="true"></span></button><ul class="menu">' + items + '</ul></div>'; }
   var cat = '<li><a href="#catalog" data-filter="All">All releases</a></li>' + LABELS.map(function (L) { return '<li><a' + (L.kind === 'sub' ? ' class="sub"' : '') + ' href="#catalog" data-filter="' + L.name + '">' + L.name + '</a></li>'; }).join('');
-  var abt = LABELS.map(function (L) { return '<li><a href="#about-' + L.id + '">' + L.name + '</a></li>'; }).join('');
-  nav.innerHTML = '<a href="#home" data-r="home">Home</a>' + dd('catalog', 'Catalog', cat) + '<a href="#artists" data-r="artists">Artists</a><a href="#mixes" data-r="mixes">Podcasts</a>' + dd('about', 'About', abt) + '<a href="#contact" data-r="contact">Contact</a>';
+  nav.innerHTML = '<a href="#home" data-r="home">Home</a>' + dd('catalog', 'Catalog', cat) + '<a href="#artists" data-r="artists">Artists</a><a href="#mixes" data-r="mixes">Podcasts</a>' + '<a href="#about" data-r="about">About</a>' + '<a href="#contact" data-r="contact">Contact</a>';
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') document.querySelectorAll('.dd').forEach(function (d) { d.setAttribute('data-open', 'false'); d.querySelector('.dd-btn').setAttribute('aria-expanded', 'false'); });
   });
@@ -4002,16 +4012,17 @@ function mixes() {
 }
 
 function aboutView(h) {
-  var id = h === 'about' ? 'siteholder' : h.slice(6), L = labelById[id];
-  if (!L) return notFound();
-  var tabs = '<div class="tabs">' + LABELS.map(function (x) { return '<a href="#about-' + x.id + '"' + (x.id === id ? ' aria-current="page"' : '') + '>' + x.name + '</a>'; }).join('') + '</div>';
-  var body = L.about ? '<div class="prose long">' + L.about.map(function (p) { return '<p>' + p + '</p>'; }).join('') + '</div>'
-    : '<div class="prose ph"><p>Placeholder. Add the story of ' + L.name + ' here: who runs it, when it started and the sound it stands for.</p></div>';
-  var list = inOrder(R.filter(function (r) { return r.label === L.name; }));
-  var heading = L.logo ? '<h1 class="page-title"><span class="label-logo" role="img" aria-label="' + L.name + '" style="--l:var(' + L.logo.v + ');aspect-ratio:' + L.logo.r + '"></span></h1>' : '<h1 class="page-title">' + L.name + '</h1>';
-  return '<p class="eyebrow">About' + (L.parent ? ' &middot; Sublabel of ' + L.parent : '') + '</p>' + heading + tabs + body +
-    '<section class="block"><div class="sec-head"><h2>Releases</h2><a class="more" href="#catalog" data-filter="' + L.name + '">View in catalog</a></div>' +
-    (list.length ? '<div class="grid">' + list.map(card).join('') + '</div>' : '<p class="empty">No releases yet.</p>') + '</section>';
+  /* one About page: every label and sublabel in turn. #about-<id> opens the page scrolled to that label. */
+  var tabs = '<div class="tabs" role="navigation" aria-label="Jump to a label">' + LABELS.map(function (x) { return '<button type="button" class="tab" data-jump="lab-' + x.id + '">' + x.name + '</button>'; }).join('') + '</div>';
+  var secs = LABELS.map(function (L) {
+    var body = L.about ? '<div class="prose long">' + L.about.map(function (p) { return '<p>' + p + '</p>'; }).join('') + '</div>'
+      : '<div class="prose ph"><p>Placeholder. Add the story of ' + L.name + ' here: who runs it, when it started and the sound it stands for.</p></div>';
+    var n = R.filter(function (r) { return inLabel(r, L.name); }).length;
+    var heading = L.logo ? '<h2 class="lab-title"><span class="label-logo" role="img" aria-label="' + L.name + '" style="--l:var(' + L.logo.v + ');aspect-ratio:' + L.logo.r + '"></span></h2>' : '<h2 class="lab-title">' + L.name + '</h2>';
+    return '<section class="lab' + (L.parent ? ' sub' : '') + '" id="lab-' + L.id + '"><p class="eyebrow">' + (L.parent ? 'Sublabel of ' + L.parent : 'Label') + '</p>' + heading + body +
+      '<p class="lab-more"><a class="more" href="#catalog" data-filter="' + L.name + '">View ' + n + (n === 1 ? ' release' : ' releases') + ' in the catalog &rarr;</a></p></section>';
+  }).join('');
+  return '<h1 class="page-title">About</h1>' + tabs + secs;
 }
 
 function contact() {
@@ -4035,6 +4046,7 @@ function route() {
   enhanceSearch();
   fitHero();
   window.scrollTo(0, 0);
+  if (h.indexOf('about-') === 0) { var lt = document.getElementById('lab-' + h.slice(6)); if (lt) lt.scrollIntoView(); }
 }
 /* desktop: make the featured cover as tall as the text beside it */
 function fitHero() {
@@ -4063,6 +4075,8 @@ document.addEventListener('click', function (e) {
   if (fq) { F.q = fq.getAttribute('data-feat-q'); F.label = 'All'; F.fmt = 'All'; F.n = 24; }
   var fb = e.target.closest && e.target.closest('[data-feat]');
   if (fb) { FEAT.i = (FEAT.i + +fb.getAttribute('data-feat') + FEATURED.length) % FEATURED.length; document.getElementById('feat').innerHTML = featHTML(); }
+  var jp = e.target.closest && e.target.closest('[data-jump]');
+  if (jp) { var jt = document.getElementById(jp.getAttribute('data-jump')); if (jt) jt.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   var az = e.target.closest && e.target.closest('[data-az]');
   if (az) { var tgt = document.getElementById('az-' + az.getAttribute('data-az')); if (tgt) tgt.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   var sg = e.target.closest && e.target.closest('#sug li[data-k]');
