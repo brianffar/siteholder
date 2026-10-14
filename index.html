@@ -1,3 +1,9 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Siteholder Records</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -207,15 +213,17 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
 @media (max-width: 899px) {
   main { padding-block: 24px 56px; }
   .block { margin-top: 48px; }
-  .top .wrap { flex-wrap: nowrap; padding-block: 10px; }
+  .top .wrap { flex-wrap: nowrap; padding-block: 10px; position: static; }
   .logo { height: 30px; }
   .tools { flex-wrap: nowrap; gap: 6px 10px; }
   .menu-btn { display: inline-flex; }
   #theme-label { display: none; }
-  nav { display: none; position: absolute; left: 0; right: 0; top: 100%; flex-direction: column; flex-wrap: nowrap; gap: 0; background: var(--bg); border-bottom: 1px solid var(--line); padding-block: 4px 10px; max-height: calc(100dvh - 64px); overflow-y: auto; }
+  nav { display: none; position: absolute; left: calc(-1 * var(--gutter)); right: calc(-1 * var(--gutter)); top: 100%; flex-direction: column; flex-wrap: nowrap; gap: 0; background: var(--bg); border-bottom: 1px solid var(--line); padding-inline: var(--gutter); padding-block: 0 8px; max-height: calc(100dvh - 64px); overflow-y: auto; }
   .top[data-nav="true"] nav { display: flex; }
   nav > a, .dd-btn { width: 100%; padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 17px; }
   .dd-btn { justify-content: space-between; }
+  .car { margin-right: 6px; width: 8px; height: 8px; }
+  nav > a:last-child { border-bottom: 0; }
   nav > a[aria-current="page"], .dd-btn[aria-current="page"] { color: var(--ink); font-weight: 700; border-bottom-color: var(--line); }
   .menu { position: static; border: 0; box-shadow: none; background: transparent; max-width: none; min-width: 0; padding: 0 0 6px 14px; }
   nav .menu a { padding: 12px 0; font-size: 16px; color: var(--muted); }
@@ -233,6 +241,9 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
 
 @media (prefers-reduced-motion: reduce) { .art svg { transition: none; } .card:hover .art svg { transform: none; } }
 </style>
+</head>
+<body>
+
 
 <div class="proto wrap">Prototype. Release names come from the old site; cover art, catalogue numbers, label assignments and links are placeholders. Only the About text and podcast names are real.</div>
 
@@ -502,6 +513,9 @@ function route() {
 }
 window.addEventListener('hashchange', route);
 document.addEventListener('click', function (e) {
+  var hdr = document.querySelector('.top'), mb = e.target.closest && e.target.closest('#menu-btn');
+  if (mb) { var o = hdr.getAttribute('data-nav') !== 'true'; hdr.setAttribute('data-nav', o); mb.setAttribute('aria-expanded', o); }
+  else if (e.target.closest && e.target.closest('nav a, .brand')) { hdr.setAttribute('data-nav', 'false'); document.getElementById('menu-btn').setAttribute('aria-expanded', 'false'); }
   var btn = e.target.closest && e.target.closest('.dd-btn');
   document.querySelectorAll('.dd').forEach(function (d) {
     var open = btn && d === btn.parentNode ? d.getAttribute('data-open') !== 'true' : false;
@@ -537,3 +551,6 @@ syncTheme();
 buildNav();
 route();
 </script>
+
+</body>
+</html>
