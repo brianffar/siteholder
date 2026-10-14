@@ -1408,7 +1408,7 @@ var byId = {}; R.forEach(function (r) { byId[r.id] = r; });
 var LABELS = [
   { id: 'siteholder', name: 'Siteholder', kind: 'label', logo: { v: '--logo', r: '480 / 272' }, about: ['The Chicago based trio of Billy Dalessandro, Brian Ffar, and Paul “Downtown” Brown continue to push music into new corners of the universe through Siteholder Records. Residing in the city that gave house music its name, Siteholder strives to combine the various elements of modern techno with the jackin’ rhythms that put their hometown on the electronic music map. Siteholder releases command you to get out of your chair, charge the dance floor, and get down to some serious beats.'] },
   { id: 'uncut', name: 'UnCut', kind: 'sub', parent: 'Siteholder', logo: { v: '--logo-uncut', r: '480 / 321' }, about: ['Following the success of Siteholder Records, the Chicago based trio of Billy Dalessandro, Brian Ffar, and Paul “Downtown” Brown turn things up a notch with Siteholder UnCut – a digital sub-label currently sold exclusively through Beatport. Featuring the edgier side of techno that initially established the roots for modern day tech house and minimal techno, expect a riskier sound from a wider range of artists (both well known and up and coming) that is bound to please both one’s aural senses as well as a packed dance floor. If Siteholder is any indication of what these Chicago natives have to offer the electronic music global community, UnCut will only serve to further establish a well rounded foundation of serious beats combined with heady intoxication.'] },
-  { id: 'uncut-ltd', name: 'UnCut Ltd', kind: 'sub', parent: 'Siteholder', about: ['Chitown REPRESENT – the Chicago-based Siteholder Records crew returns with a brand-spanking new sub-label, UnCut Ltd. Featuring the very best selections from their digital label – UnCut – these gems once only available in digital format are now coming to you direct on vinyl.'] },
+  { id: 'uncut-ltd', name: 'UnCut Ltd', kind: 'sub', parent: 'UnCut', about: ['Chitown REPRESENT – the Chicago-based Siteholder Records crew returns with a brand-spanking new sub-label, UnCut Ltd. Featuring the very best selections from their digital label – UnCut – these gems once only available in digital format are now coming to you direct on vinyl.'] },
   { id: 'facet', name: 'Facet', kind: 'label', about: [
     'The Chicago based trio of Billy Dalessandro, Brian Ffar, and Paul Brown have been running Siteholder Records since 2006. Siteholder has gone on to launch two more record labels: Siteholder UnCut and Siteholder UnCut Ltd. As if running three separate imprints wasn’t enough, 2009 introduced the launch of Facet Recordings.',
     'Demonstrating that the Chicagoans’ musical tastes span beyond that of club beats, Facet finds the Siteholder crew veering off of the house/techno highway and taking a detour into a realm that promises to both challenge and satisfy their steadily growing fan base. Facet’s main objective is to provide an outlet for production output that often finds itself on the periphery of electronic music. Ambient, downtempo, dub, experimental and trip-hop are among the many alternative electronic genres that will be featured on this latest undertaking.',
@@ -1422,7 +1422,8 @@ function labelOpts() { return ['All'].concat(LABELS.map(function (L) { return L.
 function inLabel(r) {
   if (F.label === 'All' || r.label === F.label) return true;
   var L = labelByName[r.label];
-  return !!(L && L.parent === F.label);
+  while (L && L.parent) { if (L.parent === F.label) return true; L = labelByName[L.parent]; }
+  return false;
 }
 function labelChips() {
   return chips('label', ['All'].concat(LABELS.filter(function (L) { return L.kind === 'label'; }).map(function (L) { return L.name; })), 'Label') +
@@ -1488,7 +1489,7 @@ function cover(r) {
   for (i = al.length - 1; i >= 0; i--) { t += '<text x="6" y="' + y.toFixed(1) + '" font-size="8.4" fill="#fff" style="font-weight:800;font-stretch:75%">' + al[i] + '</text>'; y -= 8.6; }
   return '<svg viewBox="0 0 100 100" role="img" aria-label="Placeholder cover for ' + r.title + ' by ' + r.artist + '" font-family="Archivo, Arial, sans-serif"><defs>' + defs + '</defs>' + s +
     '<rect y="38" width="100" height="62" fill="url(#' + id + 's)"/>' +
-    '<rect width="100" height="30" fill="url(#' + id + 't)"/>' + (r.label === 'UnCut' ? '<use href="#sh-logo-uncut" x="5" y="3.5" width="22" height="14.7"/>' : '<use href="#sh-logo" x="5" y="4.5" width="24" height="13.6"/>') + t + '</svg>';
+    '<rect width="100" height="30" fill="url(#' + id + 't)"/>' + (r.label === 'UnCut' || r.label === 'UnCut Ltd' ? '<use href="#sh-logo-uncut" x="5" y="3.5" width="22" height="14.7"/>' : '<use href="#sh-logo" x="5" y="4.5" width="24" height="13.6"/>') + t + '</svg>';
 }
 
 /* ---------- views ---------- */
