@@ -3824,9 +3824,7 @@ function home() {
     '<p class="eyebrow">Latest release &middot; <span class="cat">' + catNo(r) + '</span></p><h1>' + r.artist + '</h1><p class="ttl">' + r.title + '</p><p class="sub">' + r.sub + '</p>' +
     '<div class="actions"><a class="btn solid" href="#release-' + r.id + '">Listen &amp; buy</a><a class="btn" href="#catalog">Browse the catalog</a></div>' +
     '<p class="intro">Electronic music for DJs and fans. Every release is available to preview, then buy as high-resolution audio or on vinyl.</p></div></section>' +
-    '<section class="block" data-home="1"><div class="sec-head"><h2>Recent releases</h2><a class="more" href="#catalog">Full catalog</a></div><div class="filters">' + labelChips() + chips('fmt', ['All', 'Digital', 'Vinyl']) + '<div class="search"><input id="q" type="search" placeholder="Search artist, title or track" aria-label="Search the catalog by artist, title or track" value="' + F.q.replace(/"/g, '&quot;') + '"></div></div><div id="results"></div></section>' +
-    '<section class="block"><div class="sec-head"><h2>Artists</h2><a class="more" href="#artists">All artists</a></div><div class="wall">' +
-    artists().sort(function (x, y) { return y.rels.length - x.rels.length; }).slice(0, 30).sort(function (x, y) { return byName(x.name, y.name); }).map(function (a) { return '<a href="#artists">' + a.name + '<sup>' + a.rels.length + '</sup></a>'; }).join('') + '</div></section>';
+    '<section class="block" data-home="1"><div class="sec-head"><h2>Recent releases</h2><a class="more" href="#catalog">Full catalog</a></div><div class="filters">' + labelChips() + chips('fmt', ['All', 'Digital', 'Vinyl']) + '<div class="search"><input id="q" type="search" placeholder="Search artist, title or track" aria-label="Search the catalog by artist, title or track" value="' + F.q.replace(/"/g, '&quot;') + '"></div></div><div id="results"></div></section>';
 }
 
 function chips(group, opts, title) {
