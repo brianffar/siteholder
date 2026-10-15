@@ -172,8 +172,10 @@ function catCandidates(path){
     if(found.length)return found}
   return [];
 }
+/* digital-only releases were renumbered from SH017-SH038 to SHUC040-SHUC060; the old audio folders and file names still carry the old numbers */
+var OLD2NEW={SH017:'SHUC040',SH018:'SHUC041',SH019:'SHUC042',SH020:'SHUC043',SH021:'SHUC044',SH022:'SHUC045',SH023:'SHUC046',SH024:'SHUC047',SH025:'SHUC048',SH026:'SHUC049',SH027:'SHUC050',SH028:'SHUC051',SH029:'SHUC052',SH030:'SHUC053',SH031:'SHUC054',SH032:'SHUC055',SH034:'SHUC056',SH035:'SHUC057',SH036:'SHUC058',SH037:'SHUC059',SH038:'SHUC060'};
 function findRelease(path){
-  var cands=catCandidates(path);
+  var cands=catCandidates(path).map(function(c){return OLD2NEW[c]||c});
   for(var i=0;i<REL.length;i++){var c=REL[i].cat;if(!c)continue;
     for(var j=0;j<cands.length;j++){var cc=cands[j];
       if(c===cc||c.indexOf('/')>-1&&(c.split('/')[0]===cc||c.split('/')[0].slice(0,-3)+c.split('/')[1]===cc))return REL[i]}}
