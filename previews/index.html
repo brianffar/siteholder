@@ -79,6 +79,8 @@ td select{width:100%;max-width:340px}
 .cb-list li[aria-selected=true] .cb-t{font-weight:700}
 .cb-list li.act{background:var(--ink);color:var(--on-ink)}
 .cb-list li.act .cb-cat,.cb-list li.act .cb-a{color:inherit;opacity:.8}
+.cb-track .cb-list li{grid-template-columns:26px 1fr}
+.cb-track .cb-cat{color:var(--muted)}
 .cb-none{display:block!important;color:var(--muted);cursor:default!important}
 .fn{word-break:break-all;font-weight:500}.fn small{display:block;color:var(--muted);font:12px var(--mono);font-weight:400}
 .st{font:12px var(--mono);white-space:nowrap;letter-spacing:.02em}.st.ok{color:var(--ok)}.st.bad{color:var(--bad)}.st.warn{color:var(--warn)}
@@ -217,20 +219,33 @@ function relCmp(a,b){
 function relById(id){return REL.filter(function(x){return x.id===id})[0]}
 function itemOf(tr){return ITEMS.filter(function(x){return x.id==tr.dataset.id})[0]}
 function relLabel(r){return (r.cat||'—')+' · '+r.title+' — '+r.artist}
-function cbHtml(it){
-  var r=it.rel&&relById(it.rel);
-  return '<div class="cb"><input type="text" class="cb-in" role="combobox" aria-label="Release" aria-expanded="false" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Type or choose a release…" value="'+esc(r?relLabel(r):'')+'"><button type="button" class="cb-btn" data-k="relbtn" tabindex="-1" aria-label="Show all releases">&#9662;</button><ul class="cb-list" role="listbox" hidden></ul></div>';
+function trkLabel(r,i){var t=r.tracks[i];return (i+1)+'. '+t.t+(t.m?' ('+t.m+')':'')}
+/* one picker serves both fields: kind 'rel' (release) and 'track' (track of the chosen release) */
+function cbEntries(kind,it){
+  if(kind==='rel')return REL.map(function(r){return {v:r.id,a:r.cat||'—',b:r.title,c:r.artist,hay:r.cat+' '+r.title+' '+r.artist,key:r.cat.toLowerCase(),ttl:r.title.toLowerCase()}});
+  var r=it.rel&&relById(it.rel);if(!r)return [];
+  return r.tracks.map(function(t,i){return {v:String(i),a:String(i+1),b:t.t,c:t.m,hay:(i+1)+' '+t.t+' '+t.m,key:String(i+1),ttl:t.t.toLowerCase()}});
 }
-function cbMatches(q){
-  q=q.trim().toLowerCase();if(!q)return REL.slice();
+function cbCur(kind,it){return kind==='rel'?(it.rel||''):(it.track===null||it.track===undefined?'':String(it.track))}
+function cbLabelFor(kind,it){
+  var r=it.rel&&relById(it.rel);if(!r)return '';
+  if(kind==='rel')return relLabel(r);
+  return it.track===null||it.track===undefined?'':trkLabel(r,it.track);
+}
+function cbHtml(kind,it){
+  var rel=kind==='rel',off=!rel&&!it.rel;
+  return '<div class="cb'+(rel?'':' cb-track')+'"><input type="text" class="cb-in" data-cb="'+kind+'" role="combobox" aria-label="'+(rel?'Release':'Track')+'" aria-expanded="false" aria-autocomplete="list" autocomplete="off" spellcheck="false"'+(off?' disabled':'')+' placeholder="'+(rel?'Type or choose a release…':off?'Pick a release first':'Type or choose a track…')+'" value="'+esc(cbLabelFor(kind,it))+'"><button type="button" class="cb-btn" data-k="cbbtn" tabindex="-1"'+(off?' disabled':'')+' aria-label="Show all '+(rel?'releases':'tracks')+'">&#9662;</button><ul class="cb-list" role="listbox" hidden></ul></div>';
+}
+function cbFilter(list,q){
+  q=q.trim().toLowerCase();if(!q)return list.slice();
   var toks=q.split(/\s+/),out=[];
-  REL.forEach(function(r){
-    var h=(r.cat+' '+r.title+' '+r.artist).toLowerCase(),nh=norm(h);
+  list.forEach(function(e){
+    var h=e.hay.toLowerCase(),nh=norm(h);
     var ok=toks.every(function(t){var nt=norm(t);return h.indexOf(t)>-1||(nt&&nh.indexOf(nt)>-1)});
-    if(ok){var c=r.cat.toLowerCase();out.push({r:r,i:out.length,k:(c&&c.indexOf(q)===0)?0:(r.title.toLowerCase().indexOf(q)===0?1:2)})}
+    if(ok)out.push({e:e,i:out.length,k:(e.key&&e.key.indexOf(q)===0)?0:(e.ttl.indexOf(q)===0?1:2)});
   });
   out.sort(function(a,b){return a.k-b.k||a.i-b.i});
-  return out.map(function(o){return o.r});
+  return out.map(function(o){return o.e});
 }
 var CB={};
 function cbIsOpen(inp){return CB.inp===inp&&CB.ul&&!CB.ul.hidden}
@@ -242,26 +257,29 @@ function cbActive(i,scroll){
   if(scroll&&i>=0&&lis[i])lis[i].scrollIntoView({block:'nearest'});
 }
 function cbOpen(inp,showAll){
-  var ul=inp.closest('.cb').querySelector('.cb-list'),it=itemOf(inp.closest('tr'));if(!it)return;
-  var items=showAll?REL.slice():cbMatches(inp.value);
-  CB={it:it,inp:inp,ul:ul,items:items,act:-1};
-  ul.innerHTML=items.length?items.map(function(r,i){
-    return '<li role="option" id="cbo-'+it.id+'-'+i+'" data-i="'+i+'"'+(r.id===it.rel?' aria-selected="true"':'')+'><span class="cb-cat">'+esc(r.cat||'—')+'</span><span class="cb-t">'+esc(r.title)+'</span><span class="cb-a">'+esc(r.artist)+'</span></li>';
-  }).join(''):'<li class="cb-none" role="presentation">No matching releases</li>';
+  var ul=inp.closest('.cb').querySelector('.cb-list'),it=itemOf(inp.closest('tr')),kind=inp.dataset.cb;if(!it)return;
+  var all=cbEntries(kind,it),items=showAll?all:cbFilter(all,inp.value),cur=cbCur(kind,it);
+  CB={it:it,inp:inp,ul:ul,kind:kind,items:items,act:-1};
+  ul.innerHTML=items.length?items.map(function(e,i){
+    return '<li role="option" id="cbo-'+it.id+'-'+kind+'-'+i+'" data-i="'+i+'"'+(e.v===cur?' aria-selected="true"':'')+'><span class="cb-cat">'+esc(e.a)+'</span><span class="cb-t">'+esc(e.b)+'</span><span class="cb-a">'+esc(e.c||'')+'</span></li>';
+  }).join(''):'<li class="cb-none" role="presentation">No matching '+(kind==='rel'?'releases':'tracks')+'</li>';
   ul.hidden=false;inp.setAttribute('aria-expanded','true');
-  var cur=showAll?items.map(function(r){return r.id}).indexOf(it.rel):-1;
-  cbActive(cur>=0?cur:(showAll?-1:(items.length?0:-1)),true);
+  var at=showAll&&cur!==''?items.map(function(e){return e.v}).indexOf(cur):-1;
+  cbActive(at>=0?at:(showAll?-1:(items.length?0:-1)),true);
 }
 function cbClose(restore){
   var inp=CB.inp;if(!inp)return;
   if(CB.ul)CB.ul.hidden=true;
   inp.setAttribute('aria-expanded','false');inp.removeAttribute('aria-activedescendant');
-  if(restore){var r=CB.it&&CB.it.rel&&relById(CB.it.rel);inp.value=r?relLabel(r):''}
+  if(restore)inp.value=CB.it?cbLabelFor(CB.kind,CB.it):'';
   CB={};
 }
-function cbSet(it,id){
-  CB={};it.rel=id;it.track=null;it.conf='';freeResult(it);render();
-  if(id){var s=document.querySelector('tr[data-id="'+it.id+'"] select[data-k="track"]');if(s)s.focus()}
+function cbSet(it,kind,v){
+  CB={};
+  if(kind==='rel'){it.rel=v||null;it.track=null;it.conf=''}
+  else{it.track=(v===null||v==='')?null:+v;it.conf=it.track===null?'':'ok'}
+  freeResult(it);render();
+  if(kind==='rel'&&v){var s=document.querySelector('tr[data-id="'+it.id+'"] .cb-in[data-cb="track"]');if(s)s.focus()}
 }
 $('rows').addEventListener('focusin',function(e){
   if(e.target.classList.contains('cb-in')){e.target.select();if(!cbIsOpen(e.target))cbOpen(e.target,true)}
@@ -274,7 +292,7 @@ $('rows').addEventListener('input',function(e){
 });
 $('rows').addEventListener('mousedown',function(e){
   var li=e.target.closest('.cb-list li[role=option]');
-  if(li){e.preventDefault();if(CB.items&&CB.it)cbSet(CB.it,CB.items[+li.dataset.i].id);return}
+  if(li){e.preventDefault();if(CB.items&&CB.it)cbSet(CB.it,CB.kind,CB.items[+li.dataset.i].v);return}
   var b=e.target.closest('.cb-btn');
   if(b){
     e.preventDefault();var inp=b.closest('.cb').querySelector('.cb-in');
@@ -289,20 +307,16 @@ $('rows').addEventListener('keydown',function(e){
   else if(e.key==='ArrowUp'){e.preventDefault();if(open&&n)cbActive(Math.max(CB.act-1,0),true)}
   else if(e.key==='Enter'){
     e.preventDefault();if(!open)return;
-    if(!inp.value.trim()){var it0=CB.it;cbClose(false);cbSet(it0,null);return}
-    if(CB.act>=0&&n)cbSet(CB.it,CB.items[CB.act].id);else if(n===1)cbSet(CB.it,CB.items[0].id);
+    if(!inp.value.trim()){var it0=CB.it,k0=CB.kind;cbClose(false);cbSet(it0,k0,null);return}
+    if(CB.act>=0&&n)cbSet(CB.it,CB.kind,CB.items[CB.act].v);else if(n===1)cbSet(CB.it,CB.kind,CB.items[0].v);
   }
   else if(e.key==='Escape'){if(open){e.preventDefault();cbClose(true)}}
 });
 $('rows').addEventListener('focusout',function(e){
   var inp=e.target;if(!inp.classList||!inp.classList.contains('cb-in')||CB.inp!==inp)return;
-  if(!inp.value.trim()&&CB.it.rel){var it=CB.it;cbClose(false);cbSet(it,null);return}
+  if(!inp.value.trim()&&cbCur(CB.kind,CB.it)!==''){var it=CB.it,k=CB.kind;cbClose(false);cbSet(it,k,null);return}
   cbClose(true);
 });
-function trackOptions(it){
-  var r=REL.filter(function(x){return x.id===it.rel})[0];if(!r)return '<option value="">—</option>';
-  return '<option value="">Choose a track…</option>'+r.tracks.map(function(t,i){return '<option value="'+i+'"'+(it.track===i?' selected':'')+'>'+(i+1)+'. '+esc(t.t+(t.m?' ('+t.m+')':''))+'</option>'}).join('');
-}
 function isReady(it){return CATALOG?(it.rel&&it.track!==null):true}
 function dupes(){var seen={},d={};ITEMS.forEach(function(it){if(CATALOG&&it.rel&&it.track!==null){var k=it.rel+'#'+it.track;if(seen[k]){d[it.id]=1;d[seen[k]]=1}else seen[k]=it.id}});return d}
 function outName(it){
@@ -324,20 +338,13 @@ function render(){
     var parts=it.path.split('/'),nm=parts.pop();
     var dl=it.status==='done'?'<a class="dl" href="'+it.url+'" download="'+esc(it.outName.split('/').pop())+'">Save</a>':'';
     return '<tr data-id="'+it.id+'"><td class="fn">'+esc(nm)+(parts.length?'<small>'+esc(parts.join('/'))+'</small>':'')+'</td>'+
-      (CATALOG?'<td>'+cbHtml(it)+'</td><td><select data-k="track">'+trackOptions(it)+'</select></td>':'')+'<td>'+st+(dl?' &nbsp;'+dl:'')+'</td>'+
+      (CATALOG?'<td>'+cbHtml('rel',it)+'</td><td>'+cbHtml('track',it)+'</td>':'')+'<td>'+st+(dl?' &nbsp;'+dl:'')+'</td>'+
       '<td>'+(it.status==='done'?'<button class="play'+(playing===it.id?' on':'')+'" data-k="play" aria-label="Play preview">'+(playing===it.id?'❚❚':'▶')+'</button>':'')+'</td><td><button class="x" data-k="del" title="Remove">×</button></td></tr>';
   }).join('');
   $('go').disabled=busy||!ready;$('go').textContent=busy?'Working…':'Make previews'+(ready?' ('+ready+')':'');
   $('clear').disabled=busy||!ITEMS.length;
   $('count').textContent=ITEMS.length?ITEMS.length+' file'+(ITEMS.length>1?'s':'')+' in the list':'';
 }
-$('rows').addEventListener('change',function(e){
-  if(e.target.classList.contains('cb-in'))return;
-  var tr=e.target.closest('tr');if(!tr)return;var it=ITEMS.filter(function(x){return x.id==tr.dataset.id})[0];
-  if(e.target.dataset.k==='rel'){it.rel=e.target.value||null;it.track=null;it.conf=''}
-  if(e.target.dataset.k==='track'){it.track=e.target.value===''?null:+e.target.value;it.conf='ok'}
-  freeResult(it);render();
-});
 function freeResult(it){if(it.url){URL.revokeObjectURL(it.url)}it.url=null;it.blob=null;it.status=''}
 $('rows').addEventListener('click',function(e){
   var b=e.target.closest('button');if(!b)return;var tr=b.closest('tr'),it=ITEMS.filter(function(x){return x.id==tr.dataset.id})[0];
