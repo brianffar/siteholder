@@ -136,6 +136,9 @@ main { padding-block: 40px 72px; min-height: 70vh; }
 .meta strong { font-size: 17px; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
 .meta .ttl { color: var(--muted); font-size: 15px; overflow-wrap: anywhere; }
 .fmt { font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; }
+.listen { display: block; margin-top: 6px; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink, inherit); }
+.listen.soon { color: var(--muted); }
+a.card:hover .listen { text-decoration: underline; }
 
 /* home hero */
 .hero { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; align-items: end; }
@@ -4309,15 +4312,18 @@ var PODCASTS = [
   { n: '04', guest: 'Jonas Sella', pat: 'rings', c: ['#14040f', '#e0409a', '#7a1b55'] },
   { n: '03', guest: 'Ana+one', pat: 'blobs', c: ['#2b2350', '#8f7fc9', '#cfc6f0'] },
   { n: '02', guest: 'Billy Dalessandro', pat: 'paint', c: ['#c9c9ee', '#f2d76b', '#4a63d8'] },
-  { n: '01', guest: 'Kretipleti', pat: 'stripes', c: ['#d9d6cf', '#1b1b1d', '#8a8780'] }
+  { n: '01', guest: 'Kretipleti', pat: 'stripes', c: ['#d9d6cf', '#1b1b1d', '#8a8780'], url: 'https://open.spotify.com/episode/6u5e7kcjGtxQwqMmuG3Xen' }
 ];
 var POD_IMG = {"01": "images/pod/01.jpg", "02": "images/pod/02.jpg", "03": "images/pod/03.jpg", "04": "images/pod/04.jpg", "05": "images/pod/05.jpg", "06": "images/pod/06.jpg", "07": "images/pod/07.jpg", "08": "images/pod/08.jpg", "09": "images/pod/09.jpg", "10": "images/pod/10.jpg"};
 function mixes() {
-  return '<h1 class="page-title">Podcasts</h1><p class="count">Episode names are real. Covers and listen links are placeholders; the live site would link each one to its Mixcloud or SoundCloud mix.</p><div class="grid pod-grid">' +
+  return '<h1 class="page-title">Podcasts</h1><p class="count">Guest mixes from the Siteholder family. New episodes are being added to Spotify.</p><div class="grid pod-grid">' +
     PODCASTS.map(function (p) {
       var r = { id: 'pod' + p.n, artist: p.guest, title: 'Siteholder Podcast ' + p.n, pat: p.pat, c: p.c };
       var art = POD_IMG[p.n] ? '<div class="art pod-art"><img src="' + POD_IMG[p.n] + '" alt="Siteholder Podcast ' + p.n + ' with ' + p.guest + '" loading="lazy"></div>' : '<div class="art">' + cover(r) + '</div>';
-      return '<a class="card" href="https://www.mixcloud.com" target="_blank" rel="noopener">' + art + '<div class="meta"><div class="row"><span class="cat">PODCAST ' + p.n + '</span><span class="fmt">Mix</span></div><strong>' + p.guest + '</strong><span class="ttl">Siteholder Podcast ' + p.n + '</span></div></a>';
+      var tag = p.url ? 'a' : 'div';
+      var attrs = p.url ? ' href="' + p.url + '" target="_blank" rel="noopener" aria-label="Siteholder Podcast ' + p.n + ' with ' + p.guest + ', listen on Spotify (opens in a new tab)"' : '';
+      var cta = p.url ? '<span class="listen">Listen on Spotify &#8599;</span>' : '<span class="listen soon">Coming soon</span>';
+      return '<' + tag + ' class="card"' + attrs + '>' + art + '<div class="meta"><div class="row"><span class="cat">PODCAST ' + p.n + '</span><span class="fmt">Mix</span></div><strong>' + p.guest + '</strong><span class="ttl">Siteholder Podcast ' + p.n + '</span>' + cta + '</div></' + tag + '>';
     }).join('') + '</div>';
 }
 
