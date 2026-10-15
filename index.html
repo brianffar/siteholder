@@ -4309,7 +4309,9 @@ function labelOpts() { return ['All'].concat(LABELS.map(function (L) { return L.
 function inLabel(r, name) {
   var want = name || F.label;
   if (want === 'All') return true;
-  if (want === 'Siteholder') return r.label === 'Siteholder' || r.label === 'UnCut Ltd';
+  var gems = /^SHCOMP/.test(r.cat || '');  /* Gems compilations are digital: they belong with UnCut */
+  if (want === 'Siteholder') return !gems && (r.label === 'Siteholder' || r.label === 'UnCut Ltd');
+  if (want === 'UnCut') return gems || r.label === 'UnCut';
   return r.label === want;
 }
 function labelChips() { return chips('label', ['All', 'Siteholder', 'UnCut', 'Facet'], 'Label'); }
