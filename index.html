@@ -193,6 +193,18 @@ main { padding-block: 40px 72px; min-height: 70vh; }
 .tracks li { counter-increment: t; display: flex; gap: 14px; padding-block: 11px; border-bottom: 1px solid var(--line); font-size: 15px; }
 .tracks .tn { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .tracks .ta { display: block; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.tracks .pl { flex: none; width: 30px; height: 30px; margin-top: -3px; border-radius: 50%; border: 1.5px solid var(--ink); background: transparent; color: var(--ink); display: inline-grid; place-items: center; cursor: pointer; padding: 0; }
+.tracks .pl-sp { border: 0; cursor: default; }
+.tracks .pl svg { width: 16px; height: 16px; fill: currentColor; }
+.tracks .pl .ic-pause { display: none; }
+.tracks li.playing .pl { background: var(--ink); color: var(--bg); }
+.tracks li.playing .pl .ic-play { display: none; }
+.tracks li.playing .pl .ic-pause { display: inline; }
+.tracks .pl:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.tracks li { position: relative; align-items: flex-start; }
+.tracks li::after { content: ""; position: absolute; left: 0; bottom: -1px; height: 2px; width: var(--p, 0%); background: var(--ink); }
+.tracks li:has(.pl):hover .tn { text-decoration: none; }
+.pv-note { font-size: 13px; color: var(--muted); margin: 10px 0 0; }
 .tracks .tmx { color: var(--muted); }
 .tracks .tm { font-family: var(--mono); font-size: 12px; color: var(--muted); white-space: nowrap; padding-top: 3px; }
 @media (max-width: 599px) { .tracks li { flex-wrap: wrap; } .tracks .tm { flex-basis: 100%; padding-left: 36px; padding-top: 0; } }
@@ -3774,25 +3786,29 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
     "t": "Nitrogen 2 Oxygen 1",
     "m": "Original Mix",
     "bpm": 127,
-    "k": "G min"
+    "k": "G min",
+    "p": "sh003/01-nitrogen-2-oxygen-1-original-mix.mp3"
    },
    {
     "t": "Nitrogen 2 Oxygen 1",
     "m": "Brian Ffar vs. Huge Hephner Remix",
     "bpm": 126,
-    "k": "B min"
+    "k": "B min",
+    "p": "sh003/02-nitrogen-2-oxygen-1-brian-ffar-vs-huge-hephner-remix.mp3"
    },
    {
     "t": "Nitrogen 2 Oxygen 1",
     "m": "Crazy Larry Remix",
     "bpm": 126,
-    "k": "C min"
+    "k": "C min",
+    "p": "sh003/03-nitrogen-2-oxygen-1-crazy-larry-remix.mp3"
    },
    {
     "t": "Nitrogen 2 Oxygen 1",
     "m": "Jason Emsley Remix",
     "bpm": 124,
-    "k": "E min"
+    "k": "E min",
+    "p": "sh003/04-nitrogen-2-oxygen-1-jason-emsley-remix.mp3"
    }
   ],
   "labelImg": "images/labels/nitrogen-2-oxygen-1-ep.webp",
@@ -3885,14 +3901,16 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
     "m": "Original Mix",
     "bpm": 129,
     "k": "Ab maj",
-    "a": "Billy Dalessandro"
+    "a": "Billy Dalessandro",
+    "p": "sh002/01-that-trick-she-knows-original-mix.mp3"
    },
    {
     "t": "Red Cape Resistance",
     "m": "Original Mix",
     "bpm": 127,
     "k": "G min",
-    "a": "Brian Ffar"
+    "a": "Brian Ffar",
+    "p": "sh002/02-red-cape-resistance-original-mix.mp3"
    },
    {
     "t": "Urban Underun",
@@ -3906,7 +3924,8 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
     "m": "Original Mix",
     "bpm": 128,
     "k": "G min",
-    "a": "Slutbox"
+    "a": "Slutbox",
+    "p": "sh002/04-no-chasers-original-mix.mp3"
    }
   ],
   "labelImg": "images/labels/mining-for-rough.webp",
@@ -3930,13 +3949,15 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
     "t": "Don't Sleep",
     "m": "Original Mix",
     "bpm": 130,
-    "k": "C min"
+    "k": "C min",
+    "p": "sh001/01-don-t-sleep-original-mix.mp3"
    },
    {
     "t": "Don't Sleep",
     "m": "Afraid Of The Dark Remix",
     "bpm": 127,
-    "k": "C min"
+    "k": "C min",
+    "p": "sh001/02-don-t-sleep-afraid-of-the-dark-remix.mp3"
    },
    {
     "t": "Don't Sleep",
@@ -3948,7 +3969,8 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
     "t": "Don't Sleep",
     "m": "Slutbox Remix",
     "bpm": 128,
-    "k": "C min"
+    "k": "C min",
+    "p": "sh001/04-don-t-sleep-slutbox-remix.mp3"
    }
   ],
   "labelImg": "images/labels/don-t-sleep-ep.webp",
@@ -4220,9 +4242,10 @@ function paintResults() {
   document.getElementById('results').innerHTML = list.length ? '<div class="grid">' + list.map(card).join('') + '</div>' + (isHome && total > lim ? '<p class="more-wrap"><a class="btn solid" href="#catalog">View all ' + total + ' ' + (F.label !== 'All' ? F.label + ' ' : '') + (F.fmt !== 'All' ? F.fmt.toLowerCase() + ' ' : '') + 'releases' + (F.q.trim() ? ' matching &ldquo;' + F.q.trim().replace(/</g, '&lt;') + '&rdquo;' : '') + ' &rarr;</a></p>' : '') + (!isHome && total > lim ? '<p class="more-wrap"><button class="btn" type="button" id="show-more">Show more (' + (total - lim) + ' left)</button></p>' : '') : '<p class="empty">No releases match. Clear a filter or try another search.</p>';
 }
 
-function trackRow(t) {
+function trackRow(t, sp) {
+  var play = t.p ? '<button type="button" class="pl" data-src="' + AUDIO_BASE + t.p + '" aria-label="Play 30 second preview of ' + esc(t.t + (t.m ? ' (' + t.m + ')' : '')) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="ic-play" d="M8 5v14l11-7z"/><path class="ic-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg></button>' : (sp ? '<span class="pl pl-sp" aria-hidden="true"></span>' : '');
   var mix = t.m ? ' <span class="tmx">(' + t.m + ')</span>' : '';
-  return '<li' + (t.n ? ' data-n="' + t.n + '"' : '') + '><span class="tn">' + (t.a ? '<span class="ta">' + t.a + '</span> ' : '') + t.t + mix + '</span>' + (t.bpm ? '<span class="tm">' + t.bpm + ' BPM' + (t.k ? ' &middot; ' + t.k : '') + '</span>' : t.d ? '<span class="tm">' + t.d + '</span>' : '') + '</li>';
+  return '<li' + (t.n ? ' data-n="' + t.n + '"' : '') + '>' + play + '<span class="tn">' + (t.a ? '<span class="ta">' + t.a + '</span> ' : '') + t.t + mix + '</span>' + (t.bpm ? '<span class="tm">' + t.bpm + ' BPM' + (t.k ? ' &middot; ' + t.k : '') + '</span>' : t.d ? '<span class="tm">' + t.d + '</span>' : '') + '</li>';
 }
 function release(id) {
   var r = byId[id]; if (!r) return notFound();
@@ -4233,7 +4256,7 @@ function release(id) {
     '<dl class="facts"><dt>Label</dt><dd><a class="more" href="#about-' + labelId(r.label) + '">' + r.label + '</a></dd><dt>Released</dt><dd>' + fmtDate(r.dateYear ? String(r.date).slice(0, 4) : r.date) + '</dd><dt>Format</dt><dd>' + r.fmtName + '</dd>' + (r.cat ? '<dt>Cat. no.</dt><dd>' + r.cat + '</dd>' : '') + '</dl>' +
     '<div class="buy">' + storeLinks(r) + '</div>' +
     (!r.digital ? '' : '<p class="buy-note">This button opens a Beatport search for the release. Direct links come next.</p>') +
-    (r.tracks.length ? '<ol class="tracks">' + r.tracks.map(trackRow).join('') + '</ol>' : '') + '</div></section>' +
+    (r.tracks.length ? '<ol class="tracks">' + r.tracks.map(function (t) { return trackRow(t, r.tracks.some(function (x) { return x.p; })); }).join('') + '</ol>' + (r.tracks.some(function (t) { return t.p; }) ? '<p class="pv-note">Tap play for a 30 second preview.</p>' : '') : '') + '</div></section>' +
     '<section class="block"><div class="sec-head"><h2>More releases</h2><a class="more" href="#catalog">Full catalog</a></div><div class="grid">' + more.map(card).join('') + '</div></section>';
 }
 
@@ -4285,6 +4308,9 @@ function artistsView() {
 /* Form service: paste the Formspree form address between the quotes, e.g. 'https://formspree.io/f/abcdwxyz'. */
 var FORM_ENDPOINT = 'https://formspree.io/f/mljgogrn';
 var CONTACT_EMAIL = 'info@siteholderrecords.com';
+
+/* Where preview audio lives. Later this can point at Cloudflare R2, e.g. 'https://audio.siteholderrecords.com/'. */
+var AUDIO_BASE = 'audio/';
 
 var PODCASTS = [
   { n: '10', guest: 'Brojanowski', pat: 'blocks', c: ['#14181f', '#37d4ff', '#c8102e'] },
@@ -4402,6 +4428,20 @@ document.addEventListener('submit', function (e) {
     .catch(function () { st.textContent = 'Sorry, that did not send. Please email ' + CONTACT_EMAIL + ' directly.'; })
     .then(function () { btn.disabled = false; });
 });
+
+
+/* 30 second previews: one shared player, one track at a time */
+var pv = new Audio(), pvBtn = null; pv.preload = 'none';
+function pvStop() { pv.pause(); if (pvBtn) { var li = pvBtn.closest('li'); li.classList.remove('playing'); li.style.removeProperty('--p'); } pvBtn = null; }
+pv.addEventListener('timeupdate', function () { if (pvBtn && pv.duration) pvBtn.closest('li').style.setProperty('--p', (pv.currentTime / pv.duration * 100) + '%'); });
+pv.addEventListener('ended', pvStop);
+document.addEventListener('click', function (e) {
+  var b = e.target.closest && e.target.closest('.pl'); if (!b) return;
+  if (pvBtn === b) { pvStop(); return; }
+  pvStop(); pvBtn = b; b.closest('li').classList.add('playing'); pv.src = b.dataset.src;
+  var pr = pv.play(); if (pr && pr.catch) pr.catch(function () { pvStop(); });
+});
+window.addEventListener('hashchange', pvStop);
 
 /* light / dark switch: follows the device until the visitor picks one */
 var root = document.documentElement, themeBtn = document.getElementById('theme'), themeLabel = document.getElementById('theme-label');
