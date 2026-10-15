@@ -138,6 +138,14 @@ main { padding-block: 40px 72px; min-height: 70vh; }
 .fmt { font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; }
 .listen { display: block; margin-top: 6px; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink, inherit); }
 .listen.soon { color: var(--muted); }
+.pod-page { display: grid; gap: 28px; max-width: 980px; }
+.pod-page h1 { font-size: clamp(34px, 5vw, 62px); font-weight: 800; font-stretch: 75%; text-transform: uppercase; line-height: .98; letter-spacing: -0.02em; margin-block: 10px 6px; overflow-wrap: anywhere; }
+.pod-page .artist { font-size: 20px; font-weight: 600; margin-bottom: 20px; }
+.pod-page .pod-art { max-width: 640px; }
+.pod-page .pod-art img { width: 100%; height: auto; display: block; }
+.pod-player { margin-top: 24px; max-width: 640px; }
+.pod-page .acts { margin-top: 16px; }
+.pod-h { font-size: 18px; margin-top: 32px; }
 a.card:hover .listen { text-decoration: underline; }
 
 /* home hero */
@@ -4315,16 +4323,43 @@ var PODCASTS = [
   { n: '01', guest: 'Kretipleti', pat: 'stripes', c: ['#d9d6cf', '#1b1b1d', '#8a8780'], url: 'https://open.spotify.com/episode/6u5e7kcjGtxQwqMmuG3Xen' }
 ];
 var POD_IMG = {"01": "images/pod/01.jpg", "02": "images/pod/02.jpg", "03": "images/pod/03.jpg", "04": "images/pod/04.jpg", "05": "images/pod/05.jpg", "06": "images/pod/06.jpg", "07": "images/pod/07.jpg", "08": "images/pod/08.jpg", "09": "images/pod/09.jpg", "10": "images/pod/10.jpg"};
+function podCard(p) {
+  var r = { id: 'pod' + p.n, artist: p.guest, title: 'Siteholder Podcast ' + p.n, pat: p.pat, c: p.c };
+  var art = POD_IMG[p.n] ? '<div class="art pod-art"><img src="' + POD_IMG[p.n] + '" alt="Siteholder Podcast ' + p.n + ' with ' + p.guest + '" loading="lazy"></div>' : '<div class="art">' + cover(r) + '</div>';
+  return '<a class="card" href="#podcast-' + p.n + '">' + art + '<div class="meta"><div class="row"><span class="cat">PODCAST ' + p.n + '</span><span class="fmt">Mix</span></div><strong>' + p.guest + '</strong><span class="ttl">Siteholder Podcast ' + p.n + '</span><span class="listen' + (p.url ? '' : ' soon') + '">' + (p.url ? 'Listen now' : 'Coming soon') + '</span></div></a>';
+}
 function mixes() {
-  return '<h1 class="page-title">Podcasts</h1><p class="count">Guest mixes from the Siteholder family. New episodes are being added to Spotify.</p><div class="grid pod-grid">' +
-    PODCASTS.map(function (p) {
-      var r = { id: 'pod' + p.n, artist: p.guest, title: 'Siteholder Podcast ' + p.n, pat: p.pat, c: p.c };
-      var art = POD_IMG[p.n] ? '<div class="art pod-art"><img src="' + POD_IMG[p.n] + '" alt="Siteholder Podcast ' + p.n + ' with ' + p.guest + '" loading="lazy"></div>' : '<div class="art">' + cover(r) + '</div>';
-      var tag = p.url ? 'a' : 'div';
-      var attrs = p.url ? ' href="' + p.url + '" target="_blank" rel="noopener" aria-label="Siteholder Podcast ' + p.n + ' with ' + p.guest + ', listen on Spotify (opens in a new tab)"' : '';
-      var cta = p.url ? '<span class="listen">Listen on Spotify &#8599;</span>' : '<span class="listen soon">Coming soon</span>';
-      return '<' + tag + ' class="card"' + attrs + '>' + art + '<div class="meta"><div class="row"><span class="cat">PODCAST ' + p.n + '</span><span class="fmt">Mix</span></div><strong>' + p.guest + '</strong><span class="ttl">Siteholder Podcast ' + p.n + '</span>' + cta + '</div></' + tag + '>';
-    }).join('') + '</div>';
+  return '<h1 class="page-title">Podcasts</h1><p class="count">Guest mixes from the Siteholder family. New episodes are being added to Spotify.</p><div class="grid pod-grid">' + PODCASTS.map(podCard).join('') + '</div>';
+}
+var POD_DESC = {
+ "01": "Kretipleti is the Swedish techno duo of Pehr Herb and Thomas Jaldemark, working between Jönköping and Malmö. Their sound is twisted, driving techno, with more than fifteen 12\"s between them, solo and as a pair. Their best-known track, \"Kontaminationen\", came out on Coincidence Records. They've also released on Kant Recordings, Sleaze, Labrynth and Other Heights, and on Siteholder with \"Restid\" (SH022). Herb and Jaldemark also run Yta Recordings, which puts out hand-printed tapes and vinyl of experimental electronic music. This is their mix for Siteholder.",
+ "02": "Billy Dalessandro is a Chicago-born producer and live performer, and a co-founder of Siteholder Records. He has been on the label since the first release, \"Don't Sleep EP\" (SH001, 2006), and also records as Huge Hephner, Tyrone, Adjective and in the group Slutbox. His records have come out on Resopal Schallware, Harthouse Mannheim, Soniculture, Lazerslut and Alphahouse. He has played in Toronto and Montreal. This is his mix for Siteholder.",
+ "03": "Ana+one first appeared on Siteholder UnCut with the four-track \"La Voix Amicale\" (SHUC020, January 2009). It includes \"Box Of Donuts\", \"Second Time Around\" and \"Talking Computron\", plus an ATOM remix of the last. The sound is playful, off-kilter minimal with a funky streak. Ana+one also appeared on \"Uncut Premium Part Five\" and \"Siteholder Gems Volume 2\". This is their mix for Siteholder.",
+ "04": "Jonas Sella spent about three years DJing before he started producing, and he is a dedicated vinyl collector. His sound moves from minimal house to jazzy techno, and he has played clubs and festivals around Europe. His records have come out on Telegraph, Timid Records, The Untold Stories, 31337 Records and Multi Vitamins, and on Siteholder with \"The Hat In The Cat\" (SH025) and \"Siteholder Gems Volume 3\". This is his mix for Siteholder.",
+ "05": "Chris Larsen is a hip hop fan turned producer, sometimes called a \"ghetto technologist\". His music is sparse and hard-hitting minimal, built on inventive sampling and abrupt edits. He first made his name with releases on Roots and Wings, Casa Do Conde and Green Velvet's Cajual Records. For Siteholder he made \"For My Homies\" (SH027) and \"You Know How We Get Down\" (SH036), which includes a Billy Dalessandro remix. This is his mix for Siteholder.",
+ "06": "Dry But Funky is a duo who mix minimal techno with swing and jazz, making atmospheric music meant to pull you out of the everyday routine. They have released on Kalimari (\"The Loaf Under My Blanket\") and Kollektiv Artists, and on Siteholder with \"A Wife For Objecto Phil\" (SH028, 2013). This is their mix for Siteholder.",
+ "07": "Billy Dalessandro returns for a second Siteholder mix. The Chicago-born co-founder of the label has been releasing music since the mid-2000s, from \"Strombooty EP\" (SH014) and \"Hentai House\" (SH019) to \"Balls Of Fire\" (SH026) and \"Bootysm\" (SH033). He has also released a three-track EP on Soniculture, \"Things To Do\" (October 2024), and has played Toronto and Montreal in recent years. This is his mix for Siteholder.",
+ "08": "Galuszka is Chicago-based producer Russ Galuszka, known in the house and techno underground for tracks like \"Cellblock 3\" and \"Dirty Snitch\". He has been part of Siteholder's UnCut imprint since its early days, with \"Shogun Beatboxin\" (SHUC005), \"Dirty Snitch EP\" (SHUC012), \"Bring The Bling\" (SHUC017) and \"The Lake Effect\" (SHUC026 and SHUC027). He also appears on \"Uncut Premium Parts Three, Four and Five\" and \"Siteholder Gems Volumes 1 and 2\". This is his mix for Siteholder.",
+ "09": "Kaiq made the groove-driven \"Loaded Machine\" (SH032, 2013) for Siteholder and appeared on \"Siteholder Gems Volume 1\". He first showed up on UnCut with \"Time Machine\" (SHUC037, 2011). His music runs from house to techno. This is his mix for Siteholder.",
+ "10": "Brojanowski is the production name of Marek Brojanowski, whose catalog runs to more than twenty releases. For Siteholder he made \"Lucid Dreaming\" (SH034, 2013). In 2015 he put out \"Brojanowski classics\", a 22-track collection that gathers work from labels including Siteholder. His sound is dreamy, detailed minimal. This is his mix for Siteholder."
+};
+
+function podcastView(n) {
+  var p = PODCASTS.filter(function (x) { return x.n === n; })[0]; if (!p) return notFound();
+  var ix = PODCASTS.indexOf(p), more = [1, 2, 3].map(function (k) { return PODCASTS[(ix + k) % PODCASTS.length]; });
+  var img = POD_IMG[n] ? '<div class="art pod-art"><img src="' + POD_IMG[n] + '" alt="Siteholder Podcast ' + n + ' with ' + esc(p.guest) + '"></div>' : '';
+  var a = artists().filter(function (x) { return x.name.toLowerCase() === p.guest.toLowerCase(); })[0];
+  var rels = a ? a.rels.slice().sort(function (x, y) { return (a.kind[x.id] === 'remix') - (a.kind[y.id] === 'remix') || (x.date < y.date ? 1 : -1); }).slice(0, 8) : [];
+  var sid = p.url ? p.url.split('/episode/')[1].split('?')[0] : '';
+  var listen = p.url
+    ? '<div class="pod-player"><iframe title="Siteholder Podcast ' + n + ' on Spotify" src="https://open.spotify.com/embed/episode/' + sid + '?theme=0" width="100%" height="152" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe></div><p class="acts"><a class="btn solid" href="' + p.url + '" target="_blank" rel="noopener">Listen on Spotify &#8599;</a></p><p class="pv-note">Opens Spotify in a new tab.</p>'
+    : '<p class="pv-note">This episode is coming to Spotify soon.</p>';
+  return '<a class="back" href="#mixes">&larr; Podcasts</a><section class="pod-page">' + img + '<div class="pod-body">' +
+    '<p class="eyebrow"><span class="cat">PODCAST ' + n + '</span> &middot; Mix</p><h1>' + esc(p.guest) + '</h1><p class="artist">Siteholder Podcast ' + n + '</p>' +
+    '<div class="prose"><p>' + esc(POD_DESC[n]) + '</p></div>' + listen +
+    '<h2 class="pod-h">Tracklist</h2><p class="pv-note">Tracklist coming soon.</p></div></section>' +
+    (rels.length ? '<section class="block"><div class="sec-head"><h2>' + esc(p.guest) + ' on Siteholder</h2></div><div class="grid">' + rels.map(card).join('') + '</div></section>' : '') +
+    '<section class="block"><div class="sec-head"><h2>More episodes</h2><a class="more" href="#mixes">All podcasts</a></div><div class="grid pod-grid">' + more.map(podCard).join('') + '</div></section>';
 }
 
 function aboutView(h) {
@@ -4354,10 +4389,10 @@ function route() {
   var h = (location.hash || '#home').slice(1) || 'home', base = h.split('-')[0];
   if (h === 'catalog') catalog();
   else {
-    view.innerHTML = h === 'home' ? home() : h.indexOf('release-') === 0 ? release(h.slice(8)) : h === 'artists' ? artistsView() : h === 'mixes' ? mixes() : h.indexOf('about') === 0 ? aboutView(h) : h === 'contact' ? contact() : notFound();
+    view.innerHTML = h === 'home' ? home() : h.indexOf('release-') === 0 ? release(h.slice(8)) : h === 'artists' ? artistsView() : h === 'mixes' ? mixes() : h.indexOf('podcast-') === 0 ? podcastView(h.slice(8)) : h.indexOf('about') === 0 ? aboutView(h) : h === 'contact' ? contact() : notFound();
     if (view.querySelector('#results')) paintResults();
   }
-  var key = h.indexOf('release-') === 0 ? 'catalog' : h.indexOf('about') === 0 ? 'about' : h;
+  var key = h.indexOf('podcast-') === 0 ? 'mixes' : h.indexOf('release-') === 0 ? 'catalog' : h.indexOf('about') === 0 ? 'about' : h;
   document.querySelectorAll('#nav [data-r]').forEach(function (a) { if (a.dataset.r === key) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   enhanceSearch();
   fitHero();
