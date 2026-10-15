@@ -212,12 +212,20 @@ a.card:hover .listen { text-decoration: underline; }
 .tracks .pl-sp { border: 0; cursor: default; }
 .tracks .pl svg { width: 16px; height: 16px; fill: currentColor; }
 .tracks .pl .ic-pause { display: none; }
-.tracks li.playing .pl { background: var(--ink); color: var(--bg); }
+.tracks li.active .pl { background: var(--ink); color: var(--bg); }
 .tracks li.playing .pl .ic-play { display: none; }
 .tracks li.playing .pl .ic-pause { display: inline; }
 .tracks .pl:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 .tracks li { position: relative; align-items: flex-start; }
-.tracks li::after { content: ""; position: absolute; left: 0; bottom: -1px; height: 2px; width: var(--p, 0%); background: var(--ink); }
+.tracks li { flex-wrap: wrap; }
+.tracks .scrub { display: none; flex: 0 0 100%; order: 9; align-items: center; gap: 14px; padding: 4px 0 0 44px; cursor: pointer; user-select: none; -webkit-user-select: none; }
+.tracks li.active .scrub { display: flex; }
+.tracks .sc-bar { position: relative; flex: 1; height: 26px; display: flex; align-items: center; touch-action: none; }
+.tracks .sc-bar::before { content: ""; position: absolute; left: 0; right: 0; height: 4px; border-radius: 2px; background: var(--line); }
+.tracks .sc-fill { position: absolute; left: 0; height: 4px; width: var(--p, 0%); border-radius: 2px; background: var(--ink); pointer-events: none; }
+.tracks .sc-fill::after { content: ""; position: absolute; right: -6px; top: 50%; width: 12px; height: 12px; margin-top: -6px; border-radius: 50%; background: var(--ink); }
+.tracks .sc-time { font-family: var(--mono); font-size: 12px; color: var(--muted); white-space: nowrap; min-width: 82px; text-align: right; }
+.tracks .scrub:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .tracks li:has(.pl):hover .tn { text-decoration: none; }
 .pv-note { font-size: 13px; color: var(--muted); margin: 10px 0 0; }
 .tracks .tmx { color: var(--muted); }
@@ -4363,9 +4371,9 @@ function paintResults() {
 }
 
 function trackRow(t, sp) {
-  var play = t.p ? '<button type="button" class="pl" data-src="' + AUDIO_BASE + t.p + '" aria-label="Play 30 second preview of ' + esc(t.t + (t.m ? ' (' + t.m + ')' : '')) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="ic-play" d="M8 5v14l11-7z"/><path class="ic-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg></button>' : (sp ? '<span class="pl pl-sp" aria-hidden="true"></span>' : '');
+  var play = t.p ? '<button type="button" class="pl" data-src="' + AUDIO_BASE + t.p + '" aria-label="Play preview of ' + esc(t.t + (t.m ? ' (' + t.m + ')' : '')) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="ic-play" d="M8 5v14l11-7z"/><path class="ic-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg></button>' : (sp ? '<span class="pl pl-sp" aria-hidden="true"></span>' : '');
   var mix = t.m ? ' <span class="tmx">(' + t.m + ')</span>' : '';
-  return '<li' + (t.n ? ' data-n="' + t.n + '"' : '') + '>' + play + '<span class="tn">' + (t.a ? '<span class="ta">' + t.a + '</span> ' : '') + t.t + mix + '</span>' + (t.bpm ? '<span class="tm">' + t.bpm + ' BPM' + (t.k ? ' &middot; ' + t.k : '') + '</span>' : t.d ? '<span class="tm">' + t.d + '</span>' : '') + '</li>';
+  return '<li' + (t.n ? ' data-n="' + t.n + '"' : '') + '>' + play + '<span class="tn">' + (t.a ? '<span class="ta">' + t.a + '</span> ' : '') + t.t + mix + '</span>' + (t.bpm ? '<span class="tm">' + t.bpm + ' BPM' + (t.k ? ' &middot; ' + t.k : '') + '</span>' : t.d ? '<span class="tm">' + t.d + '</span>' : '') + (t.p ? '<div class="scrub" role="slider" tabindex="0" aria-label="Seek within the preview" aria-valuemin="0" aria-valuenow="0" aria-valuetext="0:00"><span class="sc-bar"><span class="sc-fill"></span></span><span class="sc-time">0:00 / 0:30</span></div>' : '') + '</li>';
 }
 function release(id) {
   var r = byId[id]; if (!r) return notFound();
@@ -4376,7 +4384,7 @@ function release(id) {
     '<dl class="facts"><dt>Label</dt><dd><a class="more" href="#about-' + labelId(r.label) + '">' + r.label + '</a></dd><dt>Released</dt><dd>' + fmtDate(r.dateYear ? String(r.date).slice(0, 4) : r.date) + '</dd><dt>Format</dt><dd>' + r.fmtName + '</dd>' + (r.cat ? '<dt>Cat. no.</dt><dd>' + r.cat + '</dd>' : '') + '</dl>' +
     '<div class="buy">' + storeLinks(r) + '</div>' +
     (!r.digital ? '' : '<p class="buy-note">This button opens a Beatport search for the release. Direct links come next.</p>') +
-    (r.tracks.length ? '<ol class="tracks">' + r.tracks.map(function (t) { return trackRow(t, r.tracks.some(function (x) { return x.p; })); }).join('') + '</ol>' + (r.tracks.some(function (t) { return t.p; }) ? '<p class="pv-note">Tap play for a 30 second preview.</p>' : '') : '') + '</div></section>' +
+    (r.tracks.length ? '<ol class="tracks">' + r.tracks.map(function (t) { return trackRow(t, r.tracks.some(function (x) { return x.p; })); }).join('') + '</ol>' + (r.tracks.some(function (t) { return t.p; }) ? '<p class="pv-note">Tap play to hear a preview. Drag the bar to skip ahead.</p>' : '') : '') + '</div></section>' +
     '<section class="block"><div class="sec-head"><h2>More releases</h2><a class="more" href="#catalog">Full catalog</a></div><div class="grid">' + more.map(card).join('') + '</div></section>';
 }
 
@@ -4522,8 +4530,10 @@ function route() {
   document.querySelectorAll('#nav [data-r]').forEach(function (a) { if (a.dataset.r === key) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   enhanceSearch();
   fitHero();
-  window.scrollTo(0, 0);
-  if (h.indexOf('about-') === 0) { var lt = document.getElementById('lab-' + h.slice(6)); if (lt) lt.scrollIntoView(); }
+  var st = history.state, back = st && typeof st.y === 'number';
+  window.scrollTo(0, back ? st.y : 0);
+  if (back) { var again = function () { if (Math.abs(window.scrollY - st.y) > 2) window.scrollTo(0, st.y); }; requestAnimationFrame(again); setTimeout(again, 250); if (document.fonts && document.fonts.ready) document.fonts.ready.then(again); }
+  if (!back && h.indexOf('about-') === 0) { var lt = document.getElementById('lab-' + h.slice(6)); if (lt) lt.scrollIntoView(); }
 }
 /* desktop: make the featured cover as tall as the text beside it */
 function fitHero() {
@@ -4534,6 +4544,13 @@ function fitHero() {
 }
 window.addEventListener('resize', fitHero);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitHero);
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+var scrollTimer = null;
+window.addEventListener('scroll', function () {
+  clearTimeout(scrollTimer);
+  scrollTimer = setTimeout(function () { try { history.replaceState({ y: window.scrollY }, ''); } catch (e) {} }, 120);
+}, { passive: true });
+window.addEventListener('hashchange', function () { clearTimeout(scrollTimer); });
 window.addEventListener('hashchange', route);
 document.addEventListener('click', function (e) {
   var hdr = document.querySelector('.top'), mb = e.target.closest && e.target.closest('#menu-btn');
@@ -4584,16 +4601,60 @@ document.addEventListener('submit', function (e) {
 });
 
 
-/* 30 second previews: one shared player, one track at a time */
-var pv = new Audio(), pvBtn = null; pv.preload = 'none';
-function pvStop() { pv.pause(); if (pvBtn) { var li = pvBtn.closest('li'); li.classList.remove('playing'); li.style.removeProperty('--p'); } pvBtn = null; }
-pv.addEventListener('timeupdate', function () { if (pvBtn && pv.duration) pvBtn.closest('li').style.setProperty('--p', (pv.currentTime / pv.duration * 100) + '%'); });
+/* previews: one shared player, one track at a time, with pause and a seek bar */
+var pv = new Audio(), pvBtn = null, pvLi = null, pvPending = null, pvDrag = false; pv.preload = 'none';
+function pvFmt(x) { if (!isFinite(x)) return '0:00'; x = Math.max(0, Math.floor(x)); return Math.floor(x / 60) + ':' + ('0' + (x % 60)).slice(-2); }
+function pvDur() { return pv.duration && isFinite(pv.duration) ? pv.duration : 0; }
+function pvPaint() {
+  if (!pvLi) return;
+  var d = pvDur(), f = d ? Math.min(1, pv.currentTime / d) : 0, sc = pvLi.querySelector('.scrub');
+  pvLi.style.setProperty('--p', (f * 100) + '%');
+  if (!sc) return;
+  sc.setAttribute('aria-valuenow', Math.floor(pv.currentTime)); sc.setAttribute('aria-valuetext', pvFmt(pv.currentTime));
+  if (d) sc.setAttribute('aria-valuemax', Math.floor(d));
+  sc.querySelector('.sc-time').textContent = pvFmt(pv.currentTime) + ' / ' + (d ? pvFmt(d) : '0:30');
+}
+function pvStop() {
+  pv.pause();
+  if (pvLi) { pvLi.classList.remove('active', 'playing'); pvLi.style.removeProperty('--p'); var t = pvLi.querySelector('.sc-time'); if (t) t.textContent = '0:00 / 0:30'; }
+  pvBtn = null; pvLi = null; pvPending = null; pvDrag = false;
+}
+function pvSeekTo(f) {
+  f = Math.min(1, Math.max(0, f));
+  if (pvDur()) { pv.currentTime = f * pvDur(); pvPending = null; } else pvPending = f;
+  pvPaint();
+}
+function pvSeekFrom(e, bar) { var r = bar.getBoundingClientRect(); pvSeekTo(r.width ? (e.clientX - r.left) / r.width : 0); }
+pv.addEventListener('timeupdate', pvPaint);
+pv.addEventListener('durationchange', function () { if (pvPending !== null && pvDur()) pvSeekTo(pvPending); else pvPaint(); });
+pv.addEventListener('loadedmetadata', function () { if (pvPending !== null && pvDur()) pvSeekTo(pvPending); pvPaint(); });
+pv.addEventListener('play', function () { if (pvLi) pvLi.classList.add('playing'); });
+pv.addEventListener('pause', function () { if (pvLi) pvLi.classList.remove('playing'); });
 pv.addEventListener('ended', pvStop);
 document.addEventListener('click', function (e) {
-  var b = e.target.closest && e.target.closest('.pl'); if (!b) return;
-  if (pvBtn === b) { pvStop(); return; }
-  pvStop(); pvBtn = b; b.closest('li').classList.add('playing'); pv.src = b.dataset.src;
-  var pr = pv.play(); if (pr && pr.catch) pr.catch(function () { pvStop(); });
+  var b = e.target.closest && e.target.closest('.pl'); if (!b || b.classList.contains('pl-sp')) return;
+  if (pvBtn === b) { if (pv.paused) { var r = pv.play(); if (r && r.catch) r.catch(pvStop); } else pv.pause(); return; }
+  pvStop(); pvBtn = b; pvLi = b.closest('li'); pvLi.classList.add('active'); pv.src = b.dataset.src; pvPaint();
+  var pr = pv.play(); if (pr && pr.catch) pr.catch(pvStop);
+});
+document.addEventListener('pointerdown', function (e) {
+  var bar = e.target.closest && e.target.closest('.sc-bar'); if (!bar || !pvLi || !pvLi.contains(bar)) return;
+  pvDrag = true; try { bar.setPointerCapture(e.pointerId); } catch (x) {}
+  pvSeekFrom(e, bar); e.preventDefault();
+});
+document.addEventListener('pointermove', function (e) {
+  if (!pvDrag || !pvLi) return; var bar = pvLi.querySelector('.sc-bar'); if (bar) pvSeekFrom(e, bar);
+});
+['pointerup', 'pointercancel'].forEach(function (n) { document.addEventListener(n, function () { pvDrag = false; }); });
+document.addEventListener('keydown', function (e) {
+  var sc = e.target.closest && e.target.closest('.scrub'); if (!sc || !pvLi || !pvLi.contains(sc)) return;
+  var d = pvDur(), step = e.key === 'ArrowRight' || e.key === 'ArrowUp' ? 5 : e.key === 'ArrowLeft' || e.key === 'ArrowDown' ? -5 : 0;
+  if (!d) return;
+  if (step) pv.currentTime = Math.min(d, Math.max(0, pv.currentTime + step));
+  else if (e.key === 'Home') pv.currentTime = 0;
+  else if (e.key === 'End') pv.currentTime = Math.max(0, d - 1);
+  else return;
+  e.preventDefault(); pvPaint();
 });
 window.addEventListener('hashchange', pvStop);
 
