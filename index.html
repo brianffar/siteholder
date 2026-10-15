@@ -138,17 +138,18 @@ main { padding-block: 40px 72px; min-height: 70vh; }
 .fmt { font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; }
 .listen { display: block; margin-top: 6px; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink, inherit); }
 .listen.soon { color: var(--muted); }
-.pod-page { display: grid; gap: 32px; }
-.pod-page .pod-art { aspect-ratio: 2 / 1; width: 100%; background: #0b0b0d; }
+.pod-page { display: grid; gap: 40px; }
+.pod-hero { display: grid; gap: 28px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .pod-hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: start; } }
+.pod-page .pod-art { aspect-ratio: 2 / 1; width: 100%; max-width: 600px; background: #0b0b0d; }
 .pod-page .pod-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.pod-cols { display: grid; gap: 32px; grid-template-columns: minmax(0, 1fr); }
-@media (min-width: 900px) { .pod-cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: start; } }
-.pod-page h1 { font-size: clamp(34px, 5vw, 62px); font-weight: 800; font-stretch: 75%; text-transform: uppercase; line-height: .98; letter-spacing: -0.02em; margin-block: 10px 6px; overflow-wrap: anywhere; }
+.pod-page h1 { font-size: clamp(34px, 5vw, 62px); font-weight: 800; font-stretch: 75%; text-transform: uppercase; line-height: .98; letter-spacing: -0.02em; margin-block: 0 6px; overflow-wrap: anywhere; }
+.pod-page .eyebrow { margin-bottom: 0; }
 .pod-page .artist { font-size: 20px; font-weight: 600; margin-bottom: 20px; }
-.pod-player { max-width: 640px; }
+.pod-page .prose p:first-child { font-size: 17px; line-height: 1.6; color: var(--ink); }
+.pod-player { width: 100%; }
 .pod-page .acts { margin-top: 16px; }
-.pod-h { font-size: 18px; margin-top: 32px; }
-.pod-cols > div:last-child > :first-child { margin-top: 0; }
+.pod-h { font-size: 18px; margin-top: 0; }
 a.card:hover .listen { text-decoration: underline; }
 
 /* home hero */
@@ -4357,10 +4358,11 @@ function podcastView(n) {
   var listen = p.url
     ? '<div class="pod-player"><iframe title="Siteholder Podcast ' + n + ' on Spotify" src="https://open.spotify.com/embed/episode/' + sid + '?theme=0" width="100%" height="152" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe></div><p class="acts"><a class="btn solid" href="' + p.url + '" target="_blank" rel="noopener">Listen on Spotify &#8599;</a></p><p class="pv-note">Opens Spotify in a new tab.</p>'
     : '<p class="pv-note">This episode is coming to Spotify soon.</p>';
-  return '<a class="back" href="#mixes">&larr; Podcasts</a><section class="pod-page">' + img + '<div class="pod-cols"><div class="pod-body">' +
+  return '<a class="back" href="#mixes">&larr; Podcasts</a><section class="pod-page"><div class="pod-hero">' + img + '<div class="pod-body">' +
     '<p class="eyebrow"><span class="cat">PODCAST ' + n + '</span> &middot; Mix</p><h1>' + esc(p.guest) + '</h1><p class="artist">Siteholder Podcast ' + n + '</p>' +
-    '<div class="prose"><p>' + esc(POD_DESC[n]) + '</p></div></div><div>' + listen +
-    '<h2 class="pod-h">Tracklist</h2><p class="pv-note">Tracklist coming soon.</p></div></div></section>' +
+    '<div class="prose"><p>' + esc(POD_DESC[n]) + '</p></div></div></div>' +
+    '<div class="pod-listen">' + listen + '</div>' +
+    '<div><h2 class="pod-h">Tracklist</h2><p class="pv-note">Tracklist coming soon.</p></div></section>' +
     (rels.length ? '<section class="block"><div class="sec-head"><h2>' + esc(p.guest) + ' on Siteholder</h2></div><div class="grid">' + rels.map(card).join('') + '</div></section>' : '') +
     '<section class="block"><div class="sec-head"><h2>More episodes</h2><a class="more" href="#mixes">All podcasts</a></div><div class="grid pod-grid">' + more.map(podCard).join('') + '</div></section>';
 }
