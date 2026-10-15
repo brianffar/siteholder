@@ -333,8 +333,8 @@ function render(){
   document.querySelectorAll('.c-rel,.c-trk').forEach(function(e){e.style.display=CATALOG?'':'none'});
   $('tbl').style.display=ITEMS.length?'table':'none';
   $('rows').innerHTML=ITEMS.map(function(it){
-    var ok=isReady(it);if(ok&&!d[it.id]&&it.status!=='done')ready++;
-    var st=it.status==='done'?'<span class="st ok">✓ '+(it.blob.size/1048576).toFixed(1)+' MB</span>':it.status==='work'?'<span class="st">working…</span>':it.status==='err'?'<span class="st bad" title="'+esc(it.err||'')+'">'+esc((it.err||'failed').slice(0,60))+'</span>':d[it.id]?'<span class="st bad">two files, one track</span>':!ok?'<span class="st warn">pick release + track</span>':(CATALOG&&it.conf==='check')?'<span class="st warn">check match</span>':'<span class="st">ready</span>';
+    var ok=isReady(it);if(ok&&it.status!=='done')ready++;
+    var st=it.status==='done'?'<span class="st ok">✓ '+(it.blob.size/1048576).toFixed(1)+' MB</span>':it.status==='work'?'<span class="st">working…</span>':it.status==='err'?'<span class="st bad" title="'+esc(it.err||'')+'">'+esc((it.err||'failed').slice(0,60))+'</span>':(ok&&d[it.id])?'<span class="st warn" title="Both will be made. The second is saved with (2) in its name.">same track as another file</span>':!ok?'<span class="st warn">pick release + track</span>':(CATALOG&&it.conf==='check')?'<span class="st warn">check match</span>':'<span class="st">ready</span>';
     var parts=it.path.split('/'),nm=parts.pop();
     var dl=it.status==='done'?'<a class="dl" href="'+it.url+'" download="'+esc(it.outName.split('/').pop())+'">Save</a>':'';
     return '<tr data-id="'+it.id+'"><td class="fn">'+esc(nm)+(parts.length?'<small>'+esc(parts.join('/'))+'</small>':'')+'</td>'+
@@ -520,7 +520,7 @@ async function makePreview(file,len,mode,sv,fade){
 /* ---------- make ---------- */
 function tick(){return new Promise(function(r){setTimeout(r,15)})}
 $('go').addEventListener('click',async function(){
-  var d=dupes(),todo=ITEMS.filter(function(it){return isReady(it)&&!d[it.id]&&it.status!=='done'});
+  var todo=ITEMS.filter(function(it){return isReady(it)&&it.status!=='done'});
   if(!todo.length)return;busy=true;$('done').style.display='none';
   var len=Math.max(5,Math.min(90,parseFloat($('len').value)||30)),mode=$('mode').value,sv=startVal(),fade=Math.max(0,parseFloat($('fade').value)||0);
   for(var i=0;i<todo.length;i++){
