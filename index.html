@@ -639,7 +639,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
     "k": "A min"
    },
    {
-    "t": "Loaded Machine (Original)",
+    "t": "Loaded Machine",
     "m": "Original Mix",
     "bpm": 125,
     "k": "Gb min"
@@ -1129,7 +1129,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
   "tracks": [
    {
     "t": "Backseat Driver",
-    "m": "Lick It, Smack It, Rub It Down Remix",
+    "m": "Jason Emsley's Lick It, Smack It, Rub It Down Remix",
     "bpm": 126,
     "k": "F min",
     "a": "Slutbox"
@@ -3087,21 +3087,24 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
    },
    {
     "t": "Backseat Driver",
-    "m": "Lick It, Smack It, Rub It Down Remix",
+    "m": "Jason Emsley's Lick It, Smack It, Rub It Down Remix",
     "bpm": 126,
-    "k": "F min"
+    "k": "F min",
+    "p": "sh007/04-backseat-driver-jason-emsley-remix.mp3"
    },
    {
     "t": "Backseat Driver",
-    "m": "Percocet Remix",
+    "m": "Butane's \"Percocet\" Remix",
     "bpm": 122,
-    "k": "Eb min"
+    "k": "Eb min",
+    "p": "sh007/03-backseat-driver-butane-remix.mp3"
    },
    {
     "t": "Backseat Driver",
-    "m": "Digital Exclusive Remix",
+    "m": "Bumpin' Ugly's Digital Exclusive Remix",
     "bpm": 126,
-    "k": "F min"
+    "k": "F min",
+    "p": "sh007/02-backseat-driver-bumpin-ugly-remix.mp3"
    }
   ],
   "labelImg": "images/labels/backseat-driver-ep.webp",
@@ -3348,7 +3351,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
    },
    {
     "t": "Are You There",
-    "m": "Jason Short jRemix - Digital Exclusive",
+    "m": "Jason Short Remix - Digital Exclusive",
     "bpm": 127,
     "k": "C min",
     "p": "sh005/04-are-you-there-jason-short-remix-digital-exclusive.mp3"
@@ -4153,9 +4156,10 @@ var REMIX_NAME = {
   "ATOM's Drunken Mumble ReRub": 'ATOM', "Alicia Hush's Giddy Down Remix": 'Alicia Hush', 'Billy Dalessandro\'s "Facet Style" Remix': 'Billy Dalessandro',
   "Billy Dalessandro's Pimps n' Hoes Remix": 'Billy Dalessandro', 'Dispater\'s "Dis Body" Remix': 'Dispater', 'Jason Emsley\'s "Medicated" Remix': 'Jason Emsley',
   'Noah Pred\'s "Flux Capacitor" Remix': 'Noah Pred', "Brian Ffar's Afraid Of The Dark Remix": 'Brian Ffar', "Tyrone's Digital Exclusive Remix": 'Tyrone',
-  'Brian Ffar vs. Huge Hephner Remix': ['Brian Ffar', 'Huge Hephner'], 'Stefny Remix': 'Stefny Winter', 'Slutbox Mix': 'Slutbox'
+  'Brian Ffar vs. Huge Hephner Remix': ['Brian Ffar', 'Huge Hephner'], 'Stefny Remix': 'Stefny Winter', 'Slutbox Mix': 'Slutbox',
+  "Jason Emsley's Lick It, Smack It, Rub It Down Remix": 'Jason Emsley', 'Butane\'s "Percocet" Remix': 'Butane', "Bumpin' Ugly's Digital Exclusive Remix": "Bumpin' Ugly", 'Jason Short Remix - Digital Exclusive': 'Jason Short'
 };
-var REMIX_SKIP = { 'Dub': 1, 'Original Mix': 1, 'Digital Exclusive Remix': 1, 'Lick It, Smack It, Rub It Down Remix': 1, 'Afraid Of The Dark Remix': 1, 'Jason Short jRemix - Digital Exclusive': 1, "Yes Ma'am Remix": 1 };
+var REMIX_SKIP = { 'Dub': 1, 'Original Mix': 1, 'Digital Exclusive Remix': 1, 'Afraid Of The Dark Remix': 1, "Yes Ma'am Remix": 1 };
 function remixers(mix) {
   if (!mix || REMIX_SKIP[mix]) return [];
   if (REMIX_NAME[mix]) return [].concat(REMIX_NAME[mix]);
