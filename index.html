@@ -4305,23 +4305,19 @@ var labelById = {}, labelByName = {};
 LABELS.forEach(function (L) { labelById[L.id] = L; labelByName[L.name] = L; });
 function labelId(n) { return (labelByName[n] || LABELS[0]).id; }
 function labelOpts() { return ['All'].concat(LABELS.map(function (L) { return L.name; })); }
-/* picking a label also shows its sublabels; picking a sublabel shows only that one */
+/* Siteholder = the Siteholder label plus UnCut Ltd vinyl; UnCut = UnCut digital only; Facet = Facet */
 function inLabel(r, name) {
   var want = name || F.label;
-  if (want === 'All' || r.label === want) return true;
-  var L = labelByName[r.label];
-  while (L && L.parent) { if (L.parent === want) return true; L = labelByName[L.parent]; }
-  return false;
+  if (want === 'All') return true;
+  if (want === 'Siteholder') return r.label === 'Siteholder' || r.label === 'UnCut Ltd';
+  return r.label === want;
 }
-function labelChips() {
-  return chips('label', ['All'].concat(LABELS.filter(function (L) { return L.kind === 'label'; }).map(function (L) { return L.name; })), 'Label') +
-         chips('label', LABELS.filter(function (L) { return L.kind === 'sub'; }).map(function (L) { return L.name; }), 'Sublabel');
-}
+function labelChips() { return chips('label', ['All', 'Siteholder', 'UnCut', 'Facet'], 'Label'); }
 
 function buildNav() {
   var nav = document.getElementById('nav');
   function dd(key, label, items) { return '<div class="dd" data-open="false"><button class="dd-btn" type="button" data-r="' + key + '" aria-haspopup="true" aria-expanded="false">' + label + '<span class="car" aria-hidden="true"></span></button><ul class="menu">' + items + '</ul></div>'; }
-  var cat = '<li><a href="#catalog" data-filter="All">All releases</a></li>' + LABELS.map(function (L) { return '<li><a' + (L.kind === 'sub' ? ' class="sub"' : '') + ' href="#catalog" data-filter="' + L.name + '">' + L.name + '</a></li>'; }).join('');
+  var cat = '<li><a href="#catalog" data-filter="All">All releases</a></li>' + ['Siteholder', 'UnCut', 'Facet'].map(function (n) { return '<li><a href="#catalog" data-filter="' + n + '">' + n + '</a></li>'; }).join('');
   nav.innerHTML = '<a href="#home" data-r="home">Home</a>' + dd('catalog', 'Catalog', cat) + '<a href="#artists" data-r="artists">Artists</a><a href="#mixes" data-r="mixes">Podcasts</a>' + '<a href="#about" data-r="about">About</a>' + '<a href="#contact" data-r="contact">Contact</a>';
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') document.querySelectorAll('.dd').forEach(function (d) { d.setAttribute('data-open', 'false'); d.querySelector('.dd-btn').setAttribute('aria-expanded', 'false'); });
@@ -4441,7 +4437,7 @@ function home() {
     '<p class="eyebrow">Latest release &middot; <span class="cat">' + catNo(r) + '</span></p><h1>' + r.artist + '</h1><p class="ttl">' + r.title + '</p><p class="sub">' + r.sub + '</p>' +
     '<div class="actions"><a class="btn solid" href="#release-' + r.id + '">Listen &amp; buy</a><a class="btn" href="#catalog">Browse the catalog</a></div>' +
     '<p class="intro">Electronic music for DJs and fans. Every release is available to preview, then buy as high-resolution audio or on vinyl.</p></div></section>' +
-    '<section class="block" data-home="1"><div class="sec-head"><h2>Recent releases</h2><a class="more" href="#catalog">Full catalog</a></div><div class="filters">' + labelChips() + chips('fmt', ['All', 'Digital', 'Vinyl']) + '<div class="search"><input id="q" type="search" placeholder="Search artist, title or track" aria-label="Search the catalog by artist, title or track" value="' + F.q.replace(/"/g, '&quot;') + '"></div></div><div id="results"></div></section>';
+    '<section class="block" data-home="1"><div class="sec-head"><h2>Recent releases</h2><a class="more" href="#catalog">Full catalog</a></div><div class="filters">' + labelChips() + chips('fmt', ['Digital', 'Vinyl']) + '<div class="search"><input id="q" type="search" placeholder="Search artist, title or track" aria-label="Search the catalog by artist, title or track" value="' + F.q.replace(/"/g, '&quot;') + '"></div></div><div id="results"></div></section>';
 }
 
 function chips(group, opts, title) {
@@ -4449,7 +4445,7 @@ function chips(group, opts, title) {
 }
 function catalog() {
   var labels = labelOpts();
-  var fmts = ['All', 'Digital', 'Vinyl'];
+  var fmts = ['Digital', 'Vinyl'];
   view.innerHTML = '<h1 class="page-title">Catalog</h1><div class="filters">' + labelChips() + chips('fmt', fmts) +
     '<div class="search"><input id="q" type="search" placeholder="Search artist, title or track" aria-label="Search the catalog by artist, title or track" value="' + F.q + '"></div></div><p class="count" id="count"></p><div id="results"></div>';
   paintResults();
@@ -4747,7 +4743,7 @@ document.addEventListener('click', function (e) {
   else if (!(e.target.closest && e.target.closest('.search'))) hideSug();
   var c = e.target.closest && e.target.closest('.chip');
   if (e.target.closest && e.target.closest('#show-more')) { F.n += 24; paintResults(); }
-  if (c) { F.n = 24; F[c.dataset.g] = c.dataset.v; document.querySelectorAll('.chip[data-g="' + c.dataset.g + '"]').forEach(function (x) { x.setAttribute('aria-pressed', x === c); }); paintResults(); }
+  if (c) { F.n = 24; F[c.dataset.g] = (c.dataset.g === 'fmt' && F.fmt === c.dataset.v) ? 'All' : c.dataset.v; document.querySelectorAll('.chip[data-g="' + c.dataset.g + '"]').forEach(function (x) { x.setAttribute('aria-pressed', F[c.dataset.g] === x.dataset.v); }); paintResults(); }
 });
 document.addEventListener('input', function (e) { if (e.target.id === 'q') { F.n = 24; F.q = e.target.value; paintResults(); showSug(); } });
 document.addEventListener('submit', function (e) {
