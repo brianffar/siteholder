@@ -296,6 +296,26 @@ function previewPath(t){
     if (u.p && norm(u.t) === norm(t.t) && norm(u.m) === norm(t.m)) return u.p; }
   return null;
 }
+var AVAIL = {};   // preview path -> true/false once checked against the audio host
+function hasAudio(t){ var p = previewPath(t); return !!p && AVAIL[p] !== false; }
+async function probe(p){
+  if (AVAIL[p] !== undefined) return AVAIL[p];
+  try { var r = await fetch(AUDIO_BASE + p, { method: 'HEAD', mode: 'cors' }); AVAIL[p] = r.ok; return r.ok; }
+  catch (e) { return true; }   // could not check (offline / blocked): don't disable anything
+}
+async function verifyAudio(){
+  var items = S.items; if (!items.length) return;
+  setStatus('Checking which previews are uploaded…');
+  await Promise.all(items.map(function(o){ var p = previewPath(o.t); return p ? probe(p) : null; }));
+  if (S.items !== items) return;   // selection changed while checking
+  var avail = items.map(function(o, i){ return i; }).filter(function(i){ return hasAudio(items[i].t); });
+  var before = S.picks.length;
+  S.picks = S.picks.filter(function(i){ return avail.indexOf(i) >= 0; });
+  for (var k = 0; k < avail.length && S.picks.length < MAX_TRACKS; k++) if (S.picks.indexOf(avail[k]) < 0) S.picks.push(avail[k]);
+  S.picks.sort(function(a, b){ return a - b; });
+  var gone = items.length - avail.length - items.filter(function(o){ return !previewPath(o.t); }).length;
+  setStatus(gone > 0 ? gone + ' track' + (gone === 1 ? '' : 's') + ' ' + (gone === 1 ? 'has' : 'have') + ' no audio uploaded yet and ' + (gone === 1 ? 'is' : 'are') + ' greyed out.' : '', gone > 0 ? 'warn' : '');
+}
 function full(t){ return t.t + (t.m ? ' (' + t.m + ')' : ''); }
 function tracksForArtist(name){
   var k = norm(name), out = [];
@@ -358,6 +378,7 @@ async function selectRelease(r, headline){
   $('headline').value = headline || '';
   renderTracks(); renderSegs(); S.capDirty = false;
   if (S.mode === 'release') renderRelList();
+  await verifyAudio(); renderTracks();
   await loadArt(); refresh();
 }
 async function selectArtist(n){
@@ -373,13 +394,14 @@ async function selectArtist(n){
   $('quote').value = a.quote || '';
   $('headline').value = '';
   S.capDirty = false; renderArtList(); renderTracks(); renderSegs(); $('artInfo').hidden = false;
+  await verifyAudio(); renderTracks();
   await loadPhoto(a.photo || ''); refresh();
 }
 function renderTracks(){
   var ul = $('trkList'); ul.innerHTML = '';
   if (!S.items.length) { ul.innerHTML = '<li class="empty" style="border:0;padding:0">' + (S.mode === 'artist' ? 'Pick an artist' : 'Pick a release') + '</li>'; $('trkCount').textContent = ''; return; }
   S.items.forEach(function(o, idx){
-    var p = previewPath(o.t), li = document.createElement('li'), cb = document.createElement('input');
+    var p = hasAudio(o.t) ? previewPath(o.t) : null, li = document.createElement('li'), cb = document.createElement('input'); if (!p) li.style.opacity = '.5';
     cb.type = 'checkbox'; cb.checked = S.picks.indexOf(idx) >= 0; cb.disabled = !p;
     cb.onchange = function(){
       if (cb.checked) { if (S.picks.length >= MAX_TRACKS) { cb.checked = false; setStatus('Max ' + MAX_TRACKS + ' tracks. Untick one first.', 'warn'); return; } S.picks.push(idx); }
@@ -389,7 +411,7 @@ function renderTracks(){
     var who = S.mode === 'artist' ? '<span class="s">' + esc(o.r.cat + ' · ' + o.r.title + (o.role === 'remix' ? ' · remix' : '') + (o.t.a && o.r.artist === 'Various Artists' ? ' · ' + o.t.a : '')) + '</span>'
       : (o.t.a && o.r.artist === 'Various Artists' ? '<span class="s">' + esc(o.t.a) + '</span>' : '');
     var d = document.createElement('div');
-    d.innerHTML = (o.t.n ? '<span class="m">' + esc(o.t.n) + '</span> ' : '') + esc(o.t.t) + (o.t.m ? ' <span class="m">(' + esc(o.t.m) + ')</span>' : '') + who + (p ? '' : '<span class="s na">No preview audio</span>');
+    d.innerHTML = (o.t.n ? '<span class="m">' + esc(o.t.n) + '</span> ' : '') + esc(o.t.t) + (o.t.m ? ' <span class="m">(' + esc(o.t.m) + ')</span>' : '') + who + (p ? '' : '<span class="s na">' + (previewPath(o.t) ? 'Audio not uploaded yet' : 'No preview audio') + '</span>');
     li.appendChild(cb); li.appendChild(d); ul.appendChild(li);
   });
   countTracks();
