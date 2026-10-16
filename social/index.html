@@ -578,7 +578,7 @@ function refresh(){ renderText(); if (!running) draw(0); if (!S.capDirty) buildC
 async function decodeClips(ac){
   var out = [], p = picked();
   for (var k = 0; k < p.length; k++) { var url = AUDIO_BASE + previewPath(p[k].t);
-    var res = await fetch(url, { mode: 'cors' }); if (!res.ok) throw new Error('Audio not found: ' + url);
+    var res = await fetch(url, { mode: 'cors', cache: 'reload' }); if (!res.ok) throw new Error('Audio not found: ' + url);
     out.push(await ac.decodeAudioData(await res.arrayBuffer())); }
   return out;
 }
