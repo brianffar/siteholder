@@ -684,16 +684,20 @@ function patColors(){
   while (out.length < 3) out.push(out[out.length - 1] || BG);
   patCache = { key: key, c: out }; return out;
 }
+function hsl(hex){ var n = parseInt(hex.slice(1), 16), r = (n >> 16 & 255) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+  return { l: l, s: d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1)) }; }
 function geoColors(){
   var key = 'g|' + PAT.seed + '|' + BG + '|' + bgPal.join(','); if (patCache && patCache.key === key) return patCache.c;
-  var pool = bgPal.filter(function(c){ return c.toLowerCase() !== BG.toLowerCase(); }), l = lum(BG) > 0.4;
-  if (pool.length < 3) pool = pool.concat([mixHex(l ? '#101018' : '#ffffff', BG, .9), mixHex(l ? '#d0402a' : '#ff5a3c', BG, .9), mixHex(l ? '#2a56d0' : '#4a7cff', BG, .9)]);
-  var best = [0, 1], bd = -1, i, j, d;
-  for (i = 0; i < pool.length; i++) for (j = i + 1; j < pool.length; j++) { d = Math.abs(lum(pool[i]) - lum(pool[j])) * 3 + (function(a, b){ var x = parseInt(a.slice(1), 16), y = parseInt(b.slice(1), 16); return (Math.abs((x >> 16 & 255) - (y >> 16 & 255)) + Math.abs((x >> 8 & 255) - (y >> 8 & 255)) + Math.abs((x & 255) - (y & 255))) / 765; })(pool[i], pool[j]); if (d > bd) { bd = d; best = [i, j]; } }
-  var third = pool.filter(function(c, k){ return k !== best[0] && k !== best[1]; })[PAT.seed % Math.max(1, pool.length - 2)] || BG;
-  var out = [pool[best[0]], pool[best[1]], third];
-  if (PAT.seed % 2) out = [out[1], out[0], out[2]];
-  out = out.map(function(c){ return mixHex(c, BG, .92); });
+  var pool = bgPal.filter(function(c){ return c.toLowerCase() !== BG.toLowerCase(); }).map(function(c){ var o = hsl(c); return { c: c, l: o.l, s: o.s }; });
+  // vivid accent = most saturated palette colour; dark and light anchors give the flat, high-contrast look
+  var vivid = pool.slice().sort(function(a, b){ return b.s * (1 - Math.abs(b.l - .5)) - a.s * (1 - Math.abs(a.l - .5)); })[0];
+  var viv = vivid && vivid.s > .25 ? vivid.c : null;
+  var dark = pool.filter(function(o){ return o.l < .3; }).sort(function(a, b){ return a.l - b.l; })[0], light = pool.filter(function(o){ return o.l > .72; }).sort(function(a, b){ return b.l - a.l; })[0];
+  var tint = viv || '#3d5afe';
+  var D = dark ? dark.c : mixHex('#0b0b12', tint, .8), L = light ? light.c : mixHex('#f4f1ea', tint, .85), V = viv || tint;
+  var second = pool.filter(function(o){ return o.c !== V && o.s > .25; }).sort(function(a, b){ return b.s - a.s; })[0];
+  var out = (PAT.seed >> 2) % 2 ? [D, V, L] : [D, second ? second.c : V, V];
+  if (lum(BG) > 0.4) out = [L, V, D];
   patCache = { key: key, c: out }; return out;
 }
 function withAlpha(hex, a){ var n = parseInt(hex.slice(1), 16); return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + a + ')'; }
@@ -704,12 +708,12 @@ function drawPattern(t, h){
   if (PAT.type === 'blobs') {
     for (i = 0; i < 6; i++) {
       var bx = r() * W, by = r() * h, rad = 380 + r() * 420, ph = r() * 6.28, sp = .25 + r() * .3, col = c[i % 3];
-      var x = bx + Math.sin(t * sp + ph) * 140, y = by + Math.cos(t * sp * .8 + ph) * 140, g = ctx.createRadialGradient(x, y, 0, x, y, rad);
+      var x = bx + Math.sin(t * sp * 1.6 + ph) * 260, y = by + Math.cos(t * sp * 1.3 + ph) * 260, g = ctx.createRadialGradient(x, y, 0, x, y, rad);
       g.addColorStop(0, withAlpha(col, .95)); g.addColorStop(1, withAlpha(col, 0)); ctx.fillStyle = g; ctx.fillRect(0, 0, W, h);
     }
   } else if (PAT.type === 'rings') {
     // soft rings: one radial gradient whose colour glides smoothly between the palette colours (no hard edges)
-    var cx = W * (.25 + r() * .5), cy = h * (.25 + r() * .35), per = 230 + r() * 120, R = Math.hypot(W, h), sh = (t * 0.06) % 3, g2 = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
+    var cx = W * (.25 + r() * .5), cy = h * (.25 + r() * .35), per = 230 + r() * 120, R = Math.hypot(W, h), sh = (t * 0.14) % 3, g2 = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
     for (i = 0; i <= 120; i++) {
       var u = ((i / 120) * R / per - sh + 300) % 3, ix = Math.floor(u), f = u - ix; f = (1 - Math.cos(f * Math.PI)) / 2;
       g2.addColorStop(i / 120, mixHex(c[(ix + 1) % 3], c[ix % 3], f));
@@ -718,33 +722,45 @@ function drawPattern(t, h){
   } else if (PAT.type === 'dots') {
     var gs = 56, cx2 = W * (.2 + r() * .6), cy2 = h * (.2 + r() * .6), wl = 150 + r() * 120;
     for (var yy = gs / 2; yy < h; yy += gs) for (var xx = gs / 2 + ((Math.round(yy / gs) % 2) * gs / 2); xx < W + gs; xx += gs) {
-      var d = Math.hypot(xx - cx2, yy - cy2), rr = gs * (.12 + .3 * (.5 + .5 * Math.sin(d / wl - t * 1.3)));
+      var d = Math.hypot(xx - cx2, yy - cy2), rr = gs * (.12 + .3 * (.5 + .5 * Math.sin(d / wl - t * 1.9)));
       ctx.fillStyle = c[(Math.floor(d / 260)) % 3]; ctx.beginPath(); ctx.arc(xx, yy, rr, 0, Math.PI * 2); ctx.fill();
     }
   } else if (PAT.type === 'geo') {
-    // Bauhaus-style tiles in the two most contrasting palette colours (plus a third)
-    var gc = geoColors(), cs = 135, cols = Math.ceil(W / cs), rows = Math.ceil(h / cs), gq = rng(PAT.seed * 53 + 11);
-    for (var gj = 0; gj < rows; gj++) for (var gi = 0; gi < cols; gi++) {
-      var kind = Math.floor(gq() * 6), ca = gc[Math.floor(gq() * 3)], cb = gc[Math.floor(gq() * 3)], rot = Math.floor(gq() * 4), ph = gq() * 6.28;
-      if (ca === cb) cb = gc[(gc.indexOf(ca) + 1) % 3];
-      var gx = gi * cs + cs / 2, gy = gj * cs + cs / 2, sc2 = .94 + .04 * Math.sin(t * .9 + ph), hs = cs / 2 * sc2;
-      ctx.save(); ctx.translate(gx, gy); ctx.rotate(rot * Math.PI / 2);
-      if (kind !== 5) { ctx.fillStyle = cb; ctx.fillRect(-hs, -hs, hs * 2, hs * 2); }
-      ctx.fillStyle = ca; ctx.beginPath();
-      if (kind === 0) { ctx.moveTo(-hs, -hs); ctx.arc(-hs, -hs, hs * 2, 0, Math.PI / 2); }              // quarter disc
-      else if (kind === 1) { ctx.arc(0, 0, hs, Math.PI, 0); }                                           // half disc
-      else if (kind === 2) { ctx.moveTo(-hs, -hs); ctx.lineTo(hs, -hs); ctx.lineTo(-hs, hs); }          // triangle
-      else if (kind === 3) { ctx.arc(0, 0, hs * .72, 0, Math.PI * 2); }                                 // circle
-      else if (kind === 4) { ctx.moveTo(0, -hs); ctx.lineTo(hs, 0); ctx.lineTo(0, hs); ctx.lineTo(-hs, 0); }  // diamond
-      else { ctx.rect(-hs, -hs, hs * 2, hs * 2); }
-      ctx.closePath(); ctx.fill(); ctx.restore();
+    // flat, bold, minimal compositions (big circles, split fields, bars, quarter arcs) in contrasting palette colours
+    var gc = geoColors(), lay = PAT.seed % 4, tt = t, cx3, cy3, i2, k2;
+    ctx.fillStyle = gc[0]; ctx.fillRect(0, 0, W, h);
+    if (lay === 0) {            // split field with inverted circles straddling the line
+      var sx = W * (.5 + .12 * Math.sin(tt * .35));
+      ctx.fillStyle = gc[1]; ctx.fillRect(sx, 0, W - sx, h);
+      [[.30 + .04 * Math.sin(tt * .4), W * .46], [.82 + .03 * Math.cos(tt * .3), W * .30]].forEach(function(o){
+        var yy = h * o[0], rr = o[1];
+        ctx.save(); ctx.beginPath(); ctx.rect(0, 0, sx, h); ctx.clip(); ctx.fillStyle = gc[1]; ctx.beginPath(); ctx.arc(sx, yy, rr, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+        ctx.save(); ctx.beginPath(); ctx.rect(sx, 0, W - sx, h); ctx.clip(); ctx.fillStyle = gc[0]; ctx.beginPath(); ctx.arc(sx, yy, rr, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      });
+      ctx.fillStyle = gc[2]; ctx.beginPath(); ctx.arc(sx, h * .56 + 30 * Math.sin(tt * .5), W * .07, 0, Math.PI * 2); ctx.fill();
+    } else if (lay === 1) {     // concentric discs rolling outward
+      cx3 = W * .5 + 160 * Math.cos(tt * .22); cy3 = h * .42 + 120 * Math.sin(tt * .27); var stp = 130, fl = (tt * 22) % (stp * 2);
+      for (k2 = 16; k2 >= 0; k2--) { ctx.fillStyle = k2 % 2 ? gc[0] : (k2 % 4 === 0 ? gc[2] : gc[1]); ctx.beginPath(); ctx.arc(cx3, cy3, k2 * stp + fl, 0, Math.PI * 2); ctx.fill(); }
+    } else if (lay === 2) {     // sliding bars with a big disc
+      var bh = h / 16;
+      for (i2 = 0; i2 < 16; i2++) { if (i2 % 2) continue; var dir = (i2 / 2) % 2 ? 1 : -1, len = W * (.45 + ((i2 * 37) % 5) * .1), off = ((tt * 45 * dir + i2 * 211) % (W + len)); if (off < 0) off += W + len;
+        ctx.fillStyle = gc[1]; ctx.fillRect(off - len, i2 * bh, len, bh); ctx.fillRect(off - len - W - len, i2 * bh, len, bh); }
+      ctx.fillStyle = gc[2]; ctx.beginPath(); ctx.arc(W * .78 + 50 * Math.sin(tt * .3), h * .68 + 40 * Math.cos(tt * .25), W * .34, 0, Math.PI * 2); ctx.fill();
+    } else {                    // big quarter-disc tiles that breathe
+      var cs2 = 270, cols2 = Math.ceil(W / cs2), rows2 = Math.ceil(h / cs2), gq = rng(PAT.seed * 53 + 11);
+      for (var gj = 0; gj < rows2; gj++) for (var gi = 0; gi < cols2; gi++) {
+        var rot = Math.floor(gq() * 4), alt = gq() < .5, ph = gq() * 6.28, pul = 1 + .12 * Math.sin(tt * .8 + ph);
+        ctx.save(); ctx.translate(gi * cs2 + cs2 / 2, gj * cs2 + cs2 / 2); ctx.rotate(rot * Math.PI / 2);
+        ctx.fillStyle = alt ? gc[1] : gc[0]; ctx.fillRect(-cs2 / 2, -cs2 / 2, cs2, cs2);
+        ctx.fillStyle = alt ? gc[2] : gc[1]; ctx.beginPath(); ctx.moveTo(-cs2 / 2, -cs2 / 2); ctx.arc(-cs2 / 2, -cs2 / 2, cs2 * pul, 0, Math.PI / 2); ctx.closePath(); ctx.fill(); ctx.restore();
+      }
     }
   }
   ctx.restore();
   // calm the pattern behind the text so titles stay readable
-  var sc = ctx.createLinearGradient(0, h * .57, 0, h * .68); sc.addColorStop(0, withAlpha(BG, 0)); sc.addColorStop(1, withAlpha(BG, .78));
+  var sc = ctx.createLinearGradient(0, h * .57, 0, h * .68); sc.addColorStop(0, withAlpha(BG, 0)); sc.addColorStop(1, withAlpha(BG, .6));
   ctx.fillStyle = sc; ctx.fillRect(0, h * .57, W, h * .43);
-  var st = ctx.createLinearGradient(0, 0, 0, h * .17); st.addColorStop(0, withAlpha(BG, .8)); st.addColorStop(1, withAlpha(BG, 0));   // and behind the logo
+  var st = ctx.createLinearGradient(0, 0, 0, h * .17); st.addColorStop(0, withAlpha(BG, .55)); st.addColorStop(1, withAlpha(BG, 0));   // and behind the logo
   ctx.fillStyle = st; ctx.fillRect(0, 0, W, h * .17);
 }
 [].forEach.call($('patSeg').children, function(b){ b.onclick = function(){ PAT.type = b.dataset.v; syncPat(); if (!running) draw(0); }; });
