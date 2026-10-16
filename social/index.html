@@ -622,6 +622,9 @@ async function preview(){
   if (!S.picks.length) { setStatus('Pick at least one track.', 'warn'); return; }
   var total = S.picks.length * CLIP, sess = running = { stop: [] }, clock;
   $('play').textContent = 'Stop'; setStatus('Loading audio…');
+  // iPhones mute Web Audio when the side switch is on silent: ask for "playback" audio and keep a silent media element running so sound still comes out
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
+  try { var sil = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA=='); sil.loop = true; sil.play().catch(function(){}); sess.stop.push(function(){ sil.pause(); }); } catch (e) {}
   try { var ac = new (window.AudioContext || window.webkitAudioContext)(); if (ac.resume) ac.resume(); sess.stop.push(function(){ ac.close(); });
     var bufs = await decodeClips(ac); if (running !== sess) return;
     var t0 = ac.currentTime + 0.1; schedule(ac, bufs, ac.destination, t0); clock = function(){ return ac.currentTime - t0; }; setStatus('');
