@@ -379,8 +379,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
 <footer>
   <div class="wrap"><p class="legal">&copy; Siteholder Records, Chicago.</p></div>
 </footer>
-<script type="application/json" id="releases">
-[
+<script type="application/json" id="releases">[
  {
   "title": "Don't Wait For Me",
   "artists": [
@@ -417,7 +416,8 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
     "d": "6:32",
     "p": "sh039/04-rytm-cheese.mp3"
    }
-  ]
+  ],
+  "bandcamp": "https://siteholder.bandcamp.com/music"
  },
  {
   "title": "Aceed",
@@ -453,7 +453,8 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
     "k": "E min",
     "p": "sh038/03-aceed-alicia-hush-s-giddy-down-remix.mp3"
    }
-  ]
+  ],
+  "bandcamp": "https://siteholder.bandcamp.com/music"
  },
  {
   "title": "Surge",
@@ -496,7 +497,8 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
     "k": "F min",
     "p": "sh037/04-surge-original-mix.mp3"
    }
-  ]
+  ],
+  "bandcamp": "https://siteholder.bandcamp.com/music"
  },
  {
   "title": "You Know How We Get Down",
@@ -532,7 +534,8 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
     "k": "Eb maj",
     "p": "sh036/03-you-know-how-we-get-down-billy-dalessandro-remix.mp3"
    }
-  ]
+  ],
+  "bandcamp": "https://siteholder.bandcamp.com/music"
  },
  {
   "title": "PEONS",
@@ -575,7 +578,8 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
     "k": "F maj",
     "p": "sh035/04-dette-odieuse-original-mix.mp3"
    }
-  ]
+  ],
+  "bandcamp": "https://siteholder.bandcamp.com/music"
  },
  {
   "title": "Lucid Dreaming",
@@ -611,7 +615,8 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
     "k": "C min",
     "p": "sh034/03-in-my-dreams-original-mix.mp3"
    }
-  ]
+  ],
+  "bandcamp": "https://siteholder.bandcamp.com/music"
  },
  {
   "title": "Loaded Machine",
@@ -647,7 +652,8 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
     "k": "Db min",
     "p": "sh032/03-loaded-machine-billy-dalessandro-remix.mp3"
    }
-  ]
+  ],
+  "bandcamp": "https://siteholder.bandcamp.com/music"
  },
  {
   "title": "Dream Dream",
@@ -683,7 +689,8 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
     "k": "A maj",
     "p": "sh031/03-10000-original-mix.mp3"
    }
-  ]
+  ],
+  "bandcamp": "https://siteholder.bandcamp.com/music"
  },
  {
   "title": "P.C. For You, From Us",
@@ -846,7 +853,8 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
     "d": "6:03",
     "p": "sh033/04-buddha-bass.mp3"
    }
-  ]
+  ],
+  "bandcamp": "https://siteholder.bandcamp.com/music"
  },
  {
   "title": "Siteholder Gems Volume 3",
@@ -4243,8 +4251,7 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
   "labelHole": true,
   "img": "images/labels/don-t-sleep-ep.webp"
  }
-]
-</script>
+]</script>
 <script>
 /* ---------- release data (the JSON block above the script) ---------- */
 var PATS = ['stripes', 'blobs', 'rings', 'neon', 'blocks', 'paint'];
@@ -4302,6 +4309,7 @@ function fmtDate(d) { var p = String(d).split('-'); return p.length < 3 ? p[0] :
 function storeLinks(r) {
   var q = encodeURIComponent((r.artist === 'Various Artists' ? '' : r.artist + ' ') + r.title), out = '';
   if (r.digital) out += '<a class="btn solid" href="' + (r.beatport || 'https://www.beatport.com/search/releases?q=' + q) + '" target="_blank" rel="noopener">Beatport</a>';
+  if (r.bandcamp) out += '<a class="btn" href="' + r.bandcamp + '" target="_blank" rel="noopener">Bandcamp</a>';
   if (r.vinyl) out += '<a class="btn' + (r.digital ? '' : ' solid') + '" href="' + (r.discogs || 'https://www.discogs.com/search/?type=release&q=' + q) + '" target="_blank" rel="noopener">Vinyl on Discogs</a>';
   return out;
 }
