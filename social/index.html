@@ -8,7 +8,7 @@
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=IBM+Plex+Mono:wght@400;500&family=Inter:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=IBM+Plex+Mono:wght@400;500&family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
 <script>try{var t=localStorage.getItem('sh-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <style>
 :root{color-scheme:light;
@@ -548,14 +548,21 @@ function disc(img, cx, cy, r, deg, hole){
 function picked(){ return S.picks.map(function(i){ return S.items[i]; }); }
 function clipAt(t){ var p = picked(); if (!p.length) return null; var k = Math.min(p.length - 1, Math.floor(t / CLIP)), local = t - k * CLIP, a = 1;
   if (k > 0) a = Math.min(a, local / TEXT_FADE); if (k < p.length - 1) a = Math.min(a, (CLIP - local) / TEXT_FADE); return { o: p[k], a: Math.max(0, Math.min(1, a)) }; }
-function infoDefault(){ var r = S.rel; if (!r) return ''; return r.cat + '  ·  ' + (r.artist === 'Various Artists' ? r.title : r.artist) + '  ·  ' + r.year; }
+function infoDefault(){ var r = S.rel; if (!r) return ''; return r.cat + '  ·  ' + (r.artist === 'Various Artists' ? r.title + '  ·  ' : '') + r.year; }
 function infoText(){ return S.ov.info != null ? S.ov.info : infoDefault(); }
-function trackDefault(o){ var t = o.t, various = o.r.artist === 'Various Artists' && t.a; return { t: (t.n ? t.n + '  ' : '') + (various ? t.a + ' – ' : '') + t.t, m: t.m || '' }; }
+function trackDefault(o){ var t = o.t, various = o.r.artist === 'Various Artists' && t.a; return { t: (t.n ? t.n + '  ' : '') + t.t, m: t.m || '' }; }
 function trackText(o){ var k = S.items.indexOf(o), v = S.ov.tracks[k], d = trackDefault(o); return { t: v && v.t != null ? v.t : d.t, m: v && v.m != null ? v.m : d.m }; }
-function trackLines(o, y1, y2, s1, s2){
-  var x = trackText(o);
-  ctx.fillStyle = INK; fit(x.t, W / 2, y1, 960, s1, '600', 'Inter');
-  if (x.m) { ctx.fillStyle = SOFT; fit(x.m, W / 2, y2, 960, s2, '400', 'Inter'); }
+var HEAD = 'Archivo, Inter, sans-serif', BODY = 'Inter, sans-serif';
+function spaced(txt, px, wt, color, y, ls){
+  ctx.fillStyle = color; ctx.font = wt + ' ' + px + 'px ' + BODY;
+  if ('letterSpacing' in ctx) { ctx.letterSpacing = ls + 'px'; ctx.fillText(txt, W / 2 + ls / 2, y); ctx.letterSpacing = '0px'; }
+  else ctx.fillText(txt, W / 2, y);
+}
+function trackBlock(o, y0, big){      // title (hero), artist, mix
+  var x = trackText(o), who = o.r.artist === 'Various Artists' && o.t.a ? o.t.a : (S.mode === 'artist' ? '' : o.r.artist);
+  ctx.fillStyle = INK; fit(x.t, W / 2, y0, 960, big ? 80 : 44, '800', HEAD, 40);
+  if (who) { ctx.fillStyle = INK; fit(who, W / 2, y0 + 102, 960, 46, '700', HEAD, 28); }
+  if (x.m) { ctx.fillStyle = SOFT; fit(x.m, W / 2, y0 + (who ? 170 : 90), 960, 36, '500', BODY, 24); }
 }
 function renderText(){
   var has = S.mode === 'artist' ? !!S.artist : !!S.rel;
@@ -582,46 +589,48 @@ function draw(t){
   if (!S.rel) return;
   var r = S.rel, info = infoText();
   if (S.fmt === 'video') {
-    logo(70, 420);
-    if (S.art) { if (S.look === 'spin') disc(S.art, 540, 780, 440, t * SPIN, r.labelHole); else coverImg(S.art, 540, 780, 880, 1 + 0.06 * Math.min(1, t / Math.max(CLIP, S.picks.length * CLIP)), 12); }
-    var y = 1309;
-    if (head) { ctx.fillStyle = INK; fit(head.toUpperCase(), W / 2, 1290, 960, 50, '700', 'Inter'); y = 1360; }
-    ctx.fillStyle = SOFT; fit(info, W / 2, y, 960, 40, '400', 'Inter');
-    var c = clipAt(t); if (c) { ctx.globalAlpha = c.a; trackLines(c.o, y + 120, y + 182, 48, 38); ctx.globalAlpha = 1; }
-    ctx.fillStyle = TXT2; ctx.font = '400 40px Inter'; ctx.fillText(SITE_URL, W / 2, y + 290);
+    logo(56, 340);
+    if (S.art) { if (S.look === 'spin') disc(S.art, 540, 640, 400, t * SPIN, r.labelHole); else coverImg(S.art, 540, 640, 800, 1 + 0.06 * Math.min(1, t / Math.max(CLIP, S.picks.length * CLIP)), 12); }
+    var ty = 1180;
+    if (head) { spaced(head.toUpperCase(), 30, 700, SOFT, 1100, 5); ty = 1200; }
+    var c = clipAt(t); if (c) { ctx.globalAlpha = c.a; trackBlock(c.o, ty, true); ctx.globalAlpha = 1; }
+    spaced(info.toUpperCase(), 30, 600, DIM, ty + 232, 5);
+    ctx.fillStyle = TXT2; ctx.font = '600 38px ' + BODY; ctx.fillText(SITE_URL, W / 2, ty + 288);
   } else {
-    logo(48, 250);
-    if (S.art) { if (S.look === 'spin') disc(S.art, 540, 600, 340, 0, r.labelHole); else coverImg(S.art, 540, 600, 680, 1, 10); }
-    var yy = 1015;
-    if (head) { ctx.fillStyle = INK; fit(head.toUpperCase(), W / 2, 995, 960, 40, '700', 'Inter'); yy = 1050; }
-    ctx.fillStyle = INK; fit(r.title, W / 2, yy + 20, 960, 58, '700', 'Inter');
-    ctx.fillStyle = SOFT; fit(info, W / 2, yy + 95, 960, 34, '400', 'Inter');
-    ctx.fillStyle = TXT2; ctx.font = '400 32px Inter'; ctx.fillText(SITE_URL, W / 2, 1290);
+    logo(40, 240);
+    if (S.art) { if (S.look === 'spin') disc(S.art, 540, 520, 320, 0, r.labelHole); else coverImg(S.art, 540, 520, 640, 1, 10); }
+    var yy = 950;
+    if (head) { spaced(head.toUpperCase(), 28, 700, SOFT, 880, 5); yy = 990; }
+    ctx.fillStyle = INK; fit(r.title, W / 2, yy, 960, 80, '800', HEAD, 40);
+    var ya = yy;
+    if (r.artist !== 'Various Artists') { ctx.fillStyle = INK; fit(r.artist, W / 2, yy + 82, 960, 46, '700', HEAD, 28); ya = yy + 82; }
+    spaced(info.toUpperCase(), 28, 600, DIM, ya + 64, 5);
+    ctx.fillStyle = TXT2; ctx.font = '600 36px ' + BODY; ctx.fillText(SITE_URL, W / 2, ya + 124);
   }
 }
 function drawArtist(t, head){
   if (!S.artist) return;
-  var v = S.fmt === 'video', q = $('quote').value.trim();
+  var v = S.fmt === 'video', q = $('quote').value.trim(), label = (head || 'Artist spotlight').toUpperCase();
   if (v) {
-    logo(60, 340);
+    logo(56, 340);
     var total = Math.max(CLIP, S.picks.length * CLIP);
-    if (S.photo) coverImg(S.photo, 540, 720, 760, 1.02 + 0.06 * Math.min(1, t / total), 12);
-    else { ctx.strokeStyle = EDGE; ctx.lineWidth = 2; roundRect(160, 340, 760, 760, 12); ctx.stroke(); }
-    ctx.fillStyle = SOFT; ctx.font = '500 30px Inter'; ctx.fillText((head || 'Artist spotlight').toUpperCase().split('').join(String.fromCharCode(8202)), W / 2, 1170);
-    ctx.fillStyle = INK; fit(S.artist, W / 2, 1235, 960, 72, '700', 'Inter');
-    var y = 1310;
-    if (q) { ctx.fillStyle = TXT2; var n = wrap('“' + q + '”', W / 2, y, 900, 36, 48, 3, 'italic 400 {px} Inter'); y += n * 48 + 30; } else y += 20;
-    var c = clipAt(t); if (c) { ctx.globalAlpha = c.a; trackLines(c.o, y + 30, y + 82, 40, 32);
-      ctx.fillStyle = DIM; ctx.font = '400 28px Inter'; ctx.fillText(c.o.r.cat + '  ·  ' + c.o.r.year, W / 2, y + 128); ctx.globalAlpha = 1; }
-    ctx.fillStyle = TXT2; ctx.font = '400 36px Inter'; ctx.fillText(SITE_URL, W / 2, Math.max(y + 210, 1700));
+    if (S.photo) coverImg(S.photo, 540, 610, 700, 1.02 + 0.06 * Math.min(1, t / total), 12);
+    else { ctx.strokeStyle = EDGE; ctx.lineWidth = 2; roundRect(190, 260, 700, 700, 12); ctx.stroke(); }
+    spaced(label, 30, 700, SOFT, 1030, 5);
+    ctx.fillStyle = INK; fit(S.artist, W / 2, 1115, 960, 80, '800', HEAD, 40);
+    var y = 1190;
+    if (q) { ctx.fillStyle = TXT2; var n = wrap('“' + q + '”', W / 2, y, 900, 34, 44, 2, 'italic 400 {px} Inter'); y += n * 44 + 24; } else y += 10;
+    var c = clipAt(t); if (c) { ctx.globalAlpha = c.a; trackBlock(c.o, y + 30, false);
+      spaced((c.o.r.cat + '  ·  ' + c.o.r.year).toUpperCase(), 26, 600, DIM, y + 124, 5); ctx.globalAlpha = 1; }
+    ctx.fillStyle = TXT2; ctx.font = '600 38px ' + BODY; ctx.fillText(SITE_URL, W / 2, Math.min(y + 190, 1490));
   } else {
-    logo(44, 230);
-    if (S.photo) coverImg(S.photo, 540, 560, 640, 1, 10);
-    else { ctx.strokeStyle = EDGE; ctx.lineWidth = 2; roundRect(220, 240, 640, 640, 10); ctx.stroke(); }
-    ctx.fillStyle = SOFT; ctx.font = '500 26px Inter'; ctx.fillText((head || 'Artist spotlight').toUpperCase(), W / 2, 935);
-    ctx.fillStyle = INK; fit(S.artist, W / 2, 995, 960, 62, '700', 'Inter');
-    if (q) { ctx.fillStyle = TXT2; wrap('“' + q + '”', W / 2, 1070, 900, 32, 44, 3, 'italic 400 {px} Inter'); }
-    ctx.fillStyle = TXT2; ctx.font = '400 30px Inter'; ctx.fillText(SITE_URL, W / 2, 1295);
+    logo(40, 230);
+    if (S.photo) coverImg(S.photo, 540, 560, 600, 1, 10);
+    else { ctx.strokeStyle = EDGE; ctx.lineWidth = 2; roundRect(240, 260, 600, 600, 10); ctx.stroke(); }
+    spaced(label, 26, 700, SOFT, 925, 5);
+    ctx.fillStyle = INK; fit(S.artist, W / 2, 1005, 960, 76, '800', HEAD, 40);
+    if (q) { ctx.fillStyle = TXT2; wrap('“' + q + '”', W / 2, 1085, 900, 32, 44, 2, 'italic 400 {px} Inter'); }
+    ctx.fillStyle = TXT2; ctx.font = '600 34px ' + BODY; ctx.fillText(SITE_URL, W / 2, 1245);
   }
 }
 
@@ -704,11 +713,6 @@ function geoRing(cx, cy, size, color, rot){
   ctx.save(); ctx.translate(cx, cy); if (rot) ctx.rotate(rot); ctx.translate(R / 2, 0); ctx.fillStyle = color; ctx.beginPath();
   ctx.arc(0, 0, R, Math.PI / 2, Math.PI * 1.5); ctx.arc(0, 0, r, Math.PI * 1.5, Math.PI / 2, true); ctx.closePath(); ctx.fill(); ctx.restore();
 }
-function sparkle(cx, cy, r, t){
-  var k = .82 + .18 * Math.sin(t * 2.2), rr2 = r * k, glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, rr2 * 1.1);
-  glow.addColorStop(0, 'rgba(255,255,255,.55)'); glow.addColorStop(1, 'rgba(255,255,255,0)'); ctx.fillStyle = glow; ctx.fillRect(cx - rr2 * 1.2, cy - rr2 * 1.2, rr2 * 2.4, rr2 * 2.4);
-  ctx.save(); ctx.translate(cx, cy); ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.moveTo(0, -rr2); ctx.quadraticCurveTo(0, 0, rr2, 0); ctx.quadraticCurveTo(0, 0, 0, rr2); ctx.quadraticCurveTo(0, 0, -rr2, 0); ctx.quadraticCurveTo(0, 0, 0, -rr2); ctx.fill(); ctx.restore();
-}
 function drawPattern(t, h){
   if (PAT.type === 'solid') return;
   var c = patColors(), r = rng(PAT.seed * 31 + 5), i, k;
@@ -734,14 +738,13 @@ function drawPattern(t, h){
       ctx.fillStyle = c[(Math.floor(d / 260)) % 3]; ctx.beginPath(); ctx.arc(xx, yy, rr, 0, Math.PI * 2); ctx.fill();
     }
   } else if (PAT.type === 'geo') {
-    // Poker Flat-style layouts built from the Siteholder crescent in palette colours, plus a small four-point sparkle
+    // Poker Flat-style layouts built from the Siteholder crescent in palette colours
     var gc = geoColors(), lay = Math.floor(PAT.seed / 3) % 3, j2, i2, q;
     if (lay === 0) {            // rows of rings (O O O O), each row drifting its own way
       var rh = 250, sz = 200, pitch = 175, nrows = Math.ceil(h / rh) + 1;
       for (j2 = 0; j2 < nrows; j2++) {
         q = rng(PAT.seed * 53 + j2 * 7); var dir = j2 % 2 ? 1 : -1, off = (t * 26 * dir + q() * 500) % pitch, rc = gc[j2 % 3], n = Math.ceil(W / pitch) + 3;
         for (i2 = -2; i2 < n; i2++) { if (q() < .22) continue; geoRing(i2 * pitch + off, j2 * rh + 90, sz, rc, dir > 0 ? 0 : Math.PI); }
-        if (j2 % 2 === 0) sparkle(((q() * .8 + .1) * W + t * 20 * dir) % W, j2 * rh + 90, 125, t + j2);
       }
     } else if (lay === 1) {     // diagonal cluster of diamonds (rotated rings)
       var ps = 250, sz2 = 200, span = Math.ceil(Math.hypot(W, h) / ps) + 2, dd = (t * 22) % ps;
@@ -751,14 +754,13 @@ function drawPattern(t, h){
         geoRing(i2 * ps + dd, j2 * ps, sz2, gc[q() < .8 ? 0 : 1 + Math.floor(q() * 2)], Math.floor(q() * 4) * Math.PI / 2);
       }
       ctx.rotate(-Math.PI / 4); ctx.translate(-W / 2, -h / 2);
-      sparkle(W * .72, h * .56, 150, t); sparkle(W * .14, h * .84, 100, t + 2);
     } else {                    // matrix of small rings with a moving lit band
       var ms = 92, mr = 66, cols = Math.ceil(W / ms) + 1, rows = Math.ceil(h / ms) + 1;
       for (j2 = 0; j2 < rows; j2++) for (i2 = 0; i2 < cols; i2++) {
         var w = Math.sin((i2 + j2 * .6) * .32 - t * .9) , lit = w > .55 ? 1 : 0, cc = gc[(i2 + j2) % 3];
         ctx.globalAlpha = lit ? 1 : .2; geoRing(i2 * ms + ms / 2, j2 * ms + ms / 2, mr, lit ? cc : (lum(BG) > .4 ? '#000000' : '#ffffff'), w * Math.PI / 2);
       }
-      ctx.globalAlpha = 1; sparkle(W * .8, h * .22, 130, t);
+      ctx.globalAlpha = 1;
     }
   }
   ctx.restore();
@@ -941,7 +943,7 @@ pd.ondrop = function(e){ e.preventDefault(); pd.classList.remove('over'); usePho
   try {
     await Promise.all([loadCatalog(), loadSheet(),
       loadImage('logo.png').then(function(i){ logoRaw = i; logoImg = tinted(i, INK); }).catch(function(){}),
-      document.fonts.load('600 48px Inter'), document.fonts.load('400 40px Inter'), document.fonts.load('italic 400 36px Inter')]);
+      document.fonts.load('600 48px Inter'), document.fonts.load('500 36px Inter'), document.fonts.load('800 80px Archivo'), document.fonts.load('700 46px Archivo'), document.fonts.load('400 40px Inter'), document.fonts.load('italic 400 36px Inter')]);
     NAMES = knownNames();
     var qs = new URLSearchParams(location.search), want = (qs.get('r') || '').toUpperCase(), wa = qs.get('a');
     renderRelList(); renderSegs();
