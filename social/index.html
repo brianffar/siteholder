@@ -688,19 +688,27 @@ function hsl(hex){ var n = parseInt(hex.slice(1), 16), r = (n >> 16 & 255) / 255
   return { l: l, s: d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1)) }; }
 function geoColors(){
   var key = 'g|' + PAT.seed + '|' + BG + '|' + bgPal.join(','); if (patCache && patCache.key === key) return patCache.c;
-  var pool = bgPal.filter(function(c){ return c.toLowerCase() !== BG.toLowerCase(); }).map(function(c){ var o = hsl(c); return { c: c, l: o.l, s: o.s }; });
-  // vivid accent = most saturated palette colour; dark and light anchors give the flat, high-contrast look
-  var vivid = pool.slice().sort(function(a, b){ return b.s * (1 - Math.abs(b.l - .5)) - a.s * (1 - Math.abs(a.l - .5)); })[0];
-  var viv = vivid && vivid.s > .25 ? vivid.c : null;
-  var dark = pool.filter(function(o){ return o.l < .3; }).sort(function(a, b){ return a.l - b.l; })[0], light = pool.filter(function(o){ return o.l > .72; }).sort(function(a, b){ return b.l - a.l; })[0];
-  var tint = viv || '#3d5afe';
-  var D = dark ? dark.c : mixHex('#0b0b12', tint, .8), L = light ? light.c : mixHex('#f4f1ea', tint, .85), V = viv || tint;
-  var second = pool.filter(function(o){ return o.c !== V && o.s > .25; }).sort(function(a, b){ return b.s - a.s; })[0];
-  var out = (PAT.seed >> 2) % 2 ? [D, V, L] : [D, second ? second.c : V, V];
-  if (lum(BG) > 0.4) out = [L, V, D];
+  var bl = lum(BG), seen = [];
+  var pool = bgPal.map(function(c){ var o = hsl(c); return { c: c, l: o.l, s: o.s, v: o.s * (1 - Math.abs(o.l - .5) * 1.2) + .05 }; })
+    .filter(function(o){ return Math.abs(lum(o.c) - bl) > .06; }).sort(function(a, b){ return b.v - a.v; })
+    .filter(function(o){ var ok = seen.every(function(c){ return Math.abs(hsl(c).l - o.l) + Math.abs(parseInt(c.slice(1), 16) - parseInt(o.c.slice(1), 16)) / 1e6 > .02; }); if (ok) seen.push(o.c); return ok; });
+  var out = pool.slice(0, 3).map(function(o){ return o.c; });
+  ['#d6382c', '#c9a24b', '#e8e04a', '#5ec9b0'].forEach(function(f){ if (out.length < 3) out.push(f); });
+  var rot = PAT.seed % 3; out = out.slice(rot).concat(out.slice(0, rot));
   patCache = { key: key, c: out }; return out;
 }
 function withAlpha(hex, a){ var n = parseInt(hex.slice(1), 16); return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + a + ')'; }
+function geoRing(cx, cy, size, color, rot){
+  var o = size / 2, ri = size * .29, ro = size * .26, ir = size * .15;
+  function rr(x, y, w, hh, r){ ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + hh, r); ctx.arcTo(x + w, y + hh, x, y + hh, r); ctx.arcTo(x, y + hh, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+  ctx.save(); ctx.translate(cx, cy); if (rot) ctx.rotate(rot); ctx.fillStyle = color; ctx.beginPath();
+  rr(-o, -o, size, size, ro); var inn = size * .6, io = inn / 2; rr(-io, -io, inn, inn, ir); ctx.fill('evenodd'); ctx.restore();
+}
+function sparkle(cx, cy, r, t){
+  var k = .82 + .18 * Math.sin(t * 2.2), rr2 = r * k, glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, rr2 * 1.1);
+  glow.addColorStop(0, 'rgba(255,255,255,.55)'); glow.addColorStop(1, 'rgba(255,255,255,0)'); ctx.fillStyle = glow; ctx.fillRect(cx - rr2 * 1.2, cy - rr2 * 1.2, rr2 * 2.4, rr2 * 2.4);
+  ctx.save(); ctx.translate(cx, cy); ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.moveTo(0, -rr2); ctx.quadraticCurveTo(0, 0, rr2, 0); ctx.quadraticCurveTo(0, 0, 0, rr2); ctx.quadraticCurveTo(0, 0, -rr2, 0); ctx.quadraticCurveTo(0, 0, 0, -rr2); ctx.fill(); ctx.restore();
+}
 function drawPattern(t, h){
   if (PAT.type === 'solid') return;
   var c = patColors(), r = rng(PAT.seed * 31 + 5), i, k;
@@ -726,34 +734,31 @@ function drawPattern(t, h){
       ctx.fillStyle = c[(Math.floor(d / 260)) % 3]; ctx.beginPath(); ctx.arc(xx, yy, rr, 0, Math.PI * 2); ctx.fill();
     }
   } else if (PAT.type === 'geo') {
-    // flat, bold, minimal compositions (big circles, split fields, bars, quarter arcs) in contrasting palette colours
-    var gc = geoColors(), lay = PAT.seed % 4, tt = t, cx3, cy3, i2, k2;
-    ctx.fillStyle = gc[0]; ctx.fillRect(0, 0, W, h);
-    if (lay === 0) {            // split field with inverted circles straddling the line
-      var sx = W * (.5 + .12 * Math.sin(tt * .35));
-      ctx.fillStyle = gc[1]; ctx.fillRect(sx, 0, W - sx, h);
-      [[.30 + .04 * Math.sin(tt * .4), W * .46], [.82 + .03 * Math.cos(tt * .3), W * .30]].forEach(function(o){
-        var yy = h * o[0], rr = o[1];
-        ctx.save(); ctx.beginPath(); ctx.rect(0, 0, sx, h); ctx.clip(); ctx.fillStyle = gc[1]; ctx.beginPath(); ctx.arc(sx, yy, rr, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-        ctx.save(); ctx.beginPath(); ctx.rect(sx, 0, W - sx, h); ctx.clip(); ctx.fillStyle = gc[0]; ctx.beginPath(); ctx.arc(sx, yy, rr, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-      });
-      ctx.fillStyle = gc[2]; ctx.beginPath(); ctx.arc(sx, h * .56 + 30 * Math.sin(tt * .5), W * .07, 0, Math.PI * 2); ctx.fill();
-    } else if (lay === 1) {     // concentric discs rolling outward
-      cx3 = W * .5 + 160 * Math.cos(tt * .22); cy3 = h * .42 + 120 * Math.sin(tt * .27); var stp = 130, fl = (tt * 22) % (stp * 2);
-      for (k2 = 16; k2 >= 0; k2--) { ctx.fillStyle = k2 % 2 ? gc[0] : (k2 % 4 === 0 ? gc[2] : gc[1]); ctx.beginPath(); ctx.arc(cx3, cy3, k2 * stp + fl, 0, Math.PI * 2); ctx.fill(); }
-    } else if (lay === 2) {     // sliding bars with a big disc
-      var bh = h / 16;
-      for (i2 = 0; i2 < 16; i2++) { if (i2 % 2) continue; var dir = (i2 / 2) % 2 ? 1 : -1, len = W * (.45 + ((i2 * 37) % 5) * .1), off = ((tt * 45 * dir + i2 * 211) % (W + len)); if (off < 0) off += W + len;
-        ctx.fillStyle = gc[1]; ctx.fillRect(off - len, i2 * bh, len, bh); ctx.fillRect(off - len - W - len, i2 * bh, len, bh); }
-      ctx.fillStyle = gc[2]; ctx.beginPath(); ctx.arc(W * .78 + 50 * Math.sin(tt * .3), h * .68 + 40 * Math.cos(tt * .25), W * .34, 0, Math.PI * 2); ctx.fill();
-    } else {                    // big quarter-disc tiles that breathe
-      var cs2 = 270, cols2 = Math.ceil(W / cs2), rows2 = Math.ceil(h / cs2), gq = rng(PAT.seed * 53 + 11);
-      for (var gj = 0; gj < rows2; gj++) for (var gi = 0; gi < cols2; gi++) {
-        var rot = Math.floor(gq() * 4), alt = gq() < .5, ph = gq() * 6.28, pul = 1 + .12 * Math.sin(tt * .8 + ph);
-        ctx.save(); ctx.translate(gi * cs2 + cs2 / 2, gj * cs2 + cs2 / 2); ctx.rotate(rot * Math.PI / 2);
-        ctx.fillStyle = alt ? gc[1] : gc[0]; ctx.fillRect(-cs2 / 2, -cs2 / 2, cs2, cs2);
-        ctx.fillStyle = alt ? gc[2] : gc[1]; ctx.beginPath(); ctx.moveTo(-cs2 / 2, -cs2 / 2); ctx.arc(-cs2 / 2, -cs2 / 2, cs2 * pul, 0, Math.PI / 2); ctx.closePath(); ctx.fill(); ctx.restore();
+    // Poker Flat-style: thick rounded-square rings in palette colours, plus a small four-point sparkle
+    var gc = geoColors(), lay = Math.floor(PAT.seed / 3) % 3, j2, i2, q;
+    if (lay === 0) {            // rows of rings (O O O O), each row drifting its own way
+      var rh = 250, sz = 170, pitch = 225, nrows = Math.ceil(h / rh) + 1;
+      for (j2 = 0; j2 < nrows; j2++) {
+        q = rng(PAT.seed * 53 + j2 * 7); var dir = j2 % 2 ? 1 : -1, off = (t * 26 * dir + q() * 500) % pitch, rc = gc[j2 % 3], n = Math.ceil(W / pitch) + 3;
+        for (i2 = -2; i2 < n; i2++) { if (q() < .22) continue; geoRing(i2 * pitch + off, j2 * rh + 90, sz, rc, 0); }
+        if (j2 % 2 === 0) sparkle(((q() * .8 + .1) * W + t * 20 * dir) % W, j2 * rh + 90, 125, t + j2);
       }
+    } else if (lay === 1) {     // diagonal cluster of diamonds (rotated rings)
+      var ps = 245, sz2 = 175, span = Math.ceil(Math.hypot(W, h) / ps) + 2, dd = (t * 22) % ps;
+      ctx.translate(W / 2, h / 2); ctx.rotate(Math.PI / 4);
+      for (j2 = -span; j2 <= span; j2++) for (i2 = -span; i2 <= span; i2++) {
+        q = rng(PAT.seed * 131 + (i2 + 40) * 97 + (j2 + 40) * 13); if (q() < .38) continue;
+        geoRing(i2 * ps + dd, j2 * ps, sz2, gc[q() < .8 ? 0 : 1 + Math.floor(q() * 2)], 0);
+      }
+      ctx.rotate(-Math.PI / 4); ctx.translate(-W / 2, -h / 2);
+      sparkle(W * .72, h * .56, 150, t); sparkle(W * .14, h * .84, 100, t + 2);
+    } else {                    // matrix of small rings with a moving lit band
+      var ms = 96, mr = 58, cols = Math.ceil(W / ms) + 1, rows = Math.ceil(h / ms) + 1;
+      for (j2 = 0; j2 < rows; j2++) for (i2 = 0; i2 < cols; i2++) {
+        var w = Math.sin((i2 + j2 * .6) * .32 - t * .9) , lit = w > .55 ? 1 : 0, cc = gc[(i2 + j2) % 3];
+        ctx.globalAlpha = lit ? 1 : .2; geoRing(i2 * ms + ms / 2, j2 * ms + ms / 2, mr, lit ? cc : (lum(BG) > .4 ? '#000000' : '#ffffff'), 0);
+      }
+      ctx.globalAlpha = 1; sparkle(W * .8, h * .22, 130, t);
     }
   }
   ctx.restore();
