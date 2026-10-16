@@ -58,6 +58,7 @@ textarea{resize:vertical;line-height:1.45}
 .seg button{background:none;border:0;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer}
 .seg button+button{border-left:1.5px solid var(--ink)}
 .seg button[aria-pressed=true]{background:var(--ink);color:var(--on-ink)}
+#patSeg{flex-wrap:wrap}
 .seg button:disabled{opacity:.35;cursor:default}
 /* layout */
 .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,400px);gap:28px;align-items:start}
@@ -209,6 +210,9 @@ footer{border-top:1px solid var(--line);padding-block:32px 48px}
           <div class="hint">Click or drag on the artwork to pick a colour, tap a swatch, or choose any colour.</div>
         </div>
       </div>
+      <div style="margin-top:14px"><span class="lab">Pattern <span style="text-transform:none;letter-spacing:0">(uses the colours from the artwork; Solid keeps the plain colour)</span></span>
+        <div class="row" style="gap:10px"><div class="seg" id="patSeg"><button data-v="solid" aria-pressed="true">Solid</button><button data-v="blobs" aria-pressed="false">Blobs</button><button data-v="stripes" aria-pressed="false">Stripes</button><button data-v="rings" aria-pressed="false">Rings</button><button data-v="dots" aria-pressed="false">Dots</button><button data-v="grain" aria-pressed="false">Grain</button></div>
+        <button class="btn" id="patShuffle" type="button" hidden style="padding:7px 12px;font-size:13px">Shuffle</button></div></div>
       <span class="lab" style="margin-top:16px">Headline <span style="text-transform:none;letter-spacing:0">(optional, e.g. “20 years today”)</span></span>
       <input type="text" id="headline" maxlength="60" autocomplete="off">
     </div>
@@ -572,7 +576,7 @@ function renderText(){
 }
 
 function draw(t){
-  var h = H(); ctx.fillStyle = BG; ctx.fillRect(0, 0, W, h); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  var h = H(); ctx.fillStyle = BG; ctx.fillRect(0, 0, W, h); drawPattern(t, h); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   var head = $('headline').value.trim();
   if (S.mode === 'artist') return drawArtist(t, head);
   if (!S.rel) return;
@@ -622,7 +626,7 @@ function drawArtist(t, head){
 }
 
 /* ---------- background colour ---------- */
-var bgSrc = null, bgPal = [];
+var bgSrc = null, bgPal = [], PAT = { type: 'solid', seed: 7 }, patCache = null, grainTile = null;
 function hex2(n){ return ('0' + Math.max(0, Math.min(255, Math.round(n))).toString(16)).slice(-2); }
 function toHex(r, g, b){ return '#' + hex2(r) + hex2(g) + hex2(b); }
 function lum(h){ var n = parseInt(h.slice(1), 16), c = [n >> 16 & 255, n >> 8 & 255, n & 255].map(function(v){ v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }); return .2126 * c[0] + .7152 * c[1] + .0722 * c[2]; }
@@ -667,6 +671,62 @@ function pickAt(e){
 $('bgCv').onpointerdown = function(e){ e.preventDefault(); this.setPointerCapture(e.pointerId); pickAt(e); this.onpointermove = pickAt; this.onpointerup = this.onpointercancel = function(){ this.onpointermove = null; }; };
 $('bgIn').oninput = function(){ setBg(this.value); };
 $('bgReset').onclick = function(){ setBg(DEFAULT_BG); };
+
+/* ---------- background pattern ---------- */
+function rng(seed){ var a = seed >>> 0; return function(){ a = (a + 0x6D2B79F5) >>> 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function mixHex(a, b, k){ var x = parseInt(a.slice(1), 16), y = parseInt(b.slice(1), 16);
+  return toHex((x >> 16 & 255) * k + (y >> 16 & 255) * (1 - k), (x >> 8 & 255) * k + (y >> 8 & 255) * (1 - k), (x & 255) * k + (y & 255) * (1 - k)); }
+function patColors(){
+  var key = PAT.seed + '|' + BG + '|' + bgPal.join(','); if (patCache && patCache.key === key) return patCache.c;
+  var pool = bgPal.filter(function(c){ return c.toLowerCase() !== BG.toLowerCase(); }), r = rng(PAT.seed * 977 + 13), out = [];
+  if (pool.length < 2) { var l = lum(BG) > 0.4; pool = pool.concat([mixHex(l ? '#000000' : '#ffffff', BG, .3), mixHex(l ? '#222233' : '#8899ff', BG, .45), mixHex(l ? '#553322' : '#ff8866', BG, .4)]); }
+  while (out.length < 3) { var c = pool.splice(Math.floor(r() * pool.length), 1)[0]; if (!c) break; out.push(mixHex(c, BG, .62)); }   // blend toward the background so text stays readable
+  while (out.length < 3) out.push(out[out.length - 1] || BG);
+  patCache = { key: key, c: out }; return out;
+}
+function withAlpha(hex, a){ var n = parseInt(hex.slice(1), 16); return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + a + ')'; }
+function drawPattern(t, h){
+  if (PAT.type === 'solid') return;
+  var c = patColors(), r = rng(PAT.seed * 31 + 5), i, k;
+  ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, h); ctx.clip();
+  if (PAT.type === 'blobs') {
+    for (i = 0; i < 6; i++) {
+      var bx = r() * W, by = r() * h, rad = 380 + r() * 420, ph = r() * 6.28, sp = .25 + r() * .3, col = c[i % 3];
+      var x = bx + Math.sin(t * sp + ph) * 140, y = by + Math.cos(t * sp * .8 + ph) * 140, g = ctx.createRadialGradient(x, y, 0, x, y, rad);
+      g.addColorStop(0, withAlpha(col, .95)); g.addColorStop(1, withAlpha(col, 0)); ctx.fillStyle = g; ctx.fillRect(0, 0, W, h);
+    }
+  } else if (PAT.type === 'stripes') {
+    var bw = 70 + Math.floor(r() * 90), ang = (-35 + r() * 70) * Math.PI / 180, off = (t * 45) % (bw * 3), diag = Math.hypot(W, h);
+    ctx.translate(W / 2, h / 2); ctx.rotate(ang);
+    for (i = -Math.ceil(diag / bw / 3) - 2; i <= Math.ceil(diag / bw / 3) + 2; i++) {
+      ctx.fillStyle = c[0]; ctx.fillRect(i * bw * 3 + off, -diag, bw, diag * 2);
+      ctx.fillStyle = c[1]; ctx.fillRect(i * bw * 3 + off + bw, -diag, bw, diag * 2);
+    }
+  } else if (PAT.type === 'rings') {
+    var cx = W * (.25 + r() * .5), cy = h * (.25 + r() * .35), step = 80 + r() * 50, grow = (t * 28) % (step * 2);
+    for (k = 16; k >= 0; k--) { ctx.beginPath(); ctx.arc(cx, cy, Math.max(1, k * step + grow), 0, Math.PI * 2); ctx.lineWidth = step * .5; ctx.strokeStyle = c[k % 3]; ctx.stroke(); }
+  } else if (PAT.type === 'dots') {
+    var gs = 56, cx2 = W * (.2 + r() * .6), cy2 = h * (.2 + r() * .6), wl = 150 + r() * 120;
+    for (var yy = gs / 2; yy < h; yy += gs) for (var xx = gs / 2 + ((Math.round(yy / gs) % 2) * gs / 2); xx < W + gs; xx += gs) {
+      var d = Math.hypot(xx - cx2, yy - cy2), rr = gs * (.12 + .3 * (.5 + .5 * Math.sin(d / wl - t * 1.3)));
+      ctx.fillStyle = c[(Math.floor(d / 260)) % 3]; ctx.beginPath(); ctx.arc(xx, yy, rr, 0, Math.PI * 2); ctx.fill();
+    }
+  } else if (PAT.type === 'grain') {
+    var gr = ctx.createLinearGradient(W * r(), 0, W * r(), h); gr.addColorStop(0, c[0]); gr.addColorStop(.55, c[1]); gr.addColorStop(1, c[2]);
+    ctx.globalAlpha = .9; ctx.fillStyle = gr; ctx.fillRect(0, 0, W, h); ctx.globalAlpha = 1;
+    if (!grainTile) { grainTile = document.createElement('canvas'); grainTile.width = grainTile.height = 256; var gx = grainTile.getContext('2d'), im = gx.createImageData(256, 256), q = rng(99);
+      for (i = 0; i < im.data.length; i += 4) { var v = q() * 255; im.data[i] = im.data[i+1] = im.data[i+2] = v; im.data[i+3] = 255; } gx.putImageData(im, 0, 0); }
+    var n = Math.floor(t * 12), ox = (n * 97) % 256, oy = (n * 57) % 256; ctx.globalAlpha = .16; ctx.globalCompositeOperation = lum(BG) > 0.4 ? 'multiply' : 'overlay';
+    for (var gy = -oy; gy < h; gy += 256) for (var gx2 = -ox; gx2 < W; gx2 += 256) ctx.drawImage(grainTile, gx2, gy);
+  }
+  ctx.restore();
+  // calm the pattern behind the text so titles stay readable
+  var sc = ctx.createLinearGradient(0, h * .57, 0, h * .68); sc.addColorStop(0, withAlpha(BG, 0)); sc.addColorStop(1, withAlpha(BG, .78));
+  ctx.fillStyle = sc; ctx.fillRect(0, h * .57, W, h * .43);
+}
+[].forEach.call($('patSeg').children, function(b){ b.onclick = function(){ PAT.type = b.dataset.v; syncPat(); if (!running) draw(0); }; });
+$('patShuffle').onclick = function(){ PAT.seed = Math.floor(Math.random() * 100000) + 1; if (!running) draw(0); };
+function syncPat(){ [].forEach.call($('patSeg').children, function(b){ b.setAttribute('aria-pressed', b.dataset.v === PAT.type ? 'true' : 'false'); }); $('patShuffle').hidden = PAT.type === 'solid'; }
 
 /* ---------- caption ---------- */
 function tagsFor(names){ var out = [], miss = [], likely = [];
