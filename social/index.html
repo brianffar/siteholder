@@ -535,6 +535,8 @@ function coverImg(img, cx, cy, size, zoom, radius){
   ctx.drawImage(img, cx - iw * s / 2, cy - ih * s / 2, iw * s, ih * s); ctx.restore();
 }
 function disc(img, cx, cy, r, deg, hole){
+  ctx.save(); ctx.shadowColor = 'rgba(0,0,0,' + (lum(BG) > 0.4 ? '.38' : '.7') + ')'; ctx.shadowBlur = r * 0.14; ctx.shadowOffsetY = r * 0.06;
+  ctx.fillStyle = BG; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill(); ctx.restore();
   ctx.save(); ctx.translate(cx, cy); ctx.rotate(deg * Math.PI / 180); ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.clip();
   ctx.drawImage(img, -r, -r, r * 2, r * 2); ctx.restore();
   if (hole) { ctx.fillStyle = BG; ctx.beginPath(); ctx.arc(cx, cy, r * 0.036, 0, Math.PI * 2); ctx.fill(); }
