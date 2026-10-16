@@ -108,6 +108,21 @@ canvas{display:block;width:100%;height:100%}
 .cap textarea{min-height:210px;font-size:14px}
 .cap .row{margin-top:8px}
 .hint{font-size:13px;color:var(--muted);margin-top:8px}
+.ord{list-style:none;margin:6px 0 0;padding:0;border:1px solid var(--line)}
+.ord li{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg);border-top:1px solid var(--line);font-size:14px;user-select:none;-webkit-user-select:none}
+.ord li:first-child{border-top:0}
+.ord li.drag{background:color-mix(in srgb,var(--accent) 14%,var(--bg));box-shadow:0 2px 10px rgba(0,0,0,.25);position:relative;z-index:2}
+.ord .grip{flex:none;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:20px;line-height:1;color:var(--muted);cursor:grab;touch-action:none;border-radius:2px}
+.ord .grip:hover,.ord .grip:focus-visible{color:var(--ink);background:color-mix(in srgb,var(--ink) 8%,var(--bg));outline:0}
+.ord .num{flex:none;font:12px var(--mono);color:var(--muted);width:16px}
+.ord .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bgpick{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+#bgCv{display:block;width:150px;max-width:100%;border:1px solid var(--line);cursor:crosshair;touch-action:none;background:var(--bg)}
+.sw{display:flex;flex-wrap:wrap;gap:8px}
+.sw button{width:30px;height:30px;border:1.5px solid var(--line);border-radius:50%;padding:0;cursor:pointer}
+.sw button[aria-pressed=true]{outline:2px solid var(--ink);outline-offset:2px}
+#bgHex{font:12px var(--mono);color:var(--muted)}
+input[type=color]{width:42px;height:32px;padding:0;border:1px solid var(--line);background:none;cursor:pointer}
 .hint b{color:var(--ink);font-weight:600}
 [hidden]{display:none!important}
 .tt{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
@@ -173,6 +188,7 @@ footer{border-top:1px solid var(--line);padding-block:32px 48px}
     <div class="card" id="trkCard">
       <span class="lab">Tracks <span id="trkCount" style="text-transform:none;letter-spacing:0"></span></span>
       <ul class="tracks" id="trkList"></ul>
+      <div id="ordWrap" hidden style="margin-top:16px"><span class="lab">Play order <span style="text-transform:none;letter-spacing:0">(drag ☰ to reorder)</span></span><ol class="ord" id="ordList"></ol></div>
     </div>
 
     <div class="card">
@@ -184,6 +200,15 @@ footer{border-top:1px solid var(--line);padding-block:32px 48px}
         <div class="photo"><div class="th" id="artTh"></div>
           <div><label class="drop" id="artDrop">Drop a different image (label scan, test pressing…) or click to choose<input type="file" id="artPick" accept="image/*" hidden></label>
           <div class="hint" id="artNote"></div></div></div></div>
+      <span class="lab" style="margin-top:16px">Background</span>
+      <div class="bgpick">
+        <canvas id="bgCv" width="300" height="300" aria-label="Artwork colour picker: click or drag to pick a colour"></canvas>
+        <div>
+          <div class="sw" id="bgSw"></div>
+          <div class="row" style="margin-top:12px;gap:10px"><input type="color" id="bgIn" value="#06060e" aria-label="Custom background colour"><span id="bgHex"></span><span class="grow"></span><button class="btn" id="bgReset" type="button" style="padding:7px 12px;font-size:13px">Reset</button></div>
+          <div class="hint">Click or drag on the artwork to pick a colour, tap a swatch, or choose any colour.</div>
+        </div>
+      </div>
       <span class="lab" style="margin-top:16px">Headline <span style="text-transform:none;letter-spacing:0">(optional, e.g. “20 years today”)</span></span>
       <input type="text" id="headline" maxlength="60" autocomplete="off">
     </div>
@@ -216,7 +241,7 @@ footer{border-top:1px solid var(--line);padding-block:32px 48px}
 var SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtcQmpyXNElEkBwjeLCBN7Iud3KTHuhcpv9apapX4oW8aqAK1uJG_hfiZqP4-_OsbWqNVLv3jgjQGn/pub?gid=1882382389&single=true&output=csv';
 var AUDIO_BASE = 'https://audio.siteholderrecords.com/';
 var SITE_URL = 'siteholderrecords.com';
-var BG = '#06060e', INK = '#ffffff', SOFT = '#c9cbd1';
+var BG = '#06060e', INK = '#ffffff', SOFT = '#c9cbd1', TXT2 = '#e6e7ea', DIM = '#8f939b', EDGE = '#2b2d32', DEFAULT_BG = '#06060e';
 var CLIP = 10, MAX_TRACKS = 3, SPIN = 30;           // seconds per track, tracks per video, label spin in deg/sec (matches the SH001 test)
 var FADE_IN = 0.15, FADE_OUT = 0.5, TEXT_FADE = 0.35;
 var HASHTAGS = '#siteholder #siteholderrecords #minimaltechno #techno #deephouse #chicagohouse #vinyl #electronicmusic';
@@ -228,7 +253,7 @@ var norm = function(s){ return String(s || '').toLowerCase().normalize('NFD').re
 function setStatus(m, k){ var s = $('status'); s.textContent = m || ''; s.className = k || ''; }
 
 /* ---------- state ---------- */
-var R = [], SH = { artists: {}, releases: {} }, logoImg = null;
+var R = [], SH = { artists: {}, releases: {} }, logoImg = null, logoRaw = null;
 var S = { mode:'release', fmt:'video', look:'spin', rel:null, artist:null, picks:[], items:[], art:null, photo:null, photoSrc:'', capDirty:false, ov:{ info:null, tracks:{} }, customArt:null };
 var running = null;
 
@@ -312,7 +337,6 @@ async function verifyAudio(){
   var before = S.picks.length;
   S.picks = S.picks.filter(function(i){ return avail.indexOf(i) >= 0; });
   for (var k = 0; k < avail.length && S.picks.length < MAX_TRACKS; k++) if (S.picks.indexOf(avail[k]) < 0) S.picks.push(avail[k]);
-  S.picks.sort(function(a, b){ return a - b; });
   var gone = items.length - avail.length - items.filter(function(o){ return !previewPath(o.t); }).length;
   setStatus(gone > 0 ? gone + ' track' + (gone === 1 ? '' : 's') + ' ' + (gone === 1 ? 'has' : 'have') + ' no audio uploaded yet and ' + (gone === 1 ? 'is' : 'are') + ' greyed out.' : '', gone > 0 ? 'warn' : '');
 }
@@ -399,14 +423,14 @@ async function selectArtist(n){
 }
 function renderTracks(){
   var ul = $('trkList'); ul.innerHTML = '';
-  if (!S.items.length) { ul.innerHTML = '<li class="empty" style="border:0;padding:0">' + (S.mode === 'artist' ? 'Pick an artist' : 'Pick a release') + '</li>'; $('trkCount').textContent = ''; return; }
+  if (!S.items.length) { ul.innerHTML = '<li class="empty" style="border:0;padding:0">' + (S.mode === 'artist' ? 'Pick an artist' : 'Pick a release') + '</li>'; $('trkCount').textContent = ''; renderOrder(); return; }
   S.items.forEach(function(o, idx){
     var p = hasAudio(o.t) ? previewPath(o.t) : null, li = document.createElement('li'), cb = document.createElement('input'); if (!p) li.style.opacity = '.5';
     cb.type = 'checkbox'; cb.checked = S.picks.indexOf(idx) >= 0; cb.disabled = !p;
     cb.onchange = function(){
       if (cb.checked) { if (S.picks.length >= MAX_TRACKS) { cb.checked = false; setStatus('Max ' + MAX_TRACKS + ' tracks. Untick one first.', 'warn'); return; } S.picks.push(idx); }
       else S.picks = S.picks.filter(function(x){ return x !== idx; });
-      S.picks.sort(function(a, b){ return a - b; }); stop(); countTracks(); refresh();
+      stop(); countTracks(); renderOrder(); refresh();
     };
     var who = S.mode === 'artist' ? '<span class="s">' + esc(o.r.cat + ' · ' + o.r.title + (o.role === 'remix' ? ' · remix' : '') + (o.t.a && o.r.artist === 'Various Artists' ? ' · ' + o.t.a : '')) + '</span>'
       : (o.t.a && o.r.artist === 'Various Artists' ? '<span class="s">' + esc(o.t.a) + '</span>' : '');
@@ -414,7 +438,38 @@ function renderTracks(){
     d.innerHTML = (o.t.n ? '<span class="m">' + esc(o.t.n) + '</span> ' : '') + esc(o.t.t) + (o.t.m ? ' <span class="m">(' + esc(o.t.m) + ')</span>' : '') + who + (p ? '' : '<span class="s na">' + (previewPath(o.t) ? 'Audio not uploaded yet' : 'No preview audio') + '</span>');
     li.appendChild(cb); li.appendChild(d); ul.appendChild(li);
   });
-  countTracks();
+  countTracks(); renderOrder();
+}
+function renderOrder(){
+  var ol = $('ordList'), wrap = $('ordWrap'); ol.innerHTML = '';
+  wrap.hidden = S.picks.length < 2; if (wrap.hidden) return;
+  S.picks.forEach(function(idx, n){
+    var o = S.items[idx], li = document.createElement('li'); li.dataset.idx = idx;
+    var g = document.createElement('span'); g.className = 'grip'; g.tabIndex = 0; g.setAttribute('role', 'button'); g.setAttribute('aria-label', 'Reorder ' + o.t.t + '. Drag, or use the up and down arrow keys.'); g.textContent = '☰';
+    var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = o.t.t + (o.t.m ? ' (' + o.t.m + ')' : '');
+    var num = document.createElement('span'); num.className = 'num'; num.textContent = (n + 1);
+    li.appendChild(g); li.appendChild(num); li.appendChild(nm); ol.appendChild(li);
+    g.onkeydown = function(e){
+      var d = e.key === 'ArrowUp' ? -1 : e.key === 'ArrowDown' ? 1 : 0; if (!d) return; e.preventDefault();
+      var a = S.picks.indexOf(idx), b = a + d; if (b < 0 || b >= S.picks.length) return;
+      S.picks.splice(a, 1); S.picks.splice(b, 0, idx); stop(); renderOrder(); refresh();
+      var again = ol.querySelector('li[data-idx="' + idx + '"] .grip'); if (again) again.focus();
+    };
+    g.onpointerdown = function(e){
+      e.preventDefault(); stop(); ol.setPointerCapture(e.pointerId); li.classList.add('drag');
+      ol.onpointermove = function(ev){
+        var rows = [].slice.call(ol.children).filter(function(r){ return r !== li; }), y = ev.clientY, before = null;
+        for (var i = 0; i < rows.length; i++) { var b = rows[i].getBoundingClientRect(); if (y < b.top + b.height / 2) { before = rows[i]; break; } }
+        if (before) { if (li.nextSibling !== before) ol.insertBefore(li, before); } else if (ol.lastChild !== li) ol.appendChild(li);
+      };
+      var done = function(){
+        ol.onpointermove = ol.onpointerup = ol.onpointercancel = null; li.classList.remove('drag');
+        S.picks = [].map.call(ol.children, function(r){ return +r.dataset.idx; });
+        renderOrder(); refresh();
+      };
+      ol.onpointerup = ol.onpointercancel = done;
+    };
+  });
 }
 function countTracks(){ $('trkCount').textContent = '(' + S.picks.length + '/' + MAX_TRACKS + ' · ' + (S.picks.length * CLIP) + 's)'; }
 function renderSegs(){
@@ -436,13 +491,15 @@ async function loadArt(){
 }
 function artNote(){
   var th = $('artTh'), n = $('artNote');
-  if (!S.art) { th.style.backgroundImage = ''; n.textContent = ''; return; }
+  if (!S.art) { th.style.backgroundImage = ''; n.textContent = ''; renderBgPicker(); return; }
   try { th.style.backgroundImage = 'url("' + S.art.src + '")'; } catch (e) {}
   n.innerHTML = S.customArt ? 'Your image · ' + S.art.naturalWidth + '×' + S.art.naturalHeight + ' · <a href="#" id="artReset" style="border-bottom:1px solid currentColor">use catalog art</a>'
     : 'From the catalog · ' + S.art.naturalWidth + '×' + S.art.naturalHeight + (S.look === 'spin' ? ' · shown as a spinning circle' : '');
+  renderBgPicker();
   var a = $('artReset'); if (a) a.onclick = async function(e){ e.preventDefault(); S.customArt = null; await loadArt(); refresh(); };
 }
-async function loadPhoto(src, label){
+async function loadPhoto(src, label){ try { await loadPhoto0(src, label); } finally { renderBgPicker(); } }
+async function loadPhoto0(src, label){
   S.photo = null; S.photoSrc = src; var note = $('photoNote'), th = $('photoTh'); th.style.backgroundImage = '';
   if (!src) { note.innerHTML = 'No photo in the sheet yet. Drop one in, or add a <b>Press photo link</b> in the Artists tab.'; return; }
   try { S.photo = await loadImage(src, true); th.style.backgroundImage = 'url("' + src + '")';
@@ -522,7 +579,7 @@ function draw(t){
     if (head) { ctx.fillStyle = INK; fit(head.toUpperCase(), W / 2, 1290, 960, 50, '700', 'Inter'); y = 1360; }
     ctx.fillStyle = SOFT; fit(info, W / 2, y, 960, 40, '400', 'Inter');
     var c = clipAt(t); if (c) { ctx.globalAlpha = c.a; trackLines(c.o, y + 120, y + 182, 48, 38); ctx.globalAlpha = 1; }
-    ctx.fillStyle = '#e6e7ea'; ctx.font = '400 40px Inter'; ctx.fillText(SITE_URL, W / 2, y + 290);
+    ctx.fillStyle = TXT2; ctx.font = '400 40px Inter'; ctx.fillText(SITE_URL, W / 2, y + 290);
   } else {
     logo(48, 250);
     if (S.art) { if (S.look === 'spin') disc(S.art, 540, 600, 340, 0, r.labelHole); else coverImg(S.art, 540, 600, 680, 1, 10); }
@@ -530,7 +587,7 @@ function draw(t){
     if (head) { ctx.fillStyle = INK; fit(head.toUpperCase(), W / 2, 995, 960, 40, '700', 'Inter'); yy = 1050; }
     ctx.fillStyle = INK; fit(r.title, W / 2, yy + 20, 960, 58, '700', 'Inter');
     ctx.fillStyle = SOFT; fit(info, W / 2, yy + 95, 960, 34, '400', 'Inter');
-    ctx.fillStyle = '#e6e7ea'; ctx.font = '400 32px Inter'; ctx.fillText(SITE_URL, W / 2, 1290);
+    ctx.fillStyle = TXT2; ctx.font = '400 32px Inter'; ctx.fillText(SITE_URL, W / 2, 1290);
   }
 }
 function drawArtist(t, head){
@@ -540,24 +597,71 @@ function drawArtist(t, head){
     logo(60, 340);
     var total = Math.max(CLIP, S.picks.length * CLIP);
     if (S.photo) coverImg(S.photo, 540, 720, 760, 1.02 + 0.06 * Math.min(1, t / total), 12);
-    else { ctx.strokeStyle = '#2b2d32'; ctx.lineWidth = 2; roundRect(160, 340, 760, 760, 12); ctx.stroke(); }
+    else { ctx.strokeStyle = EDGE; ctx.lineWidth = 2; roundRect(160, 340, 760, 760, 12); ctx.stroke(); }
     ctx.fillStyle = SOFT; ctx.font = '500 30px Inter'; ctx.fillText((head || 'Artist spotlight').toUpperCase().split('').join(String.fromCharCode(8202)), W / 2, 1170);
     ctx.fillStyle = INK; fit(S.artist, W / 2, 1235, 960, 72, '700', 'Inter');
     var y = 1310;
-    if (q) { ctx.fillStyle = '#e6e7ea'; var n = wrap('“' + q + '”', W / 2, y, 900, 36, 48, 3, 'italic 400 {px} Inter'); y += n * 48 + 30; } else y += 20;
+    if (q) { ctx.fillStyle = TXT2; var n = wrap('“' + q + '”', W / 2, y, 900, 36, 48, 3, 'italic 400 {px} Inter'); y += n * 48 + 30; } else y += 20;
     var c = clipAt(t); if (c) { ctx.globalAlpha = c.a; trackLines(c.o, y + 30, y + 82, 40, 32);
-      ctx.fillStyle = '#8f939b'; ctx.font = '400 28px Inter'; ctx.fillText(c.o.r.cat + '  ·  ' + c.o.r.year, W / 2, y + 128); ctx.globalAlpha = 1; }
-    ctx.fillStyle = '#e6e7ea'; ctx.font = '400 36px Inter'; ctx.fillText(SITE_URL, W / 2, Math.max(y + 210, 1700));
+      ctx.fillStyle = DIM; ctx.font = '400 28px Inter'; ctx.fillText(c.o.r.cat + '  ·  ' + c.o.r.year, W / 2, y + 128); ctx.globalAlpha = 1; }
+    ctx.fillStyle = TXT2; ctx.font = '400 36px Inter'; ctx.fillText(SITE_URL, W / 2, Math.max(y + 210, 1700));
   } else {
     logo(44, 230);
     if (S.photo) coverImg(S.photo, 540, 560, 640, 1, 10);
-    else { ctx.strokeStyle = '#2b2d32'; ctx.lineWidth = 2; roundRect(220, 240, 640, 640, 10); ctx.stroke(); }
+    else { ctx.strokeStyle = EDGE; ctx.lineWidth = 2; roundRect(220, 240, 640, 640, 10); ctx.stroke(); }
     ctx.fillStyle = SOFT; ctx.font = '500 26px Inter'; ctx.fillText((head || 'Artist spotlight').toUpperCase(), W / 2, 935);
     ctx.fillStyle = INK; fit(S.artist, W / 2, 995, 960, 62, '700', 'Inter');
-    if (q) { ctx.fillStyle = '#e6e7ea'; wrap('“' + q + '”', W / 2, 1070, 900, 32, 44, 3, 'italic 400 {px} Inter'); }
-    ctx.fillStyle = '#e6e7ea'; ctx.font = '400 30px Inter'; ctx.fillText(SITE_URL, W / 2, 1295);
+    if (q) { ctx.fillStyle = TXT2; wrap('“' + q + '”', W / 2, 1070, 900, 32, 44, 3, 'italic 400 {px} Inter'); }
+    ctx.fillStyle = TXT2; ctx.font = '400 30px Inter'; ctx.fillText(SITE_URL, W / 2, 1295);
   }
 }
+
+/* ---------- background colour ---------- */
+var bgSrc = null, bgPal = [];
+function hex2(n){ return ('0' + Math.max(0, Math.min(255, Math.round(n))).toString(16)).slice(-2); }
+function toHex(r, g, b){ return '#' + hex2(r) + hex2(g) + hex2(b); }
+function lum(h){ var n = parseInt(h.slice(1), 16), c = [n >> 16 & 255, n >> 8 & 255, n & 255].map(function(v){ v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }); return .2126 * c[0] + .7152 * c[1] + .0722 * c[2]; }
+function setBg(h){
+  BG = h;
+  if (lum(h) > 0.4) { INK = '#0b0b10'; SOFT = '#2f3138'; TXT2 = '#1c1d22'; DIM = '#4a4d55'; EDGE = '#9a9da5'; }
+  else { INK = '#ffffff'; SOFT = '#c9cbd1'; TXT2 = '#e6e7ea'; DIM = '#8f939b'; EDGE = '#2b2d32'; }
+  if (logoRaw) logoImg = tinted(logoRaw, INK);
+  $('screen').style.background = BG; $('bgIn').value = h; $('bgHex').textContent = h.toUpperCase();
+  [].forEach.call($('bgSw').children, function(b){ b.setAttribute('aria-pressed', b.dataset.c === h ? 'true' : 'false'); });
+  if (!running) draw(0);
+}
+function paletteOf(img){
+  var c = document.createElement('canvas'), n = 40, x; c.width = c.height = n; x = c.getContext('2d', { willReadFrequently: true });
+  try { x.drawImage(img, 0, 0, n, n); var d = x.getImageData(0, 0, n, n).data; } catch (e) { return []; }
+  var bins = {};
+  for (var i = 0; i < d.length; i += 4) { if (d[i+3] < 200) continue; var k = (d[i] >> 5) + ',' + (d[i+1] >> 5) + ',' + (d[i+2] >> 5), b = bins[k] || (bins[k] = { n: 0, r: 0, g: 0, b: 0 }); b.n++; b.r += d[i]; b.g += d[i+1]; b.b += d[i+2]; }
+  var all = Object.keys(bins).map(function(k){ var b = bins[k]; return { n: b.n, r: b.r / b.n, g: b.g / b.n, b: b.b / b.n }; }).sort(function(a, b){ return b.n - a.n; }), out = [];
+  all.forEach(function(c){ if (out.length >= 7) return; if (out.every(function(o){ return Math.abs(o.r - c.r) + Math.abs(o.g - c.g) + Math.abs(o.b - c.b) > 90; })) out.push(c); });
+  return out.map(function(c){ return toHex(c.r, c.g, c.b); });
+}
+function renderBgPicker(){
+  var src = S.mode === 'artist' ? (S.photo || S.art) : S.art, cvp = $('bgCv'), x = cvp.getContext('2d');
+  bgSrc = src; x.clearRect(0, 0, cvp.width, cvp.height);
+  if (src) {
+    var iw = src.naturalWidth || src.width, ih = src.naturalHeight || src.height, k = Math.min(cvp.width / iw, cvp.height / ih), w = iw * k, h = ih * k;
+    cvp.height = Math.round(cvp.width * Math.min(1.4, ih / iw)); k = Math.min(cvp.width / iw, cvp.height / ih); w = iw * k; h = ih * k;
+    x.drawImage(src, (cvp.width - w) / 2, (cvp.height - h) / 2, w, h);
+  }
+  bgPal = src ? paletteOf(src) : [];
+  var sw = $('bgSw'); sw.innerHTML = '';
+  ['#06060e', '#000000', '#ffffff'].concat(bgPal).forEach(function(c){
+    var b = document.createElement('button'); b.type = 'button'; b.style.background = c; b.dataset.c = c; b.title = c.toUpperCase(); b.setAttribute('aria-label', 'Background ' + c); b.setAttribute('aria-pressed', c === BG ? 'true' : 'false');
+    b.onclick = function(){ setBg(c); }; sw.appendChild(b);
+  });
+}
+function pickAt(e){
+  if (!bgSrc) return; var r = $('bgCv').getBoundingClientRect(), cvp = $('bgCv');
+  var px = Math.max(0, Math.min(cvp.width - 1, Math.floor((e.clientX - r.left) * cvp.width / r.width))), py = Math.max(0, Math.min(cvp.height - 1, Math.floor((e.clientY - r.top) * cvp.height / r.height)));
+  try { var d = cvp.getContext('2d', { willReadFrequently: true }).getImageData(px, py, 1, 1).data; if (d[3] > 0) setBg(toHex(d[0], d[1], d[2])); } catch (er) { setStatus('Could not read colours from this image. Use the colour box instead.', 'warn'); }
+}
+$('bgCv').onpointerdown = function(e){ e.preventDefault(); this.setPointerCapture(e.pointerId); pickAt(e); this.onpointermove = pickAt; this.onpointerup = this.onpointercancel = function(){ this.onpointermove = null; }; };
+$('bgIn').oninput = function(){ setBg(this.value); };
+$('bgReset').onclick = function(){ setBg(DEFAULT_BG); };
 
 /* ---------- caption ---------- */
 function tagsFor(names){ var out = [], miss = [], likely = [];
@@ -727,7 +831,7 @@ pd.ondrop = function(e){ e.preventDefault(); pd.classList.remove('over'); usePho
 (async function(){
   try {
     await Promise.all([loadCatalog(), loadSheet(),
-      loadImage('logo.png').then(function(i){ logoImg = tinted(i, '#ffffff'); }).catch(function(){}),
+      loadImage('logo.png').then(function(i){ logoRaw = i; logoImg = tinted(i, INK); }).catch(function(){}),
       document.fonts.load('600 48px Inter'), document.fonts.load('400 40px Inter'), document.fonts.load('italic 400 36px Inter')]);
     NAMES = knownNames();
     var qs = new URLSearchParams(location.search), want = (qs.get('r') || '').toUpperCase(), wa = qs.get('a');
