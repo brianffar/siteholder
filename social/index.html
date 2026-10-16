@@ -699,10 +699,10 @@ function geoColors(){
 }
 function withAlpha(hex, a){ var n = parseInt(hex.slice(1), 16); return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + a + ')'; }
 function geoRing(cx, cy, size, color, rot){
-  var o = size / 2, ri = size * .29, ro = size * .26, ir = size * .15;
-  function rr(x, y, w, hh, r){ ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + hh, r); ctx.arcTo(x + w, y + hh, x, y + hh, r); ctx.arcTo(x, y + hh, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
-  ctx.save(); ctx.translate(cx, cy); if (rot) ctx.rotate(rot); ctx.fillStyle = color; ctx.beginPath();
-  rr(-o, -o, size, size, ro); var inn = size * .6, io = inn / 2; rr(-io, -io, inn, inn, ir); ctx.fill('evenodd'); ctx.restore();
+  // the Siteholder crescent: a thick half-ring with flat ends (as in the logo mark)
+  var R = size / 2, r = R * .44;
+  ctx.save(); ctx.translate(cx, cy); if (rot) ctx.rotate(rot); ctx.translate(R / 2, 0); ctx.fillStyle = color; ctx.beginPath();
+  ctx.arc(0, 0, R, Math.PI / 2, Math.PI * 1.5); ctx.arc(0, 0, r, Math.PI * 1.5, Math.PI / 2, true); ctx.closePath(); ctx.fill(); ctx.restore();
 }
 function sparkle(cx, cy, r, t){
   var k = .82 + .18 * Math.sin(t * 2.2), rr2 = r * k, glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, rr2 * 1.1);
@@ -734,29 +734,29 @@ function drawPattern(t, h){
       ctx.fillStyle = c[(Math.floor(d / 260)) % 3]; ctx.beginPath(); ctx.arc(xx, yy, rr, 0, Math.PI * 2); ctx.fill();
     }
   } else if (PAT.type === 'geo') {
-    // Poker Flat-style: thick rounded-square rings in palette colours, plus a small four-point sparkle
+    // Poker Flat-style layouts built from the Siteholder crescent in palette colours, plus a small four-point sparkle
     var gc = geoColors(), lay = Math.floor(PAT.seed / 3) % 3, j2, i2, q;
     if (lay === 0) {            // rows of rings (O O O O), each row drifting its own way
-      var rh = 250, sz = 170, pitch = 225, nrows = Math.ceil(h / rh) + 1;
+      var rh = 250, sz = 200, pitch = 175, nrows = Math.ceil(h / rh) + 1;
       for (j2 = 0; j2 < nrows; j2++) {
         q = rng(PAT.seed * 53 + j2 * 7); var dir = j2 % 2 ? 1 : -1, off = (t * 26 * dir + q() * 500) % pitch, rc = gc[j2 % 3], n = Math.ceil(W / pitch) + 3;
-        for (i2 = -2; i2 < n; i2++) { if (q() < .22) continue; geoRing(i2 * pitch + off, j2 * rh + 90, sz, rc, 0); }
+        for (i2 = -2; i2 < n; i2++) { if (q() < .22) continue; geoRing(i2 * pitch + off, j2 * rh + 90, sz, rc, dir > 0 ? 0 : Math.PI); }
         if (j2 % 2 === 0) sparkle(((q() * .8 + .1) * W + t * 20 * dir) % W, j2 * rh + 90, 125, t + j2);
       }
     } else if (lay === 1) {     // diagonal cluster of diamonds (rotated rings)
-      var ps = 245, sz2 = 175, span = Math.ceil(Math.hypot(W, h) / ps) + 2, dd = (t * 22) % ps;
+      var ps = 250, sz2 = 200, span = Math.ceil(Math.hypot(W, h) / ps) + 2, dd = (t * 22) % ps;
       ctx.translate(W / 2, h / 2); ctx.rotate(Math.PI / 4);
       for (j2 = -span; j2 <= span; j2++) for (i2 = -span; i2 <= span; i2++) {
         q = rng(PAT.seed * 131 + (i2 + 40) * 97 + (j2 + 40) * 13); if (q() < .38) continue;
-        geoRing(i2 * ps + dd, j2 * ps, sz2, gc[q() < .8 ? 0 : 1 + Math.floor(q() * 2)], 0);
+        geoRing(i2 * ps + dd, j2 * ps, sz2, gc[q() < .8 ? 0 : 1 + Math.floor(q() * 2)], Math.floor(q() * 4) * Math.PI / 2);
       }
       ctx.rotate(-Math.PI / 4); ctx.translate(-W / 2, -h / 2);
       sparkle(W * .72, h * .56, 150, t); sparkle(W * .14, h * .84, 100, t + 2);
     } else {                    // matrix of small rings with a moving lit band
-      var ms = 96, mr = 58, cols = Math.ceil(W / ms) + 1, rows = Math.ceil(h / ms) + 1;
+      var ms = 92, mr = 66, cols = Math.ceil(W / ms) + 1, rows = Math.ceil(h / ms) + 1;
       for (j2 = 0; j2 < rows; j2++) for (i2 = 0; i2 < cols; i2++) {
         var w = Math.sin((i2 + j2 * .6) * .32 - t * .9) , lit = w > .55 ? 1 : 0, cc = gc[(i2 + j2) % 3];
-        ctx.globalAlpha = lit ? 1 : .2; geoRing(i2 * ms + ms / 2, j2 * ms + ms / 2, mr, lit ? cc : (lum(BG) > .4 ? '#000000' : '#ffffff'), 0);
+        ctx.globalAlpha = lit ? 1 : .2; geoRing(i2 * ms + ms / 2, j2 * ms + ms / 2, mr, lit ? cc : (lum(BG) > .4 ? '#000000' : '#ffffff'), w * Math.PI / 2);
       }
       ctx.globalAlpha = 1; sparkle(W * .8, h * .22, 130, t);
     }
