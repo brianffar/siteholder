@@ -606,12 +606,11 @@ function drawBody(t, h){
   if (!S.rel) return;
   var r = S.rel, info = infoText();
   if (S.fmt === 'video') {
-    if (S.art) { if (S.look === 'spin') disc(S.art, 540, 640, 400, t * SPIN, r.labelHole); else coverImg(S.art, 540, 640, 800, 1 + 0.06 * Math.min(1, t / Math.max(CLIP, S.picks.length * CLIP)), 12); }
-    var ty = 1180;
-    if (head) { spaced(head.toUpperCase(), 30, 700, SOFT, 1100, 5); ty = 1200; }
+    if (S.art) { if (S.look === 'spin') disc(S.art, 540, 665, 410, t * SPIN, r.labelHole); else coverImg(S.art, 540, 665, 820, 1 + 0.06 * Math.min(1, t / Math.max(CLIP, S.picks.length * CLIP)), 12); }
+    var ty = 1215;
+    if (head) { spaced(head.toUpperCase(), 30, 700, SOFT, 1135, 5); ty = 1235; }
     var c = clipAt(t); if (c) { ctx.globalAlpha = c.a * FADE; trackBlock(c.o, ty, true); ctx.globalAlpha = FADE; }
     spaced(info.toUpperCase(), 30, 600, DIM, ty + 232, 5);
-    ctx.fillStyle = TXT2; ctx.font = '600 38px ' + BODY; ctx.fillText(SITE_URL, W / 2, ty + 288);
   } else {
     logo(40, 240);
     if (S.art) { if (S.look === 'spin') disc(S.art, 540, 520, 320, 0, r.labelHole); else coverImg(S.art, 540, 520, 640, 1, 10); }
@@ -629,15 +628,14 @@ function drawArtist(t, head){
   var v = S.fmt === 'video', q = $('quote').value.trim(), label = (head || 'Artist spotlight').toUpperCase();
   if (v) {
     var total = Math.max(CLIP, S.picks.length * CLIP);
-    if (S.photo) coverImg(S.photo, 540, 610, 700, 1.02 + 0.06 * Math.min(1, t / total), 12);
-    else { ctx.strokeStyle = EDGE; ctx.lineWidth = 2; roundRect(190, 260, 700, 700, 12); ctx.stroke(); }
-    spaced(label, 30, 700, SOFT, 1030, 5);
-    ctx.fillStyle = INK; fit(S.artist, W / 2, 1115, 960, 80, '800', HEAD, 40);
-    var y = 1190;
-    if (q) { ctx.fillStyle = TXT2; var n = wrap('“' + q + '”', W / 2, y, 900, 34, 44, 2, 'italic 400 {px} Inter'); y += n * 44 + 24; } else y += 10;
+    if (S.photo) coverImg(S.photo, 540, 640, 720, 1.02 + 0.06 * Math.min(1, t / total), 12);
+    else { ctx.strokeStyle = EDGE; ctx.lineWidth = 2; roundRect(180, 280, 720, 720, 12); ctx.stroke(); }
+    spaced(label, 30, 700, SOFT, 1065, 5);
+    ctx.fillStyle = INK; fit(S.artist, W / 2, 1150, 960, 80, '800', HEAD, 40);
+    var y = 1225;
+    if (q) { ctx.fillStyle = TXT2; var n = wrap('“' + q + '”', W / 2, y, 900, 34, 44, 2, 'italic 400 {px} Inter'); y += n * 44 + 12; } else y += 10;
     var c = clipAt(t); if (c) { ctx.globalAlpha = c.a * FADE; trackBlock(c.o, y + 30, false);
-      spaced((c.o.r.cat + '  ·  ' + c.o.r.year).toUpperCase(), 26, 600, DIM, y + 124, 5); ctx.globalAlpha = FADE; }
-    ctx.fillStyle = TXT2; ctx.font = '600 38px ' + BODY; ctx.fillText(SITE_URL, W / 2, Math.min(y + 190, 1490));
+      spaced((c.o.r.cat + '  ·  ' + c.o.r.year).toUpperCase(), 26, 600, DIM, y + 168, 5); ctx.globalAlpha = FADE; }
   } else {
     logo(40, 230);
     if (S.photo) coverImg(S.photo, 540, 560, 600, 1, 10);
