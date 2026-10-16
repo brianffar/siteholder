@@ -527,6 +527,9 @@ function logo(top, width){
 }
 function roundRect(x, y, w, h, r){ ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
 function coverImg(img, cx, cy, size, zoom, radius){
+  // soft drop shadow so the square art floats above the background
+  ctx.save(); ctx.shadowColor = 'rgba(0,0,0,' + (lum(BG) > 0.4 ? '.38' : '.7') + ')'; ctx.shadowBlur = size * 0.07; ctx.shadowOffsetY = size * 0.03;
+  ctx.fillStyle = BG; roundRect(cx - size / 2, cy - size / 2, size, size, radius || 0); ctx.fill(); ctx.restore();
   ctx.save(); roundRect(cx - size / 2, cy - size / 2, size, size, radius || 0); ctx.clip();
   var iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height, s = Math.max(size / iw, size / ih) * (zoom || 1);
   ctx.drawImage(img, cx - iw * s / 2, cy - ih * s / 2, iw * s, ih * s); ctx.restore();
