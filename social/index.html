@@ -247,7 +247,8 @@ var AUDIO_BASE = 'https://audio.siteholderrecords.com/';
 var SITE_URL = 'siteholderrecords.com';
 var BG = '#06060e', INK = '#ffffff', SOFT = '#c9cbd1', TXT2 = '#e6e7ea', DIM = '#8f939b', EDGE = '#2b2d32', DEFAULT_BG = '#06060e';
 var CLIP = 10, MAX_TRACKS = 3, SPIN = 30;           // seconds per track, tracks per video, label spin in deg/sec (matches the SH001 test)
-var FADE_IN = 0.15, FADE_OUT = 0.5, TEXT_FADE = 0.35;
+var FADE_IN = 0.15, FADE_OUT = 0.5, TEXT_FADE = 0.35, END = 1.8;   // END = seconds of logo end card after the last clip
+var FADE = 1;
 var HASHTAGS = '#siteholder #siteholderrecords #minimaltechno #techno #deephouse #chicagohouse #vinyl #electronicmusic';
 
 var $ = function(id){ return document.getElementById(id); };
@@ -475,7 +476,8 @@ function renderOrder(){
     };
   });
 }
-function countTracks(){ $('trkCount').textContent = '(' + S.picks.length + '/' + MAX_TRACKS + ' · ' + (S.picks.length * CLIP) + 's)'; }
+function vidTotal(){ return S.picks.length * CLIP + END; }
+function countTracks(){ $('trkCount').textContent = '(' + S.picks.length + '/' + MAX_TRACKS + ' · ' + (S.picks.length * CLIP) + 's + ' + END + 's end card)'; }
 function renderSegs(){
   [].forEach.call($('fmtSeg').children, function(b){ b.setAttribute('aria-pressed', b.dataset.v === S.fmt); });
   [].forEach.call($('lookSeg').children, function(b){ b.setAttribute('aria-pressed', b.dataset.v === S.look);
@@ -584,16 +586,30 @@ function renderText(){
 
 function draw(t){
   var h = H(); ctx.fillStyle = BG; ctx.fillRect(0, 0, W, h); drawPattern(t, h); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  var e = 0;
+  if (S.fmt === 'video' && S.picks.length) { var end0 = S.picks.length * CLIP - 0.2; e = Math.max(0, Math.min(1, (t - end0) / 0.6)); e = e * e * (3 - 2 * e); }
+  FADE = 1 - e; ctx.globalAlpha = FADE;
+  if (FADE > 0) drawBody(t, h);
+  ctx.globalAlpha = 1; FADE = 1;
+  if (e > 0) endCard(e, h);
+}
+function endCard(e, h){
+  var w = 620 * (.94 + .06 * e); ctx.save(); ctx.globalAlpha = e; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  var lh = logoImg ? w * logoImg.height / logoImg.width : 0, cy = h * .45;
+  if (logoImg) ctx.drawImage(logoImg, (W - w) / 2, cy - lh / 2 - 30, w, lh);
+  ctx.fillStyle = TXT2; ctx.font = '600 40px ' + BODY; ctx.fillText(SITE_URL, W / 2, cy + lh / 2 + 50);
+  ctx.restore();
+}
+function drawBody(t, h){
   var head = $('headline').value.trim();
   if (S.mode === 'artist') return drawArtist(t, head);
   if (!S.rel) return;
   var r = S.rel, info = infoText();
   if (S.fmt === 'video') {
-    logo(56, 340);
     if (S.art) { if (S.look === 'spin') disc(S.art, 540, 640, 400, t * SPIN, r.labelHole); else coverImg(S.art, 540, 640, 800, 1 + 0.06 * Math.min(1, t / Math.max(CLIP, S.picks.length * CLIP)), 12); }
     var ty = 1180;
     if (head) { spaced(head.toUpperCase(), 30, 700, SOFT, 1100, 5); ty = 1200; }
-    var c = clipAt(t); if (c) { ctx.globalAlpha = c.a; trackBlock(c.o, ty, true); ctx.globalAlpha = 1; }
+    var c = clipAt(t); if (c) { ctx.globalAlpha = c.a * FADE; trackBlock(c.o, ty, true); ctx.globalAlpha = FADE; }
     spaced(info.toUpperCase(), 30, 600, DIM, ty + 232, 5);
     ctx.fillStyle = TXT2; ctx.font = '600 38px ' + BODY; ctx.fillText(SITE_URL, W / 2, ty + 288);
   } else {
@@ -612,7 +628,6 @@ function drawArtist(t, head){
   if (!S.artist) return;
   var v = S.fmt === 'video', q = $('quote').value.trim(), label = (head || 'Artist spotlight').toUpperCase();
   if (v) {
-    logo(56, 340);
     var total = Math.max(CLIP, S.picks.length * CLIP);
     if (S.photo) coverImg(S.photo, 540, 610, 700, 1.02 + 0.06 * Math.min(1, t / total), 12);
     else { ctx.strokeStyle = EDGE; ctx.lineWidth = 2; roundRect(190, 260, 700, 700, 12); ctx.stroke(); }
@@ -620,8 +635,8 @@ function drawArtist(t, head){
     ctx.fillStyle = INK; fit(S.artist, W / 2, 1115, 960, 80, '800', HEAD, 40);
     var y = 1190;
     if (q) { ctx.fillStyle = TXT2; var n = wrap('“' + q + '”', W / 2, y, 900, 34, 44, 2, 'italic 400 {px} Inter'); y += n * 44 + 24; } else y += 10;
-    var c = clipAt(t); if (c) { ctx.globalAlpha = c.a; trackBlock(c.o, y + 30, false);
-      spaced((c.o.r.cat + '  ·  ' + c.o.r.year).toUpperCase(), 26, 600, DIM, y + 124, 5); ctx.globalAlpha = 1; }
+    var c = clipAt(t); if (c) { ctx.globalAlpha = c.a * FADE; trackBlock(c.o, y + 30, false);
+      spaced((c.o.r.cat + '  ·  ' + c.o.r.year).toUpperCase(), 26, 600, DIM, y + 124, 5); ctx.globalAlpha = FADE; }
     ctx.fillStyle = TXT2; ctx.font = '600 38px ' + BODY; ctx.fillText(SITE_URL, W / 2, Math.min(y + 190, 1490));
   } else {
     logo(40, 230);
@@ -835,7 +850,7 @@ function stop(){ if (!running) return; var s = running; running = null; cancelAn
 async function preview(){
   if (running) { stop(); return; }
   if (!S.picks.length) { setStatus('Pick at least one track.', 'warn'); return; }
-  var total = S.picks.length * CLIP, sess = running = { stop: [] }, clock;
+  var total = vidTotal(), sess = running = { stop: [] }, clock;
   $('play').textContent = 'Stop'; setStatus('Loading audio…');
   // iPhones mute Web Audio when the side switch is on silent: ask for "playback" audio and keep a silent media element running so sound still comes out
   try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
@@ -871,7 +886,7 @@ async function download(){
   if (!S.picks.length) { setStatus('Pick at least one track.', 'warn'); return; }
   var mime = pickMime(); if (!mime) { setStatus('This browser can’t record video. Use Chrome.', 'bad'); return; }
   try { cv.toDataURL(); } catch (e) { setStatus('This photo can’t be used in a video because its host blocks it. Drop the photo in instead.', 'bad'); return; }
-  var total = S.picks.length * CLIP, sess = running = { stop: [] };
+  var total = vidTotal(), sess = running = { stop: [] };
   $('dl').disabled = true; $('play').disabled = true;
   try {
     setStatus('Loading audio…');
@@ -883,7 +898,7 @@ async function download(){
     rec.ondataavailable = function(e){ if (e.data.size) chunks.push(e.data); };
     var finished = new Promise(function(res){ rec.onstop = res; });
     draw(0); var t0 = ac.currentTime + 0.25; schedule(ac, bufs, mix, t0); rec.start(250);
-    setStatus('Recording ' + total + 's… keep this tab visible.');
+    setStatus('Recording ' + total.toFixed(1) + 's… keep this tab visible.');
     await new Promise(function(res){ animate(sess, function(){ return ac.currentTime - t0; }, total + 0.2, res); });
     rec.stop(); await finished;
     var ext = mime.indexOf('video/mp4') === 0 ? 'mp4' : 'webm';
