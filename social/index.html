@@ -600,7 +600,7 @@ async function preview(){
   if (!S.picks.length) { setStatus('Pick at least one track.', 'warn'); return; }
   var total = S.picks.length * CLIP, sess = running = { stop: [] }, clock;
   $('play').textContent = 'Stop'; setStatus('Loading audio…');
-  try { var ac = new AudioContext(); sess.stop.push(function(){ ac.close(); });
+  try { var ac = new (window.AudioContext || window.webkitAudioContext)(); if (ac.resume) ac.resume(); sess.stop.push(function(){ ac.close(); });
     var bufs = await decodeClips(ac); if (running !== sess) return;
     var t0 = ac.currentTime + 0.1; schedule(ac, bufs, ac.destination, t0); clock = function(){ return ac.currentTime - t0; }; setStatus('');
   } catch (e) {
@@ -635,7 +635,7 @@ async function download(){
   $('dl').disabled = true; $('play').disabled = true;
   try {
     setStatus('Loading audio…');
-    var ac = new AudioContext(); sess.stop.push(function(){ ac.close(); });
+    var ac = new (window.AudioContext || window.webkitAudioContext)(); if (ac.resume) ac.resume(); sess.stop.push(function(){ ac.close(); });
     var bufs = await decodeClips(ac), dest = ac.createMediaStreamDestination(), mix = ac.createGain();
     mix.connect(dest); mix.connect(ac.destination);
     var stream = new MediaStream(cv.captureStream(30).getVideoTracks().concat(dest.stream.getAudioTracks()));
