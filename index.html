@@ -4680,19 +4680,35 @@ function initCarousel() {
   pp.onclick = function () { stopped = !stopped; pp.setAttribute('aria-label', stopped ? 'Resume automatic rotation' : 'Pause automatic rotation'); pp.innerHTML = stopped ? '&#9654;' : '&#10074;&#10074;'; };
   dots.appendChild(pp);
   timer = setInterval(function () { if (!hold) tick(); }, 8000);
-  /* the We're back panel: the label's crescent pattern, drawn once */
-  function paint() {
-    var c = document.getElementById('hc-bg'); if (!c) return; var r = c.parentNode.getBoundingClientRect(), d = window.devicePixelRatio || 1;
-    c.width = Math.round(r.width * d); c.height = Math.round(r.height * d); var x = c.getContext('2d'); x.scale(d, d);
-    x.fillStyle = '#06060e'; x.fillRect(0, 0, r.width, r.height);
-    var gc = ['#a8a8a8', '#7c7c7c', '#c9c9c9'], ms = 92, mr = 56;
-    for (var j = 0; j * 70 < r.height + 70; j++) for (var i = 0; i * ms < r.width + ms; i++) {
-      var w = Math.sin((i + j * .6) * .32 - 2.4), lit = w > .55, R2 = mr / 2;
-      x.save(); x.globalAlpha = lit ? 1 : .2; x.translate(i * ms + ms / 2, j * 70 + 35); x.rotate(w * Math.PI / 2); x.translate(R2 / 2, 0); x.fillStyle = lit ? gc[(i + j) % 3] : '#fff';
-      x.beginPath(); x.arc(0, 0, R2, Math.PI / 2, Math.PI * 1.5); x.arc(0, 0, R2 * .44, Math.PI * 1.5, Math.PI / 2, true); x.closePath(); x.fill(); x.restore();
+  /* the We're back panel: the label's crescent pattern, drawn live while that slide is showing */
+  var bg = document.getElementById('hc-bg'), bx = bg ? bg.getContext('2d') : null, bw = 0, bh = 0, raf = 0, last = 0, t0 = performance.now();
+  function size() { if (!bg) return; var r = bg.parentNode.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2); bw = r.width; bh = r.height; bg.width = Math.round(bw * d); bg.height = Math.round(bh * d); bx.setTransform(d, 0, 0, d, 0, 0); }
+  function draw(t) {
+    bx.fillStyle = '#06060e'; bx.fillRect(0, 0, bw, bh);
+    var gc = ['#a8a8a8', '#7c7c7c', '#c9c9c9'], ms = 92, mr = 56, R2 = mr / 2;
+    for (var j = 0; j * 70 < bh + 70; j++) for (var i = 0; i * ms < bw + ms; i++) {
+      var w = Math.sin((i + j * .6) * .32 - t * .9), lit = w > .55;
+      bx.save(); bx.globalAlpha = lit ? 1 : .2; bx.translate(i * ms + ms / 2, j * 70 + 35); bx.rotate(w * Math.PI / 2); bx.translate(R2 / 2, 0); bx.fillStyle = lit ? gc[(i + j) % 3] : '#fff';
+      bx.beginPath(); bx.arc(0, 0, R2, Math.PI / 2, Math.PI * 1.5); bx.arc(0, 0, R2 * .44, Math.PI * 1.5, Math.PI / 2, true); bx.closePath(); bx.fill(); bx.restore();
     }
   }
-  paint(); window.addEventListener('resize', paint);
+  function frame(now) {
+    raf = 0;
+    if (!document.body.contains(stage)) return;
+    if (now - last >= 33) { last = now; draw((now - t0) / 1000 + 2.4); }
+    raf = requestAnimationFrame(frame);
+  }
+  /* run only when the We're back slide is visible, the tab is in front, and the visitor allows motion */
+  function sync() {
+    if (!bg) return;
+    var on = slides[cur] === bg.parentNode && !document.hidden && !reduce;
+    if (on && !raf) raf = requestAnimationFrame(frame);
+    if (!on && raf) { cancelAnimationFrame(raf); raf = 0; }
+  }
+  var show0 = show; show = function (i) { show0(i); sync(); };
+  document.addEventListener('visibilitychange', sync);
+  window.addEventListener('resize', function () { size(); draw(2.4 + (performance.now() - t0) / 1000); });
+  size(); draw(2.4); sync();
 }
 var FEAT = { i: Math.floor(Math.random() * FEATURED.length) };
 function featHTML() {
