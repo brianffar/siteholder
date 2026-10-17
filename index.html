@@ -4492,9 +4492,10 @@ function sortKey(n) { return n.toLowerCase().replace(/^the\s+/, ''); }
 function byName(a, b) { return sortKey(a).localeCompare(sortKey(b)); }
 
 function homeArtist() {
-  if (!window.HOME_PICK) window.HOME_PICK = HOME_ARTISTS[Math.floor(Math.random() * HOME_ARTISTS.length)];
-  var a = window.HOME_PICK, rel = a.rel ? R.filter(function (x) { return x.id === a.rel; })[0] : null;
-  var pic = a.img ? '<img src="' + a.img + '" alt="' + esc(a.name) + '">' : (rel ? cover(rel) : '');
+  /* photos only: an artist joins the rotation once a photo is added */
+  var pool = HOME_ARTISTS.filter(function (x) { return x.img; });
+  if (!window.HOME_PICK) window.HOME_PICK = pool[Math.floor(Math.random() * pool.length)];
+  var a = window.HOME_PICK, pic = '<img src="' + a.img + '" alt="' + esc(a.name) + '">';
   return '<div class="hc-slide hero hc-artist" role="group" aria-roledescription="slide" aria-label="Featured artist"><a class="art" href="#artists" aria-label="' + esc(a.name) + '">' + pic + '</a><div>' +
     '<p class="eyebrow">Featured artist</p><h1>' + esc(a.name) + '</h1><p class="ttl">' + a.tag + '</p><p class="bio">' + a.blurb + '</p>' +
     '<div class="actions"><a class="btn solid" href="#catalog" data-feat-q="' + esc(a.name) + '">See the releases</a><a class="btn" href="#artists">All artists</a></div></div></div>';
