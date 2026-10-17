@@ -152,6 +152,35 @@ main { padding-block: 40px 72px; min-height: 70vh; }
 .pod-h { font-size: 18px; margin-top: 0; }
 a.card:hover .listen { text-decoration: underline; }
 
+
+/* home carousel */
+.hcar { position: relative; }
+.hc-stage { display: grid; }
+.hc-slide { grid-area: 1 / 1; visibility: hidden; opacity: 0; transition: opacity .5s ease, visibility 0s linear .5s; }
+.hc-slide[data-on="true"] { visibility: visible; opacity: 1; transition: opacity .5s ease; }
+.hc-artist .art img { aspect-ratio: 1; }
+@media (min-width: 900px) { .hcar .hero { --hero-art: 380px; align-items: center; min-height: 420px; } }
+.hc-artist .bio { font-size: 15px; line-height: 1.55; color: var(--muted); margin-top: 12px; max-width: 54ch; }
+.hc-back { position: relative; overflow: hidden; background: #06060e; color: #fff; display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; gap: 24px; padding: 40px 24px; }
+.hc-back canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.hc-back::before { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at 28% 50%, rgba(6,6,14,.92), rgba(6,6,14,.4) 72%); z-index: 1; }
+.hc-back > div, .hc-back > .hc-reel { position: relative; z-index: 2; }
+.hc-back .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: #cfcfcf; margin: 0; }
+.hc-back h1 { font-family: var(--display); font-weight: 900; font-stretch: 100%; font-size: clamp(38px, 7vw, 66px); line-height: .98; letter-spacing: -0.03em; text-transform: uppercase; margin: 14px 0 12px; color: #fff; }
+.hc-back .lede { font-size: 18px; color: #d8d8d8; margin: 0 0 24px; max-width: 420px; }
+.hc-back .btn { background: #fff; color: #111; border-color: #fff; }
+.hc-reel { display: none; justify-self: end; height: 340px; aspect-ratio: 9 / 16; border-radius: 14px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,.6); }
+.hc-reel img { width: 100%; height: 100%; object-fit: cover; display: block; }
+@media (min-width: 900px) { .hc-back { grid-template-columns: minmax(0, 1fr) 280px; gap: 40px; padding: 0 64px; min-height: 420px; } .hc-reel { display: block; } }
+.hc-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; font-size: 18px; z-index: 3; display: none; }
+.hc-nav:hover { border-color: var(--ink); }
+.hc-prev { left: -6px; } .hc-next { right: -6px; }
+@media (min-width: 900px) { .hc-nav { display: block; } }
+.hc-dots { display: flex; gap: 6px; justify-content: center; margin-top: 18px; }
+.hc-dots button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 4px; background: var(--line); cursor: pointer; transition: width .25s, background .25s; }
+.hc-dots button[aria-current="true"] { width: 28px; background: var(--ink); }
+@media (prefers-reduced-motion: reduce) { .hc-slide, .hc-slide[data-on="true"] { transition: none; } }
+
 /* home hero */
 .hero { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; align-items: end; }
 @media (min-width: 900px) { .hero { grid-template-columns: var(--hero-art, 380px) minmax(0, 1fr); gap: 56px; align-items: start; } }
@@ -4460,12 +4489,28 @@ function artists() {
 function sortKey(n) { return n.toLowerCase().replace(/^the\s+/, ''); }
 function byName(a, b) { return sortKey(a).localeCompare(sortKey(b)); }
 
+function homeArtist() {
+  if (!window.HOME_PICK) window.HOME_PICK = HOME_ARTISTS[Math.floor(Math.random() * HOME_ARTISTS.length)];
+  var a = window.HOME_PICK, rel = a.rel ? R.filter(function (x) { return x.id === a.rel; })[0] : null;
+  var pic = a.img ? '<img src="' + a.img + '" alt="' + esc(a.name) + '">' : (rel ? cover(rel) : '');
+  return '<div class="hc-slide hero hc-artist" role="group" aria-roledescription="slide" aria-label="Featured artist"><a class="art" href="#artists" aria-label="' + esc(a.name) + '">' + pic + '</a><div>' +
+    '<p class="eyebrow">Featured artist</p><h1>' + esc(a.name) + '</h1><p class="ttl">' + a.tag + '</p><p class="bio">' + a.blurb + '</p>' +
+    '<div class="actions"><a class="btn solid" href="#catalog" data-feat-q="' + esc(a.name) + '">See the releases</a><a class="btn" href="#artists">All artists</a></div></div></div>';
+}
 function home() {
   var r = R[0];
-  return '<section class="hero"><a class="art" href="#release-' + r.id + '" aria-label="' + r.title + '">' + cover(r) + '</a><div>' +
+  return '<section class="hcar" aria-roledescription="carousel" aria-label="Highlights"><div class="hc-stage" id="hc-stage">' +
+    '<div class="hc-slide hero" role="group" aria-roledescription="slide" aria-label="Latest release"><a class="art" href="#release-' + r.id + '" aria-label="' + r.title + '">' + cover(r) + '</a><div>' +
     '<p class="eyebrow">Latest release &middot; <span class="cat">' + catNo(r) + '</span></p><h1>' + r.artist + '</h1><p class="ttl">' + r.title + '</p><p class="sub">' + r.sub + '</p>' +
-    '<div class="actions"><a class="btn solid" href="#release-' + r.id + '">Listen &amp; buy</a><a class="btn" href="#catalog">Browse the catalog</a></div>' +
-    '<p class="intro">Electronic music for DJs and fans. Every release is available to preview, then buy as high-resolution audio or on vinyl.</p></div></section>' +
+    '<div class="actions"><a class="btn solid" href="#release-' + r.id + '">Listen &amp; buy</a><a class="btn" href="#catalog">Browse the catalog</a></div></div></div>' +
+    '<div class="hc-slide hc-back" role="group" aria-roledescription="slide" aria-label="We\u2019re back"><canvas id="hc-bg" aria-hidden="true"></canvas><div>' +
+    '<p class="eyebrow">We\u2019re back</p><h1>The party<br>isn\u2019t over.</h1><p class="lede">Siteholder\u2019s back. To destroy dancefloors.</p>' +
+    '<div class="actions"><a class="btn" href="#catalog">Browse the catalog</a></div></div>' +
+    '<div class="hc-reel"><img src="images/were-back-reel.jpg" alt="Still from the Siteholder We\u2019re Back reel" loading="lazy"></div></div>' +
+    homeArtist() +
+    '</div><button type="button" class="hc-nav hc-prev" aria-label="Previous slide">&larr;</button><button type="button" class="hc-nav hc-next" aria-label="Next slide">&rarr;</button>' +
+    '<div class="hc-dots" id="hc-dots"></div></section>' +
+    '<p class="intro" style="max-width:62ch;margin:28px 0 0;color:var(--muted)">Electronic music for DJs and fans. Every release is available to preview, then buy as high-resolution audio or on vinyl.</p>' +
     '<section class="block" data-home="1"><div class="sec-head"><h2>Recent releases</h2><a class="more" href="#catalog">Full catalog</a></div><div class="filters">' + labelChips() + chips('fmt', ['Digital', 'Vinyl']) + '<div class="search"><input id="q" type="search" placeholder="Search artist, title or track" aria-label="Search the catalog by artist, title or track" value="' + F.q.replace(/"/g, '&quot;') + '"></div></div><div id="results"></div></section>';
 }
 
@@ -4600,6 +4645,49 @@ var FEATURED = [
 ];
 var FEAT_IMG = {"Pan-Pot": "images/feat/pan-pot.jpg", "Akufen": "images/feat/akufen.jpg", "Maetrik": "images/feat/maetrik.jpg", "Billy Dalessandro": "images/feat/billy-dalessandro.jpg", "Alka Rex": "images/feat/alka-rex.jpg", "Brian Ffar": "images/feat/brian-ffar.jpg"};
 FEATURED.forEach(function (f) { f.img = FEAT_IMG[f.name]; });
+var HOME_ARTISTS = [
+  { name: "Pan-Pot", tag: "Berlin \u00b7 Techno & house", img: "images/feat/pan-pot.jpg", blurb: "The Berlin duo behind Second State Audio, known for driving, atmospheric techno and house. Their remix of <em>Billy Bought A Laser</em> is on Siteholder." },
+  { name: "Akufen", tag: "Montr\u00e9al \u00b7 Microhouse", img: "images/feat/akufen.jpg", blurb: "Marc Leclair turned the radio dial into an instrument, building his \u201cmicrosampling\u201d sound from slices of FM radio. His remix of <em>Don\u2019t Wait For Me</em> is on Siteholder." },
+  { name: "Butane", tag: "Remixer", rel: "backseat-driver-ep", blurb: "His \u201cPercocet\u201d remix of Slutbox\u2019s <em>Backseat Driver</em> is on Siteholder." },
+  { name: "Maetrik", tag: "Techno \u00b7 Electro", img: "images/feat/maetrik.jpg", blurb: "Eric Estornel\u2019s early techno and electro alias, before he became Maceo Plex. His Maetrik remixes are on two Siteholder releases." },
+  { name: "Billy Dalessandro", tag: "Chicago \u00b7 Montr\u00e9al", img: "images/feat/billy-dalessandro.jpg", blurb: "MUTEK calls him \u201cChicago\u2019s prodigal son.\u201d A classically trained pianist and multimedia engineer, now based in Montr\u00e9al, he co-owns Siteholder Records." },
+  { name: "Brian Ffar", tag: "Chicago \u00b7 Minimal techno & house", img: "images/feat/brian-ffar.jpg", blurb: "A DJ for more than twenty years and an early American voice in minimal techno. His best-known record is the Pan-Pot remix of <em>Billy Bought A Laser</em>." }
+];
+/* home carousel: slides, dots, arrows, slow auto-advance */
+function initCarousel() {
+  var stage = document.getElementById('hc-stage'); if (!stage) return;
+  var slides = [].slice.call(stage.children), dots = document.getElementById('hc-dots'), cur = 0, timer = null, stopped = false;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  slides.forEach(function (sl, i) { var b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', 'Show slide ' + (i + 1)); b.onclick = function () { stopped = true; show(i); }; dots.appendChild(b); });
+  function show(i) {
+    cur = (i + slides.length) % slides.length;
+    slides.forEach(function (sl, k) { sl.setAttribute('data-on', k === cur); sl.setAttribute('aria-hidden', k !== cur); });
+    [].forEach.call(dots.children, function (b, k) { b.setAttribute('aria-current', k === cur); });
+  }
+  function tick() { if (!document.body.contains(stage)) { clearInterval(timer); return; } if (!stopped && !document.hidden) show(cur + 1); }
+  var sec = stage.parentNode;
+  sec.querySelector('.hc-prev').onclick = function () { stopped = true; show(cur - 1); };
+  sec.querySelector('.hc-next').onclick = function () { stopped = true; show(cur + 1); };
+  var hold = false; sec.addEventListener('mouseenter', function () { hold = true; }); sec.addEventListener('mouseleave', function () { hold = false; });
+  sec.addEventListener('focusin', function () { stopped = true; });
+  var x0 = null; stage.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+  stage.addEventListener('touchend', function (e) { if (x0 === null) return; var dx = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(dx) > 40) { stopped = true; show(cur + (dx < 0 ? 1 : -1)); } }, { passive: true });
+  show(0);
+  if (!reduce) timer = setInterval(function () { if (!hold) tick(); }, 8000);
+  /* the We're back panel: the label's crescent pattern, drawn once */
+  function paint() {
+    var c = document.getElementById('hc-bg'); if (!c) return; var r = c.parentNode.getBoundingClientRect(), d = window.devicePixelRatio || 1;
+    c.width = Math.round(r.width * d); c.height = Math.round(r.height * d); var x = c.getContext('2d'); x.scale(d, d);
+    x.fillStyle = '#06060e'; x.fillRect(0, 0, r.width, r.height);
+    var gc = ['#a8a8a8', '#7c7c7c', '#c9c9c9'], ms = 92, mr = 56;
+    for (var j = 0; j * 70 < r.height + 70; j++) for (var i = 0; i * ms < r.width + ms; i++) {
+      var w = Math.sin((i + j * .6) * .32 - 2.4), lit = w > .55, R2 = mr / 2;
+      x.save(); x.globalAlpha = lit ? 1 : .2; x.translate(i * ms + ms / 2, j * 70 + 35); x.rotate(w * Math.PI / 2); x.translate(R2 / 2, 0); x.fillStyle = lit ? gc[(i + j) % 3] : '#fff';
+      x.beginPath(); x.arc(0, 0, R2, Math.PI / 2, Math.PI * 1.5); x.arc(0, 0, R2 * .44, Math.PI * 1.5, Math.PI / 2, true); x.closePath(); x.fill(); x.restore();
+    }
+  }
+  paint(); window.addEventListener('resize', paint);
+}
 var FEAT = { i: Math.floor(Math.random() * FEATURED.length) };
 function featHTML() {
   var f = FEATURED[FEAT.i], all = artists(), a = all.filter(function (x) { return x.name.toLowerCase() === f.name.toLowerCase(); })[0];
@@ -4725,6 +4813,7 @@ function route() {
   var key = h.indexOf('podcast-') === 0 ? 'mixes' : h.indexOf('release-') === 0 ? 'catalog' : h.indexOf('about') === 0 ? 'about' : h;
   document.querySelectorAll('#nav [data-r]').forEach(function (a) { if (a.dataset.r === key) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   enhanceSearch();
+  initCarousel();
   fitHero();
   var st = history.state, back = st && typeof st.y === 'number';
   window.scrollTo(0, back ? st.y : 0);
@@ -4733,10 +4822,12 @@ function route() {
 }
 /* desktop: make the featured cover as tall as the text beside it */
 function fitHero() {
-  var h = view.querySelector('.hero'); if (!h) return;
-  if (window.innerWidth < 900) { h.style.removeProperty('--hero-art'); return; }
-  var t = h.children[1];
-  for (var i = 0; i < 3; i++) h.style.setProperty('--hero-art', Math.max(260, Math.min(520, Math.round(t.getBoundingClientRect().height))) + 'px');
+  [].forEach.call(view.querySelectorAll('.hero'), function (h) {
+    if (h.closest('.hcar')) return;
+    if (window.innerWidth < 900) { h.style.removeProperty('--hero-art'); return; }
+    var t = h.children[1];
+    for (var i = 0; i < 3; i++) h.style.setProperty('--hero-art', Math.max(260, Math.min(520, Math.round(t.getBoundingClientRect().height))) + 'px');
+  });
 }
 window.addEventListener('resize', fitHero);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitHero);
