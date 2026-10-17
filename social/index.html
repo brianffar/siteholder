@@ -308,10 +308,10 @@ async function loadSheet(){
   try {
     var rows = parseCSV(await (await fetch(SHEET_CSV + (SHEET_CSV.indexOf('?') < 0 ? '?' : '&') + 't=' + Date.now())).text());
     var h = rows[0] || [], col = function(name, from){ for (var i = from || 0; i < h.length; i++) if (h[i].trim() === name) return i; return -1; };
-    var A = col('Artist'), B = col('Instagram handle'), C = col('Confidence'), D = col('Other names / aliases'), E = col('Press photo link'), F = col('Siteholder quote');
+    var A = col('Artist'), B = col('Instagram handle'), C = col('Confidence'), D = col('Other names / aliases'), E = col('Press photo link'), F = col('Siteholder quote'), G = col('Artist caption');
     var K = col('Catalog #'), V = col('Video tracks'), P = col('Caption');
     rows.slice(1).forEach(function(r){
-      if (A >= 0 && r[A]) SH.artists[norm(r[A])] = { name: r[A], ig: (r[B] || '').trim(), conf: (r[C] || '').trim(), aka: r[D] || '', photo: (r[E] || '').trim(), quote: (r[F] || '').trim() };
+      if (A >= 0 && r[A]) SH.artists[norm(r[A])] = { name: r[A], ig: (r[B] || '').trim(), conf: (r[C] || '').trim(), aka: r[D] || '', photo: (r[E] || '').trim(), quote: (r[F] || '').trim(), caption: G >= 0 ? (r[G] || '').trim() : '' };
       if (K >= 0 && r[K]) SH.releases[r[K].trim().toUpperCase()] = { tracks: (r[V] || '').trim(), caption: (r[P] || '').trim() };
     });
     st.textContent = 'sheet connected · ' + Object.keys(SH.artists).length + ' artists'; st.className = 'ok';
@@ -848,6 +848,8 @@ function buildCaption(){
   if (S.mode === 'artist' && S.artist) {
     var q = $('quote').value.trim(), hnd = handleFor(S.artist), p = picked(), rels = [];
     S.items.forEach(function(o){ if (rels.indexOf(o.r) < 0) rels.push(o.r); });
+    var artCap = (SH.artists[norm(S.artist)] || {}).caption;
+    if (artCap) { src = 'from the sheet'; text = artCap; } else {
     text = (head || 'Artist spotlight') + ': ' + S.artist + (hnd ? ' ' + hnd : '') + '\n\n' + (q ? '“' + q + '”\n\n' : '')
       + (p.length ? 'In this clip:\n' + p.map(function(o){ var by = trackArtists(o.r, o.t).filter(function(n){ return norm(n) !== norm(S.artist); }).join(', '); return '▸ ' + (by ? by + ' – ' : '') + full(o.t) + ' [' + o.r.cat + ']'; }).join('\n') + '\n\n' : '')
       + (rels.length ? 'On Siteholder: ' + rels.slice(0, 6).map(function(r){ return r.cat; }).join(', ') + (rels.length > 6 ? ' + ' + (rels.length - 6) + ' more' : '') + '\n\n' : '')
@@ -856,6 +858,7 @@ function buildCaption(){
     var tg = tagsFor(others); if (tg.tags.length) text = text.replace('\n\nListen', '\nWith ' + tg.tags.join(' ') + '\n\nListen');
     if (!hnd) note.push('No confirmed handle for ' + S.artist + '.');
     if (tg.likely.length) note.push('Not tagged (only “Likely”): ' + tg.likely.join(', ') + '.');
+    }
   } else if (S.rel) {
     var r = S.rel, sheetCap = (SH.releases[r.cat.toUpperCase()] || {}).caption;
     if (sheetCap) { src = 'from the sheet'; text = sheetCap; }
