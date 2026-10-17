@@ -179,13 +179,13 @@ footer{border-top:1px solid var(--line);padding-block:32px 48px}
       <textarea id="quote" rows="3" placeholder="Their quote about Siteholder (from the sheet, or type one)"></textarea>
     </div>
     <div class="card" id="batchCard" hidden>
-      <span class="lab">Batch export <span style="text-transform:none;letter-spacing:0">(every artist in one go)</span></span>
-      <div class="row" style="gap:18px;margin-bottom:10px"><label><input type="checkbox" id="bImg" checked> Images (4:5)</label><label><input type="checkbox" id="bVid" checked> Videos (9:16)</label><label><input type="checkbox" id="bSkip" checked> Skip artists with no photo</label></div>
-      <details id="bDet"><summary id="bSum" style="cursor:pointer">Choose artists</summary>
+      <span class="lab">Batch export <span style="text-transform:none;letter-spacing:0">(everything in one go)</span></span>
+      <div class="row" style="gap:18px;margin-bottom:10px"><label><input type="checkbox" id="bImg" checked> Images (4:5)</label><label><input type="checkbox" id="bVid" checked> Videos (9:16)</label><label id="bSkipL"><input type="checkbox" id="bSkip" checked> Skip artists with no photo</label></div>
+      <details id="bDet"><summary id="bSum" style="cursor:pointer">Choose</summary>
         <div class="row" style="margin:8px 0"><button class="btn" id="bAll" type="button" style="padding:5px 10px;font-size:13px">All</button><button class="btn" id="bNone" type="button" style="padding:5px 10px;font-size:13px">None</button></div>
         <div id="bList" style="max-height:200px;overflow:auto;display:grid;gap:4px"></div></details>
       <div class="row" style="margin-top:12px"><button class="btn solid" id="bGo" type="button">Choose folder &amp; generate all</button><button class="btn" id="bStop" type="button" hidden>Cancel</button></div>
-      <p class="hint">Uses the background, pattern and look you have set right now (set black + Geometric first). Saves into <b>images/</b> and <b>reels/</b> folders with a <b>captions.csv</b>. Videos record in real time (about 35 seconds each), so keep this tab open and visible. Needs Chrome.</p>
+      <p class="hint">Uses the background, pattern and look you have set right now (for artists, set black + Geometric first; each release uses its own artwork look). Saves into <b>images/</b> and <b>reels/</b> folders with a <b>captions.csv</b>. Videos record in real time (about 35 seconds each), so keep this tab open and visible. Needs Chrome.</p>
     </div>
 
     <div class="card" id="txtCard">
@@ -975,21 +975,28 @@ async function download(){
 
 /* ---------- batch export ---------- */
 var batchStop = false, batchOn = false;
+function batchItems(){
+  if (S.mode === 'artist') return Object.keys(NAMES).map(function(k){ return NAMES[k]; }).sort(function(a, b){ return a.localeCompare(b); }).map(function(n){ return { key: n, label: n }; });
+  return R.map(function(r){ return { key: r.cat, label: r.cat + ' · ' + r.title + ' (' + r.artist + ')' }; });
+}
 function renderBatchList(){
-  var box = $('bList'); if (box.children.length) { updBatchCount(); return; }
-  Object.keys(NAMES).map(function(k){ return NAMES[k]; }).sort(function(a, b){ return a.localeCompare(b); }).forEach(function(n){
-    var l = document.createElement('label'); l.innerHTML = '<input type="checkbox" checked> ' + esc(n); l.firstChild.dataset.n = n; l.firstChild.onchange = updBatchCount; box.appendChild(l); });
+  var box = $('bList'), want = S.mode; if (box.children.length && box.dataset.mode === want) { updBatchCount(); return; }
+  box.innerHTML = ''; box.dataset.mode = want; $('bSkipL').hidden = want !== 'artist'; $('bVid').checked = want === 'artist';
+  batchItems().forEach(function(it){
+    var l = document.createElement('label'); l.innerHTML = '<input type="checkbox" checked> ' + esc(it.label); l.firstChild.dataset.n = it.key; l.firstChild.onchange = updBatchCount; box.appendChild(l); });
   updBatchCount();
 }
 function batchNames(){ return [].filter.call($('bList').querySelectorAll('input'), function(i){ return i.checked; }).map(function(i){ return i.dataset.n; }); }
-function updBatchCount(){ $('bSum').textContent = 'Choose artists (' + batchNames().length + ' selected)'; }
+function updBatchCount(){ $('bSum').textContent = 'Choose ' + (S.mode === 'artist' ? 'artists' : 'releases') + ' (' + batchNames().length + ' selected)'; }
+async function selectItem(k){ if (S.mode === 'artist') return selectArtist(k); var r = R.find(function(x){ return x.cat === k; }); if (r) return selectRelease(r); }
 $('bAll').onclick = function(){ [].forEach.call($('bList').querySelectorAll('input'), function(i){ i.checked = true; }); updBatchCount(); };
 $('bNone').onclick = function(){ [].forEach.call($('bList').querySelectorAll('input'), function(i){ i.checked = false; }); updBatchCount(); };
 function csvCell(v){ v = String(v == null ? '' : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
 async function batchRun(){
   if (batchOn) return;
-  var names = batchNames(), wantImg = $('bImg').checked, wantVid = $('bVid').checked, skipNoPhoto = $('bSkip').checked;
-  if (!names.length) { setStatus('Pick at least one artist.', 'warn'); return; }
+  var names = batchNames(), wantImg = $('bImg').checked, wantVid = $('bVid').checked, skipNoPhoto = $('bSkip').checked && S.mode === 'artist';
+  var isArt = S.mode === 'artist', noun = isArt ? 'artists' : 'releases';
+  if (!names.length) { setStatus('Pick at least one ' + (isArt ? 'artist' : 'release') + '.', 'warn'); return; }
   if (!wantImg && !wantVid) { setStatus('Tick Images and/or Videos.', 'warn'); return; }
   var root = null, dImg = null, dVid = null;
   if (window.showDirectoryPicker) {
@@ -997,13 +1004,13 @@ async function batchRun(){
     catch (e) { setStatus('No folder chosen, so nothing was started.', 'warn'); return; }
   } else if (!confirm('This browser cannot save into a folder, so each file will download separately. Use Chrome for folders. Continue?')) return;
   async function put(dir, name, blob){ if (dir) { var fh = await dir.getFileHandle(name, { create: true }), w = await fh.createWritable(); await w.write(blob); await w.close(); } else save(blob, name); }
-  var finalMsg = null, origFmt = S.fmt, origArtist = S.artist, rows = [['artist', 'image_file', 'video_file', 'caption']], problems = [], done = 0;
+  var finalMsg = null, origFmt = S.fmt, origArtist = S.mode === 'artist' ? S.artist : (S.rel && S.rel.cat), rows = [[S.mode === 'artist' ? 'artist' : 'catalog', 'image_file', 'video_file', 'caption']], problems = [], done = 0;
   batchOn = true; batchStop = false; stop(); $('bGo').hidden = true; $('bStop').hidden = false; $('dl').disabled = true; $('play').disabled = true;
   try {
     for (var i = 0; i < names.length && !batchStop; i++) {
       var n = names[i], tagline = '(' + (i + 1) + '/' + names.length + ') ' + n + ': ';
       try {
-        setStatus(tagline + 'loading…'); await selectArtist(n);
+        setStatus(tagline + 'loading…'); await selectItem(n);
         if (skipNoPhoto && !S.photo) { problems.push(n + ': no photo'); continue; }
         var base = fileBase(), imgName = '', vidName = '', cap = '';
         if (wantImg) {
@@ -1020,11 +1027,11 @@ async function batchRun(){
       } catch (e) { problems.push(n + ': ' + (e && e.message || e)); }
     }
     if (root && rows.length > 1) { var cb = new Blob([rows.map(function(r){ return r.map(csvCell).join(','); }).join('\n')], { type: 'text/csv' }); await put(root, 'captions.csv', cb); }
-    finalMsg = [(batchStop ? 'Cancelled. ' : 'Finished. ') + done + ' of ' + names.length + ' artists saved' + (root ? ' to the folder you chose' : '') + '.' + (problems.length ? ' Skipped: ' + problems.join('; ') + '.' : ''), problems.length ? 'warn' : 'ok'];
+    finalMsg = [(batchStop ? 'Cancelled. ' : 'Finished. ') + done + ' of ' + names.length + ' ' + noun + ' saved' + (root ? ' to the folder you chose' : '') + '.' + (problems.length ? ' Skipped: ' + problems.join('; ') + '.' : ''), problems.length ? 'warn' : 'ok'];
   } catch (e) { finalMsg = ['Batch stopped: ' + e.message, 'bad']; }
   finally {
     batchOn = false; $('bGo').hidden = false; $('bStop').hidden = true; $('dl').disabled = false; $('play').disabled = false;
-    S.fmt = origFmt; renderSegs(); if (origArtist) await selectArtist(origArtist); else refresh();
+    S.fmt = origFmt; renderSegs(); if (origArtist) await selectItem(origArtist); else refresh();
     if (finalMsg) setStatus(finalMsg[0], finalMsg[1]);
   }
 }
@@ -1035,7 +1042,7 @@ $('bStop').onclick = function(){ batchStop = true; setStatus('Cancelling after t
 function setMode(m){
   stop(); S.mode = m;
   [].forEach.call(document.querySelectorAll('.tabs button'), function(b){ b.setAttribute('aria-selected', b.dataset.mode === m); });
-  $('otdCard').hidden = m !== 'otd'; $('relCard').hidden = m !== 'release'; $('artCard').hidden = m !== 'artist'; $('artInfo').hidden = m !== 'artist' || !S.artist; $('batchCard').hidden = m !== 'artist'; if (m === 'artist') renderBatchList();
+  $('otdCard').hidden = m !== 'otd'; $('relCard').hidden = m !== 'release'; $('artCard').hidden = m !== 'artist'; $('artInfo').hidden = m !== 'artist' || !S.artist; $('batchCard').hidden = m === 'otd'; if (m !== 'otd') renderBatchList();
   if (m === 'artist') { if (S.artist) selectArtist(S.artist); else { S.items = []; S.picks = []; renderTracks(); renderArtList(); renderSegs(); refresh(); } }
   else { if (m === 'otd') renderOtd(); else renderRelList(); if (S.rel) selectRelease(S.rel, m === 'otd' ? $('headline').value : ''); else { S.items = []; S.picks = []; renderTracks(); renderSegs(); refresh(); } }
 }
