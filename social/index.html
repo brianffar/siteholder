@@ -250,7 +250,7 @@ var SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtcQmpyXNElEkB
 var AUDIO_BASE = 'https://audio.siteholderrecords.com/';
 var SITE_URL = 'siteholderrecords.com';
 var BG = '#06060e', INK = '#ffffff', SOFT = '#c9cbd1', TXT2 = '#e6e7ea', DIM = '#8f939b', EDGE = '#2b2d32', DEFAULT_BG = '#06060e';
-var CLIP = 10, MAX_TRACKS = 3, SPIN = 30;           // seconds per track, tracks per video, label spin in deg/sec (matches the SH001 test)
+var CLIP = 10, MUSIC = 30, MAX_TRACKS = 3, SPIN = 30;           // seconds per track, tracks per video, label spin in deg/sec (matches the SH001 test)
 var FADE_IN = 0.15, FADE_OUT = 0.5, TEXT_FADE = 0.35, END = 1.8;   // END = seconds of logo end card after the last clip
 var FADE = 1;
 var HASHTAGS = '#siteholder #siteholderrecords #minimaltechno #techno #deephouse #chicagohouse #vinyl #electronicmusic';
@@ -480,8 +480,9 @@ function renderOrder(){
     };
   });
 }
-function vidTotal(){ return S.picks.length * CLIP + END; }
-function countTracks(){ $('trkCount').textContent = '(' + S.picks.length + '/' + MAX_TRACKS + ' · ' + (S.picks.length * CLIP) + 's + ' + END + 's end card)'; }
+function clipLen(){ return S.picks.length ? MUSIC / S.picks.length : CLIP; }   // 1 track = 30s, 2 = 15s each, 3 = 10s each
+function vidTotal(){ return (S.picks.length ? MUSIC : 0) + END; }
+function countTracks(){ $('trkCount').textContent = '(' + S.picks.length + '/' + MAX_TRACKS + ' · ' + (S.picks.length ? MUSIC : 0) + 's + ' + END + 's end card)'; }
 function renderSegs(){
   [].forEach.call($('fmtSeg').children, function(b){ b.setAttribute('aria-pressed', b.dataset.v === S.fmt); });
   [].forEach.call($('lookSeg').children, function(b){ b.setAttribute('aria-pressed', b.dataset.v === S.look);
@@ -553,8 +554,8 @@ function disc(img, cx, cy, r, deg, hole){
   if (hole) { ctx.fillStyle = BG; ctx.beginPath(); ctx.arc(cx, cy, r * 0.036, 0, Math.PI * 2); ctx.fill(); }
 }
 function picked(){ return S.picks.map(function(i){ return S.items[i]; }); }
-function clipAt(t){ var p = picked(); if (!p.length) return null; var k = Math.min(p.length - 1, Math.floor(t / CLIP)), local = t - k * CLIP, a = 1;
-  if (k > 0) a = Math.min(a, local / TEXT_FADE); if (k < p.length - 1) a = Math.min(a, (CLIP - local) / TEXT_FADE); return { o: p[k], a: Math.max(0, Math.min(1, a)) }; }
+function clipAt(t){ var p = picked(); if (!p.length) return null; var CL = clipLen(), k = Math.min(p.length - 1, Math.floor(t / CL)), local = t - k * CL, a = 1;
+  if (k > 0) a = Math.min(a, local / TEXT_FADE); if (k < p.length - 1) a = Math.min(a, (CL - local) / TEXT_FADE); return { o: p[k], a: Math.max(0, Math.min(1, a)) }; }
 function infoDefault(){ var r = S.rel; if (!r) return ''; return r.cat + '  ·  ' + (r.artist === 'Various Artists' ? r.title + '  ·  ' : '') + r.year; }
 function infoText(){ return S.ov.info != null ? S.ov.info : infoDefault(); }
 function trackDefault(o){ var t = o.t, various = o.r.artist === 'Various Artists' && t.a; return { t: (t.n ? t.n + '  ' : '') + t.t, m: t.m || '' }; }
@@ -592,7 +593,7 @@ function renderText(){
 function draw(t){
   var h = H(); ctx.fillStyle = BG; ctx.fillRect(0, 0, W, h); drawPattern(t, h); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   var e = 0;
-  if (S.fmt === 'video' && S.picks.length) { var end0 = S.picks.length * CLIP - 0.2; e = Math.max(0, Math.min(1, (t - end0) / 0.6)); e = e * e * (3 - 2 * e); }
+  if (S.fmt === 'video' && S.picks.length) { var end0 = MUSIC - 0.2; e = Math.max(0, Math.min(1, (t - end0) / 0.6)); e = e * e * (3 - 2 * e); }
   FADE = 1 - e; ctx.globalAlpha = FADE;
   if (FADE > 0) drawBody(t, h);
   ctx.globalAlpha = 1; FADE = 1;
@@ -611,7 +612,7 @@ function drawBody(t, h){
   if (!S.rel) return;
   var r = S.rel, info = infoText();
   if (S.fmt === 'video') {
-    if (S.art) { if (S.look === 'spin') disc(S.art, 540, 665, 410, t * SPIN, r.labelHole); else coverImg(S.art, 540, 665, 820, 1 + 0.06 * Math.min(1, t / Math.max(CLIP, S.picks.length * CLIP)), 12, S.customArt ? POS.art : null); }
+    if (S.art) { if (S.look === 'spin') disc(S.art, 540, 665, 410, t * SPIN, r.labelHole); else coverImg(S.art, 540, 665, 820, 1 + 0.06 * Math.min(1, t / MUSIC), 12, S.customArt ? POS.art : null); }
     var ty = 1215;
     if (head) { spaced(head.toUpperCase(), 30, 700, SOFT, 1135, 5); ty = 1235; }
     var c = clipAt(t); if (c) { ctx.globalAlpha = c.a * FADE; trackBlock(c.o, ty, true); ctx.globalAlpha = FADE; }
@@ -632,7 +633,7 @@ function drawArtist(t, head){
   if (!S.artist) return;
   var v = S.fmt === 'video', q = $('quote').value.trim(), label = (head || 'Artist spotlight').toUpperCase();
   if (v) {
-    var total = Math.max(CLIP, S.picks.length * CLIP);
+    var total = MUSIC;
     if (S.photo) coverImg(S.photo, 540, 640, 720, 1.02 + 0.06 * Math.min(1, t / total), 12, POS.photo);
     else { ctx.strokeStyle = EDGE; ctx.lineWidth = 2; roundRect(180, 280, 720, 720, 12); ctx.stroke(); }
     spaced(label, 30, 700, SOFT, 1065, 5);
@@ -876,8 +877,8 @@ async function decodeClips(ac){
 }
 function schedule(ac, bufs, dest, t0){
   bufs.forEach(function(buf, k){ var src = ac.createBufferSource(), g = ac.createGain(); src.buffer = buf; src.connect(g); g.connect(dest);
-    var st = t0 + k * CLIP, en = st + CLIP; g.gain.setValueAtTime(0, st); g.gain.linearRampToValueAtTime(1, st + FADE_IN);
-    g.gain.setValueAtTime(1, en - FADE_OUT); g.gain.linearRampToValueAtTime(0, en); src.start(st, 0, Math.min(CLIP, buf.duration)); });
+    var CL = clipLen(), st = t0 + k * CL, en = st + CL; g.gain.setValueAtTime(0, st); g.gain.linearRampToValueAtTime(1, st + FADE_IN);
+    g.gain.setValueAtTime(1, en - FADE_OUT); g.gain.linearRampToValueAtTime(0, en); src.start(st, 0, Math.min(CL, buf.duration)); });
 }
 function animate(sess, clock, total, done){
   function step(){ if (running !== sess) return; var t = clock(); if (sess.tick) sess.tick(t);
@@ -903,7 +904,7 @@ async function preview(){
     var els = picked().map(function(o){ var a = new Audio(AUDIO_BASE + previewPath(o.t)); a.preload = 'auto'; return a; });
     sess.stop.push(function(){ els.forEach(function(a){ a.pause(); }); });
     var start = performance.now() + 150, cur = -1; clock = function(){ return (performance.now() - start) / 1000; };
-    sess.tick = function(t){ var k = Math.floor(t / CLIP); if (t >= 0 && k !== cur && k < els.length) { if (cur >= 0) els[cur].pause(); cur = k; els[k].currentTime = 0; els[k].play().catch(function(){}); } };
+    sess.tick = function(t){ var k = Math.floor(t / clipLen()); if (t >= 0 && k !== cur && k < els.length) { if (cur >= 0) els[cur].pause(); cur = k; els[k].currentTime = 0; els[k].play().catch(function(){}); } };
     setStatus('Preview only: the audio host must allow this page before videos can be downloaded.', 'warn');
   }
   animate(sess, clock, total, stop);
