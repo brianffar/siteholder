@@ -177,10 +177,8 @@ a.card:hover .listen { text-decoration: underline; }
 .hc-nav:hover { border-color: var(--ink); }
 @media (min-width: 900px) { .hc-nav { display: block; } }
 .hc-dots { display: flex; gap: 6px; justify-content: center; margin-top: 18px; }
-.hc-dots .hc-pp { width: 22px; height: 22px; border-radius: 50%; margin-left: 10px; background: transparent; border: 1px solid var(--line); color: var(--muted); font-size: 8px; line-height: 1; display: grid; place-items: center; }
-.hc-dots .hc-pp:hover { border-color: var(--ink); color: var(--ink); }
-.hc-dots button:not(.hc-pp) { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 4px; background: var(--line); cursor: pointer; transition: width .25s, background .25s; }
-.hc-dots button[aria-current="true"]:not(.hc-pp) { width: 28px; background: var(--ink); }
+.hc-dots button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 4px; background: var(--line); cursor: pointer; transition: width .25s, background .25s; }
+.hc-dots button[aria-current="true"] { width: 28px; background: var(--ink); }
 @media (prefers-reduced-motion: reduce) { .hc-slide, .hc-slide[data-on="true"] { transition: none; } }
 
 /* home hero */
@@ -4667,20 +4665,17 @@ function initCarousel() {
     slides.forEach(function (sl, k) { sl.setAttribute('data-on', k === cur); sl.setAttribute('aria-hidden', k !== cur); });
     [].forEach.call(dots.children, function (b, k) { b.setAttribute('aria-current', k === cur); });
   }
-  function tick() { if (!document.body.contains(stage)) { clearInterval(timer); return; } if (!stopped && !document.hidden) show(cur + 1); }
+  function tick() { if (!document.body.contains(stage)) { clearInterval(timer); return; } if (!document.hidden) show(cur + 1); }
   var sec = stage.parentNode;
-  function stopHere() { stopped = true; var q = dots.querySelector('.hc-pp'); if (q) { q.setAttribute('aria-label', 'Resume automatic rotation'); q.innerHTML = '&#9654;'; } }
+  /* any manual move restarts the 8-second clock; rotation never stops for good */
+  function stopHere() { restart(); }
   sec.querySelector('.hc-prev').onclick = function () { stopHere(); show(cur - 1); };
   sec.querySelector('.hc-next').onclick = function () { stopHere(); show(cur + 1); };
-  var hold = false; sec.addEventListener('mouseenter', function () { hold = true; }); sec.addEventListener('mouseleave', function () { hold = false; });
-  sec.addEventListener('focusin', function () { stopHere(); });
   var x0 = null; stage.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true });
   stage.addEventListener('touchend', function (e) { if (x0 === null) return; var dx = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(dx) > 40) { stopHere(); show(cur + (dx < 0 ? 1 : -1)); } }, { passive: true });
   show(0);
-  var pp = document.createElement('button'); pp.type = 'button'; pp.className = 'hc-pp'; pp.setAttribute('aria-label', 'Pause automatic rotation'); pp.innerHTML = '&#10074;&#10074;';
-  pp.onclick = function () { stopped = !stopped; pp.setAttribute('aria-label', stopped ? 'Resume automatic rotation' : 'Pause automatic rotation'); pp.innerHTML = stopped ? '&#9654;' : '&#10074;&#10074;'; };
-  dots.appendChild(pp);
-  timer = setInterval(function () { if (!hold) tick(); }, 8000);
+  function restart() { clearInterval(timer); timer = setInterval(tick, 8000); }
+  restart();
   /* the We're back panel: the label's crescent pattern, drawn live while that slide is showing */
   var bg = document.getElementById('hc-bg'), bx = bg ? bg.getContext('2d') : null, bw = 0, bh = 0, raf = 0, last = 0, t0 = performance.now();
   function size() { if (!bg) return; var r = bg.parentNode.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2); bw = r.width; bh = r.height; bg.width = Math.round(bw * d); bg.height = Math.round(bh * d); bx.setTransform(d, 0, 0, d, 0, 0); }
