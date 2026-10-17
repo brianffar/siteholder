@@ -913,13 +913,15 @@ function pickMime(){
   var o = ['video/mp4;codecs=avc1.640028,mp4a.40.2', 'video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/webm;codecs=vp9,opus', 'video/webm'];
   for (var i = 0; i < o.length; i++) if (window.MediaRecorder && MediaRecorder.isTypeSupported(o[i])) return o[i]; return '';
 }
-function fileBase(){ return S.mode === 'artist' ? 'artist_' + S.artist.replace(/[^A-Za-z0-9]+/g, '-') : S.rel.cat.replace(/[^A-Za-z0-9]+/g, '-'); }
+function slug(x){ return String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); }
+function tag(x){ var h = 2166136261, i, str = 'siteholder|' + x; for (i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return ('000' + (h % 46656).toString(36)).slice(-3); }   // same name always gives the same 3 characters
+function fileBase(){ var n = slug(S.mode === 'artist' ? S.artist : S.rel.cat) || 'siteholder'; return n + '-' + tag(n); }   // e.g. pan-pot-7k2 (same for the image and the reel)
 function save(blob, name){ var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(a.href); }, 60000); }
 async function download(){
   if (S.mode === 'artist' ? !S.artist : !S.rel) { setStatus('Pick a ' + (S.mode === 'artist' ? 'artist' : 'release') + ' first.', 'warn'); return; }
   if (S.fmt === 'feed') {
     stop(); draw(0);
-    try { cv.toBlob(function(b){ save(b, fileBase() + '_feed.png'); setStatus('Saved ' + fileBase() + '_feed.png', 'ok'); }, 'image/png'); }
+    try { cv.toBlob(function(b){ save(b, fileBase() + '.png'); setStatus('Saved ' + fileBase() + '.png', 'ok'); }, 'image/png'); }
     catch (e) { setStatus('This photo can’t be exported because its host blocks it. Drop the photo in instead.', 'bad'); }
     return;
   }
