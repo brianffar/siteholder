@@ -311,6 +311,11 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
 .prose.ph p { font-size: 17px; }
 .prose p a { color: inherit; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 .prose p a:hover { color: var(--accent); }
+.about-hero { margin: 0 0 40px; }
+.about-hero img { display: block; width: 100%; height: auto; }
+.about-hero figcaption { margin-top: 10px; font-size: 14px; color: var(--muted); }
+.about-hero figcaption a { color: inherit; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.about-hero figcaption a:hover { color: var(--accent); }
 .tabs .tab { font: inherit; background: none; border: 0; border-bottom: 2px solid transparent; cursor: pointer; }
 .tabs .tab:hover { color: var(--ink); }
 .lab { padding-top: 40px; margin-top: 8px; border-top: 1px solid var(--line); scroll-margin-top: 90px; }
@@ -4659,8 +4664,8 @@ function podcastView(n) {
 
 function aboutView(h) {
   /* one About page: every label and sublabel in turn. #about-<id> opens the page scrolled to that label. */
-  var tabs = '<div class="tabs" role="navigation" aria-label="Jump to a label">' + LABELS.map(function (x) { return '<button type="button" class="tab" data-jump="lab-' + x.id + '">' + x.name + '</button>'; }).join('') + '</div>';
-  var secs = LABELS.map(function (L) {
+  var tabs = '';
+  var secs = LABELS.filter(function (x) { return x.id === 'siteholder'; }).map(function (L) {
     var body = L.about ? '<div class="prose long">' + L.about.map(function (p) { return '<p>' + p + '</p>'; }).join('') + '</div>'
       : '<div class="prose ph"><p>Placeholder. Add the story of ' + L.name + ' here: who runs it, when it started and the sound it stands for.</p></div>';
     var n = R.filter(function (r) { return inLabel(r, L.name); }).length;
@@ -4668,7 +4673,9 @@ function aboutView(h) {
     return '<section class="lab' + (L.parent ? ' sub' : '') + '" id="lab-' + L.id + '"><p class="eyebrow">' + (L.parent ? 'Sublabel of ' + L.parent : 'Label') + '</p>' + heading + body +
       '<p class="lab-more"><a class="more" href="#catalog" data-filter="' + L.name + '">View ' + n + (n === 1 ? ' release' : ' releases') + ' in the catalog &rarr;</a></p></section>';
   }).join('');
-  return '<h1 class="page-title">About</h1>' + tabs + secs;
+  var hero = '<figure class="about-hero"><img src="images/about-hero.webp" width="2400" height="636" alt="Portraits of Brian Ffar, Billy Dalessandro and Paul Downtown Brown, side by side, separated by the Siteholder crescent" decoding="async">' +
+    '<figcaption>Left to right: <a href="https://www.brianffar.com" target="_blank" rel="noopener">Brian Ffar</a>, Billy Dalessandro and Paul &ldquo;Downtown&rdquo; Brown</figcaption></figure>';
+  return '<h1 class="page-title">About</h1>' + hero + tabs + secs;
 }
 
 function contact() {
