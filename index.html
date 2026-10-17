@@ -4502,13 +4502,13 @@ function homeArtist() {
 function home() {
   var r = R[0];
   return '<section class="hcar" aria-roledescription="carousel" aria-label="Highlights"><div class="hc-stage" id="hc-stage">' +
-    '<div class="hc-slide hero" role="group" aria-roledescription="slide" aria-label="Latest release"><a class="art" href="#release-' + r.id + '" aria-label="' + r.title + '">' + cover(r) + '</a><div>' +
-    '<p class="eyebrow">Latest release &middot; <span class="cat">' + catNo(r) + '</span></p><h1>' + r.artist + '</h1><p class="ttl">' + r.title + '</p><p class="sub">' + r.sub + '</p>' +
-    '<div class="actions"><a class="btn solid" href="#release-' + r.id + '">Listen &amp; buy</a><a class="btn" href="#catalog">Browse the catalog</a></div></div></div>' +
     '<div class="hc-slide hc-back" role="group" aria-roledescription="slide" aria-label="We\u2019re back"><canvas id="hc-bg" aria-hidden="true"></canvas><div>' +
     '<p class="eyebrow">We\u2019re back</p><h1>The party<br>isn\u2019t over.</h1><p class="lede">Siteholder\u2019s back. To destroy dancefloors.</p>' +
     '<div class="actions"><a class="btn" href="#catalog">Browse the catalog</a></div></div>' +
     '<div class="hc-reel"><img src="images/were-back-reel.jpg" alt="Still from the Siteholder We\u2019re Back reel" loading="lazy"></div></div>' +
+    '<div class="hc-slide hero" role="group" aria-roledescription="slide" aria-label="Latest release"><a class="art" href="#release-' + r.id + '" aria-label="' + r.title + '">' + cover(r) + '</a><div>' +
+    '<p class="eyebrow">Latest release &middot; <span class="cat">' + catNo(r) + '</span></p><h1>' + r.artist + '</h1><p class="ttl">' + r.title + '</p><p class="sub">' + r.sub + '</p>' +
+    '<div class="actions"><a class="btn solid" href="#release-' + r.id + '">Listen &amp; buy</a><a class="btn" href="#catalog">Browse the catalog</a></div></div></div>' +
     homeArtist() +
     '</div><button type="button" class="hc-nav hc-prev" aria-label="Previous slide">&larr;</button><button type="button" class="hc-nav hc-next" aria-label="Next slide">&rarr;</button>' +
     '<div class="hc-dots" id="hc-dots"></div></section>' +
