@@ -281,6 +281,7 @@ a.card:hover .listen { text-decoration: underline; }
 /* featured artist (top of the Artists page) */
 .feat { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 20px; border: 1px solid var(--line); background: var(--surface); margin-bottom: 36px; }
 @media (min-width: 800px) { .feat { grid-template-columns: minmax(0, 400px) minmax(0, 1fr); gap: 36px; padding: 28px; } }
+.feat:not(:has(.feat-art)) { grid-template-columns: minmax(0, 1fr); }
 .feat-art { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; align-content: start; }
 .feat-art .ph { grid-column: 1 / -1; aspect-ratio: 4 / 3; background: var(--line); overflow: hidden; }
 .feat-art .ph img { display: block; width: 100%; height: 100%; object-fit: cover; }
@@ -4713,7 +4714,8 @@ function featHTML() {
   /* covers: main-artist releases first, then remixes */
   rels.sort(function (x, y) { return (a.kind[x.id] === 'remix') - (a.kind[y.id] === 'remix'); });
   var pics = rels.slice(0, 3);
-  return '<div class="feat-art">' + (f.img ? '<div class="ph"><img src="' + f.img + '" alt="' + esc(f.name) + '"></div>' : '') + pics.map(function (r) { return '<a class="art" href="#release-' + r.id + '" aria-label="' + esc(r.title) + '">' + cover(r) + '</a>'; }).join('') + '</div><div>' +
+  /* an artist without a photo gets a text-only card, never a release cover standing in for them */
+  return (f.img ? '<div class="feat-art"><div class="ph"><img src="' + f.img + '" alt="' + esc(f.name) + '"></div>' + pics.map(function (r) { return '<a class="art" href="#release-' + r.id + '" aria-label="' + esc(r.title) + '">' + cover(r) + '</a>'; }).join('') + '</div>' : '') + '<div>' +
     '<p class="eyebrow">Featured artist</p><h2>' + esc(f.name) + '</h2><p class="tag">' + f.tag + '</p><p class="bio">' + f.bio + '</p>' +
     (rels.length ? '<p class="start">On Siteholder: ' + rels.slice(0, 4).map(function (r) { return '<a href="#release-' + r.id + '">' + esc(r.title) + (a.kind[r.id] === 'remix' ? ' (remix)' : '') + '</a>'; }).join('') + '</p>' : '') +
     '<div class="acts"><a class="btn solid" href="#catalog" data-feat-q="' + esc(f.name) + '">' + (a && a.rels.length === 1 ? 'See the release' : 'All ' + (a ? a.rels.length : '') + ' releases') + '</a>' +
