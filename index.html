@@ -154,7 +154,8 @@ a.card:hover .listen { text-decoration: underline; }
 
 
 /* home carousel */
-.hcar { position: relative; }
+.hcar { position: relative; border: 1px solid var(--line); background: var(--surface); padding: 16px 16px 14px; box-shadow: 0 18px 40px -26px rgba(0,0,0,.35); }
+@media (min-width: 900px) { .hcar { padding: 28px 28px 16px; } .hc-prev { left: -20px; } .hc-next { right: -20px; } }
 .hc-stage { display: grid; }
 .hc-slide { grid-area: 1 / 1; visibility: hidden; opacity: 0; transition: opacity .5s ease, visibility 0s linear .5s; }
 .hc-slide[data-on="true"] { visibility: visible; opacity: 1; transition: opacity .5s ease; }
@@ -174,7 +175,6 @@ a.card:hover .listen { text-decoration: underline; }
 @media (min-width: 900px) { .hc-back { grid-template-columns: minmax(0, 1fr) 280px; gap: 40px; padding: 0 64px; min-height: 420px; } .hc-reel { display: block; } }
 .hc-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; font-size: 18px; z-index: 3; display: none; }
 .hc-nav:hover { border-color: var(--ink); }
-.hc-prev { left: -6px; } .hc-next { right: -6px; }
 @media (min-width: 900px) { .hc-nav { display: block; } }
 .hc-dots { display: flex; gap: 6px; justify-content: center; margin-top: 18px; }
 .hc-dots .hc-pp { width: 22px; height: 22px; border-radius: 50%; margin-left: 10px; background: transparent; border: 1px solid var(--line); color: var(--muted); font-size: 8px; line-height: 1; display: grid; place-items: center; }
