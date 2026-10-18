@@ -4869,6 +4869,8 @@ window.addEventListener('scroll', function () {
 window.addEventListener('hashchange', function () { clearTimeout(scrollTimer); });
 window.addEventListener('hashchange', route);
 document.addEventListener('click', function (e) {
+  /* the logo and the Home link always bring back the full list: clear any search and filters */
+  if (e.target.closest && e.target.closest('.brand, #nav [data-r="home"]')) { F.label = 'All'; F.fmt = 'All'; F.q = ''; F.n = 24; }
   var hdr = document.querySelector('.top'), mb = e.target.closest && e.target.closest('#menu-btn');
   if (mb) { var o = hdr.getAttribute('data-nav') !== 'true'; hdr.setAttribute('data-nav', o); mb.setAttribute('aria-expanded', o); }
   else if (e.target.closest && e.target.closest('nav a, .brand')) { hdr.setAttribute('data-nav', 'false'); document.getElementById('menu-btn').setAttribute('aria-expanded', 'false'); }
