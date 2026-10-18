@@ -500,7 +500,7 @@ function renderSegs(){
   $('lookWrap').hidden = S.mode === 'artist'; $('artWrap').hidden = S.mode === 'artist';
   var v = S.fmt === 'video';
   cv.height = v ? 1920 : 1350; $('screen').className = 'screen ' + (v ? 'v' : 'f');
-  $('dl').textContent = v ? 'Download video' : 'Download image';
+  READY = null; $('dl').textContent = dlLabel(v);
   $('play').hidden = !v; $('progWrap').hidden = !v; $('trkCard').style.opacity = v ? '' : '.55';
 }
 async function loadArt(){
@@ -930,6 +930,17 @@ function pickMime(){
 function slug(x){ return String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); }
 function tag(x){ var h = 2166136261, i, str = 'siteholder|' + x; for (i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return ('000' + (h % 46656).toString(36)).slice(-3); }   // same name always gives the same 3 characters
 function fileBase(){ var n = slug(S.mode === 'artist' ? S.artist : S.rel.cat) || 'siteholder'; return n + '-' + tag(n); }   // e.g. pan-pot-7k2 (same for the image and the reel)
+/* On phones the share sheet offers Save Image / Save Video (camera roll); a plain download only goes to Files. */
+var READY = null, PHONE = !!(window.matchMedia && matchMedia('(pointer:coarse)').matches && navigator.share && navigator.canShare);
+function dlLabel(v){ return PHONE ? (v ? 'Make video' : 'Save image') : (v ? 'Download video' : 'Download image'); }
+function shareFile(blob, name, type){
+  try { var f = new File([blob], name, { type: type }); return navigator.canShare({ files: [f] }) ? f : null; } catch (e) { return null; }
+}
+async function saveOrShare(blob, name, type){
+  var f = PHONE && shareFile(blob, name, type);
+  if (f) { try { await navigator.share({ files: [f] }); return 'shared'; } catch (e) { if (e && e.name === 'AbortError') return 'cancel'; } }
+  save(blob, name); return 'saved';
+}
 function save(blob, name){ var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(a.href); }, 60000); }
 async function recordVideo(){
   var mime = pickMime(); if (!mime) throw new Error('This browser can’t record video. Use Chrome.');
@@ -956,10 +967,16 @@ async function recordVideo(){
   }
 }
 async function download(){
+  if (READY) {
+    var rd = READY; READY = null; $('dl').textContent = dlLabel(true);
+    var r = await saveOrShare(rd.blob, rd.name, rd.type);
+    setStatus(r === 'shared' ? 'Choose Save Video to put it in Photos.' : r === 'cancel' ? 'Not saved. Tap Make video to try again.' : 'Saved ' + rd.name, r === 'cancel' ? 'warn' : 'ok');
+    return;
+  }
   if (S.mode === 'artist' ? !S.artist : !S.rel) { setStatus('Pick a ' + (S.mode === 'artist' ? 'artist' : 'release') + ' first.', 'warn'); return; }
   if (S.fmt === 'feed') {
     stop(); draw(0);
-    try { cv.toBlob(function(b){ save(b, fileBase() + '.png'); setStatus('Saved ' + fileBase() + '.png', 'ok'); }, 'image/png'); }
+    try { cv.toBlob(async function(b){ var r = await saveOrShare(b, fileBase() + '.png', 'image/png'); setStatus(r === 'shared' ? 'Choose Save Image to put it in Photos.' : r === 'cancel' ? 'Not saved.' : 'Saved ' + fileBase() + '.png', r === 'cancel' ? 'warn' : 'ok'); }, 'image/png'); }
     catch (e) { setStatus('This photo can’t be exported because its host blocks it. Drop the photo in instead.', 'bad'); }
     return;
   }
@@ -968,6 +985,12 @@ async function download(){
   $('dl').disabled = true; $('play').disabled = true;
   try {
     var out = await recordVideo();
+    if (PHONE && shareFile(out.blob, fileBase() + '.' + out.ext, out.ext === 'mp4' ? 'video/mp4' : 'video/webm')) {
+      READY = { blob: out.blob, name: fileBase() + '.' + out.ext, type: out.ext === 'mp4' ? 'video/mp4' : 'video/webm' };
+      $('dl').textContent = 'Save video to Photos';
+      setStatus('Video ready. Tap Save video to Photos, then choose Save Video.', 'ok');
+      return;
+    }
     save(out.blob, fileBase() + '.' + out.ext);
     setStatus(out.ext === 'mp4' ? 'Saved ' + fileBase() + '.mp4' : 'Saved as WebM. Use Chrome for an Instagram-ready MP4.', out.ext === 'mp4' ? 'ok' : 'warn');
   } catch (e) {
