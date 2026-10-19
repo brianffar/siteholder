@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin · Siteholder Records</title>
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="description" content="Siteholder Records tools.">
+<link rel="icon" href="../favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script>try{var t=localStorage.getItem('sh-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<style>
+
+:root{color-scheme:light;
+  --bg:#f2f3f4;--surface:#ffffff;--ink:#0e0f11;--muted:#5b5f66;--line:#d8dadd;--accent:#2536ff;--on-ink:#ffffff;--ok:#12805c;--bad:#c4271c;--warn:#a86a00;
+  --display:'Archivo','Helvetica Neue',Arial,sans-serif;--mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  --gutter:clamp(16px,4vw,40px);--logo:url("logo.png")}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e0f11;--surface:#17181b;--ink:#f1f2f3;--muted:#9b9fa7;--line:#2b2d32;--accent:#8a95ff;--on-ink:#0e0f11;--ok:#41c796;--bad:#ff6b5e;--warn:#e8b040;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e0f11;--surface:#17181b;--ink:#f1f2f3;--muted:#9b9fa7;--line:#2b2d32;--accent:#8a95ff;--on-ink:#0e0f11;--ok:#41c796;--bad:#ff6b5e;--warn:#e8b040;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--display);font-size:16px;line-height:1.5;padding-inline:var(--gutter)}
+a{color:inherit;text-decoration:none}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+h1,h2,p{margin:0}
+.wrap{max-width:1240px;margin-inline:auto}
+.top{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px 32px;padding-block:14px}
+.logo{display:block;height:56px;aspect-ratio:480/272;background-color:currentColor;-webkit-mask:var(--logo) no-repeat center/contain;mask:var(--logo) no-repeat center/contain}
+.theme{display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:13px;font-weight:500;color:var(--muted);background:none;border:0;padding:4px;cursor:pointer}
+.theme:hover{color:var(--ink)}
+.theme .track{width:38px;height:22px;border-radius:99px;border:1.5px solid var(--ink);position:relative;flex:none}
+.theme .track::after{content:"";position:absolute;top:2.5px;left:2.5px;width:14px;height:14px;border-radius:50%;background:var(--ink);transition:transform .2s}
+.theme[aria-checked="true"] .track::after{transform:translateX(16px)}
+@media (prefers-reduced-motion:reduce){.theme .track::after,.tile,.tile .go{transition:none}}
+main{padding-block:40px 72px;min-height:100vh;min-height:100svh}
+.page-title{font-size:clamp(44px,9vw,120px);font-weight:800;font-stretch:75%;text-transform:uppercase;letter-spacing:-.02em;line-height:.95;margin-bottom:32px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:20px}
+.tile{display:flex;flex-direction:column;justify-content:space-between;gap:28px;min-height:260px;padding:26px 28px;background:var(--surface);border:1px solid var(--line);transition:border-color .15s,transform .15s}
+.tile:hover{border-color:var(--ink)}
+.tile .k{font:12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.tile h2{font-size:clamp(28px,3.4vw,44px);font-weight:800;font-stretch:75%;text-transform:uppercase;letter-spacing:-.01em;line-height:1;margin-bottom:14px}
+.tile p{color:var(--muted);font-size:16px;max-width:46ch}
+.tile .go{font:500 13px var(--mono);letter-spacing:.14em;text-transform:uppercase}
+.tile.feat{background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+.tile.feat .k,.tile.feat p{color:color-mix(in srgb,var(--on-ink) 70%,transparent)}
+.tile.feat:hover{border-color:var(--accent)}
+@media(min-width:760px){.tile.feat{grid-column:span 2}}
+footer{border-top:1px solid var(--line);padding-block:32px 48px}
+.legal{font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.8}
+.legal a{border-bottom:1px solid currentColor}.legal a:hover{color:var(--accent)}
+</style></head><body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="../" aria-label="Siteholder Records home"><span class="logo" role="img" aria-label="siteHolder"></span></a>
+  <button class="theme" id="theme" type="button" role="switch" aria-checked="false" aria-label="Dark mode"><span class="track"></span><span id="theme-label">Light</span></button>
+</div></header>
+<main class="wrap">
+<h1 class="page-title">Admin</h1>
+<nav class="tiles" id="tiles" aria-label="Tools"></nav>
+</main>
+<footer><div class="wrap"><p class="legal">&copy; Siteholder Records, Chicago. <a href="../">Back to the label</a></p></div></footer>
+<script>
+/* To add a tool, add one line here. The first tile is shown large.
+   ext:true opens in a new tab. */
+var TOOLS=[
+  {k:'Make',t:'Reel &amp; Image Maker',d:'Build reels and 4:5 images for releases and artists, with the audio previews, a spinning label, patterns and captions.',href:'../social/',feat:true},
+  {k:'Make',t:'Preview Maker',d:'Turn full tracks into 30 second MP3 previews. Pick the clip on the waveform. Nothing is uploaded.',href:'../previews/'},
+  {k:'Plan',t:'Master Sheet',d:'Releases, tracks, artists, social feed and artist outreach. This is what the posting guide runs from.',href:'https://docs.google.com/spreadsheets/d/1zE4oZ7jLhZAfK9lYzC-XOMzmU4CLyA-j4qvwg8JVDeg/edit',ext:true},
+  {k:'Site',t:'Label Website',d:'See the live site as visitors do: the carousel, catalog and artists.',href:'../'}
+];
+(function(){
+  var el=document.getElementById('tiles');
+  el.innerHTML=TOOLS.map(function(x){
+    return '<a class="tile'+(x.feat?' feat':'')+'" href="'+x.href+'"'+(x.ext?' target="_blank" rel="noopener"':'')+'><div><div class="k">'+x.k+'</div><h2>'+x.t+'</h2><p>'+x.d+'</p></div><span class="go">Open '+(x.ext?'&nearr;':'&rarr;')+'</span></a>';
+  }).join('');
+})();
+/* light / dark (shares the main site's choice) */
+(function(){
+  var root=document.documentElement,btn=document.getElementById('theme'),lab=document.getElementById('theme-label');
+  function eff(){var t=root.getAttribute('data-theme');return t||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}
+  function sync(){var d=eff()==='dark';btn.setAttribute('aria-checked',d);lab.textContent=d?'Dark':'Light'}
+  btn.addEventListener('click',function(){var n=eff()==='dark'?'light':'dark';root.setAttribute('data-theme',n);try{localStorage.setItem('sh-theme',n)}catch(e){}sync()});
+  if(window.matchMedia){try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',sync)}catch(e){}}
+  sync();
+})();
+</script>
+</body></html>
