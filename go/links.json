@@ -1,0 +1,278 @@
+{
+ "_note": "Store links per release id. Optional: vinyl:[{store,url,status}] for new pressings. Rebuild with python3 go/build.py",
+ "links": {
+  "don-t-wait-for-me": {
+   "discogs": "https://www.discogs.com/master/913429-Magnanime-Dont-Wait-For-Me"
+  },
+  "aceed": {
+   "beatport": "https://www.beatport.com/release/aceed/1407863"
+  },
+  "surge": {
+   "beatport": "https://www.beatport.com/release/surge/1385655"
+  },
+  "you-know-how-we-get-down": {
+   "beatport": "https://www.beatport.com/release/you-know-how-we-get-down/1337496"
+  },
+  "peons": {
+   "beatport": "https://www.beatport.com/release/peons/1269137"
+  },
+  "lucid-dreaming": {
+   "beatport": "https://www.beatport.com/release/lucid-dreaming/1214034"
+  },
+  "loaded-machine": {
+   "beatport": "https://www.beatport.com/release/loaded-machine/1173918"
+  },
+  "dream-dream": {
+   "beatport": "https://www.beatport.com/release/dream-dream/1130223"
+  },
+  "p-c-for-you-from-us": {
+   "beatport": "https://www.beatport.com/release/pc-for-you-from-us/1080787"
+  },
+  "girls-hate-boys": {
+   "beatport": "https://www.beatport.com/release/girls-hate-boys/1046783"
+  },
+  "a-wife-for-objecto-phil": {
+   "beatport": "https://www.beatport.com/release/a-wife-for-objecto-phil/1033762"
+  },
+  "bootysm": {
+   "discogs": "https://www.discogs.com/master/2269129-Billy-Dalessandro-Bootysm-"
+  },
+  "siteholder-gems-volume-3": {
+   "beatport": "https://www.beatport.com/release/siteholder-gems-volume-3/1016842"
+  },
+  "for-my-homies": {
+   "beatport": "https://www.beatport.com/release/for-my-homies/994510"
+  },
+  "balls-of-fire": {
+   "beatport": "https://www.beatport.com/release/balls-of-fire/978018"
+  },
+  "the-hat-in-the-cat": {
+   "beatport": "https://www.beatport.com/release/the-hat-in-the-cat/944036"
+  },
+  "all-in-your-head": {
+   "beatport": "https://www.beatport.com/release/all-in-your-head/907579"
+  },
+  "siteholder-gems-volume-2": {
+   "beatport": "https://www.beatport.com/release/siteholder-gems-volume-2/881597"
+  },
+  "blur": {
+   "beatport": "https://www.beatport.com/release/blur/872026"
+  },
+  "restid": {
+   "beatport": "https://www.beatport.com/release/restid/855596"
+  },
+  "siteholder-gems-volume-1": {
+   "beatport": "https://www.beatport.com/release/siteholder-gems-volume-1/849791"
+  },
+  "skipping-stones-after-dark": {
+   "beatport": "https://www.beatport.com/release/skipping-stones-after-dark/835677"
+  },
+  "i-live-in-spandex": {
+   "beatport": "https://www.beatport.com/release/i-live-in-spandex/825060"
+  },
+  "hentai-house": {
+   "beatport": "https://www.beatport.com/release/hentai-house/681361"
+  },
+  "kissing-booth-criminal": {
+   "beatport": "https://www.beatport.com/release/kissing-booth-criminal/436848"
+  },
+  "air-dance": {
+   "beatport": "https://www.beatport.com/release/air-dance/397911"
+  },
+  "balls-in-your-face": {
+   "beatport": "https://www.beatport.com/release/balls-in-your-face/352156",
+   "discogs": "https://www.discogs.com/master/368113-Billy-Dalessandro-Balls-In-Your-Face"
+  },
+  "indoor-league": {
+   "beatport": "https://www.beatport.com/release/indoor-league/342478"
+  },
+  "rustbelt": {
+   "beatport": "https://www.beatport.com/release/rustbelt/329916"
+  },
+  "time-machine": {
+   "beatport": "https://www.beatport.com/release/time-machine/320118"
+  },
+  "micropiano": {
+   "beatport": "https://www.beatport.com/release/micro-piano/314075"
+  },
+  "reversible": {
+   "beatport": "https://www.beatport.com/release/reversible/302369"
+  },
+  "drunk-elephants": {
+   "beatport": "https://www.beatport.com/release/drunk-elephants/287721"
+  },
+  "stripped": {
+   "beatport": "https://www.beatport.com/release/stripped/275437"
+  },
+  "elastic": {
+   "beatport": "https://www.beatport.com/release/elastic/266537"
+  },
+  "desert-hire": {
+   "beatport": "https://www.beatport.com/release/desert-hire/255954"
+  },
+  "drunk-lover": {
+   "beatport": "https://www.beatport.com/release/drunk-lover/228434",
+   "discogs": "https://www.discogs.com/master/235191-Tyrone-Drunk-Lover"
+  },
+  "site-in-sight": {
+   "beatport": "https://www.beatport.com/release/sight-in-sight/226729"
+  },
+  "strombooty-ep": {
+   "beatport": "https://www.beatport.com/release/strombooty-ep/219426",
+   "discogs": "https://www.discogs.com/master/259528-Billy-Dalessandro-Strombooty"
+  },
+  "wetfood-ep": {
+   "beatport": "https://www.beatport.com/release/wetfood-ep/199740",
+   "discogs": "https://www.discogs.com/master/259526-Slutbox-Wetfood-EP"
+  },
+  "money-talks": {
+   "beatport": "https://www.beatport.com/release/money-talks/197084"
+  },
+  "antisystem-ep": {
+   "beatport": "https://www.beatport.com/release/antisystem-ep/191399"
+  },
+  "the-lake-effect-part-ii": {
+   "beatport": "https://www.beatport.com/release/the-lake-effect-part-2/186268"
+  },
+  "the-lake-effect-part-1": {
+   "beatport": "https://www.beatport.com/release/the-lake-effect-part-1/181429"
+  },
+  "hold-me-tight": {
+   "beatport": "https://www.beatport.com/release/hold-me-tight/176899"
+  },
+  "shift-ep": {
+   "beatport": "https://www.beatport.com/release/shift-ep/173714",
+   "discogs": "https://www.discogs.com/master/182299-Jason-Emsley-Shift-EP"
+  },
+  "places": {
+   "beatport": "https://www.beatport.com/release/places-ep/170554"
+  },
+  "do-it": {
+   "beatport": "https://www.beatport.com/release/do-it-ep/166739"
+  },
+  "touch-sensitive-ep": {
+   "beatport": "https://www.beatport.com/release/touch-sensitive-ep/163370",
+   "discogs": "https://www.discogs.com/master/14263-Tyrone-Touch-Sensitive"
+  },
+  "not-alone": {
+   "beatport": "https://www.beatport.com/release/not-alone-ep/161515"
+  },
+  "effectinmotion": {
+   "beatport": "https://www.beatport.com/release/effectinmotion-ep/158178"
+  },
+  "billy-bought-a-laser-ep": {
+   "beatport": "https://www.beatport.com/release/billy-bought-a-laser-ep/156341",
+   "discogs": "https://www.discogs.com/master/236022-Brian-Ffar-Billy-Bought-A-Laser"
+  },
+  "la-voix-amicale": {
+   "beatport": "https://www.beatport.com/release/la-voix-amicale-ep/153460"
+  },
+  "uncut-premium-part-four": {
+   "discogs": "https://www.discogs.com/master/711934-Various-Uncut-Premium-Part-Four"
+  },
+  "uncut-premium-part-six": {
+   "discogs": "https://www.discogs.com/master/3311740-Various-Uncut-Premium-Part-Six"
+  },
+  "mirapex": {
+   "beatport": "https://www.beatport.com/release/mirapex-ep/149743"
+  },
+  "roniti": {
+   "beatport": "https://www.beatport.com/release/roniti-ep/143647"
+  },
+  "bring-the-bling": {
+   "beatport": "https://www.beatport.com/release/bring-the-bling-ep/139665"
+  },
+  "hiato": {
+   "beatport": "https://www.beatport.com/release/hiato-ep/136340"
+  },
+  "bang-bang-cowboy": {
+   "beatport": "https://www.beatport.com/release/bang-bang-cowboy-ep/132767"
+  },
+  "nymphotech-lp": {
+   "beatport": "https://www.beatport.com/release/nymphotech-lp/128907",
+   "discogs": "https://www.discogs.com/master/614567-Huge-Hephner-Nymphotech-Vol-1"
+  },
+  "heritage": {
+   "beatport": "https://www.beatport.com/release/heritage-ep/124385"
+  },
+  "sheezah-ep": {
+   "beatport": "https://www.beatport.com/release/sheezah-ep/120563"
+  },
+  "backseat-driver-ep": {
+   "beatport": "https://www.beatport.com/release/backseat-driver-ep/117589",
+   "discogs": "https://www.discogs.com/release/1341913-Slutbox-Backseat-Driver"
+  },
+  "dirty-snitch-ep": {
+   "beatport": "https://www.beatport.com/release/dirty-snitch-ep/114541"
+  },
+  "tumble-dry-low-ep": {
+   "beatport": "https://www.beatport.com/release/tumble-dry-low-ep/109818"
+  },
+  "pimp-slappin-ep": {
+   "beatport": "https://www.beatport.com/release/pimp-slappin-ep/107505",
+   "discogs": "https://www.discogs.com/master/504646-Huge-Hephner-Pimp-Slappin"
+  },
+  "in-the-dark-the-remixes": {
+   "beatport": "https://www.beatport.com/release/in-the-dark-the-remixes/105458"
+  },
+  "are-you-there-ep": {
+   "beatport": "https://www.beatport.com/release/are-you-there-ep/99666",
+   "discogs": "https://www.discogs.com/release/1237391-Billy-Dalessandro-Are-You-There"
+  },
+  "the-big-blue": {
+   "beatport": "https://www.beatport.com/release/the-big-blue-ep/96952"
+  },
+  "the-filthy-fibber-ep": {
+   "beatport": "https://www.beatport.com/release/filthy-fibber-ep/92470"
+  },
+  "ballroom-hustler": {
+   "beatport": "https://www.beatport.com/release/ballroom-hustler/90802",
+   "discogs": "https://www.discogs.com/master/139812-Brian-Ffar-Ballroom-Hustler"
+  },
+  "uncut-premium-part-one": {
+   "discogs": "https://www.discogs.com/master/615189-Various-Uncut-Premium-Part-One"
+  },
+  "uncut-premium-part-two": {
+   "discogs": "https://www.discogs.com/release/1434196-Various-Uncut-Premium-Part-Two"
+  },
+  "uncut-premium-part-three": {
+   "discogs": "https://www.discogs.com/release/1489002-Various-Uncut-Premium-Part-Three"
+  },
+  "uncut-premium-part-five": {
+   "discogs": "https://www.discogs.com/master/711864-Various-Uncut-Premium-Part-Five"
+  },
+  "triangelen-ep": {
+   "beatport": "https://www.beatport.com/release/triangelen-ep/89927"
+  },
+  "work-me-ep": {
+   "beatport": "https://www.beatport.com/release/work-me-ep/84224"
+  },
+  "shogun-beatboxin": {
+   "beatport": "https://www.beatport.com/release/shogun-beatboxin-ep/78962"
+  },
+  "teflon-villain-ep": {
+   "beatport": "https://www.beatport.com/release/teflon-villain-ep/73356"
+  },
+  "dead-by-night-ep": {
+   "beatport": "https://www.beatport.com/release/dead-by-night-ep/70073"
+  },
+  "nitrogen-2-oxygen-1-ep": {
+   "beatport": "https://www.beatport.com/release/nitrogen-2-oxygen-1-ep/63638",
+   "discogs": "https://www.discogs.com/master/372100-Slutbox-Nitrogen-2-Oxygen-1-EP"
+  },
+  "the-booty-drop-ep": {
+   "beatport": "https://www.beatport.com/release/the-booty-drop-ep/65242"
+  },
+  "spotted-cow-ep": {
+   "beatport": "https://www.beatport.com/release/spotted-cow-ep/61477"
+  },
+  "mining-for-rough": {
+   "beatport": "https://www.beatport.com/release/mining-for-rough/46536",
+   "discogs": "https://www.discogs.com/master/372112-Various-Mining-For-Rough-EP"
+  },
+  "don-t-sleep-ep": {
+   "beatport": "https://www.beatport.com/release/dont-sleep-ep/39143",
+   "discogs": "https://www.discogs.com/master/504632-Billy-Dalessandro-Dont-Sleep"
+  }
+ }
+}
