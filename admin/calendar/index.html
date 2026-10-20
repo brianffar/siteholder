@@ -160,7 +160,7 @@ function init(d){
 }
 function summary(){
   var P=DATA.posts,c={Posted:0,Scheduled:0,Draft:0,'To schedule':0};P.forEach(function(p){c[p.s]++});
-  var nx=P.filter(function(p){return p.d>=todayKey})[0];
+  var nx=P.filter(function(p){return p.d>=todayKey&&p.s!=='Posted'})[0];
   var h='';
   h+='<div class="stat"><i style="background:var(--muted)"></i><b>'+c.Posted+'</b><span>Posted</span></div>';
   h+='<div class="stat"><i style="background:var(--ok)"></i><b>'+c.Scheduled+'</b><span>Scheduled</span></div>';
@@ -210,7 +210,7 @@ function panel(){
 }
 function lists(){
   var P=DATA.posts,miss=P.filter(function(p){return p.miss&&p.d>=todayKey});
-  var nx=P.filter(function(p){return p.d>=todayKey&&!p.miss}).slice(0,6);
+  var nx=P.filter(function(p){return p.d>=todayKey&&!p.miss&&p.s!=='Posted'}).slice(0,6);
   function rows(a){return a.map(function(p){return '<button type="button" class="row" data-k="'+p.d+'"><span class="rt">'+esc(title(p))+'</span><span class="rd">'+esc(nice(p.d,true))+'</span></button>'}).join('')||'<p class="empty">None.</p>'}
   document.getElementById('needs').innerHTML='<h3>Needs attention ('+miss.length+')</h3>'+rows(miss);
   document.getElementById('upnext').innerHTML='<h3>Up next</h3>'+rows(nx);
