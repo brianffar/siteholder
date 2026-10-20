@@ -228,7 +228,7 @@ function step(n){view.m+=n;if(view.m<0){view.m=11;view.y--}if(view.m>11){view.m=
 document.getElementById('prev').onclick=function(){step(-1)};
 document.getElementById('next').onclick=function(){step(1)};
 document.getElementById('today').onclick=function(){var t=parts(todayKey);view={y:t.y,m:t.m};sel=BY[todayKey]?todayKey:sel;draw()};
-fetch('schedule-snapshot.json',{cache:'no-cache'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(init).catch(function(){
+fetch('schedule-snapshot.json?v='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(init).catch(function(){
   document.getElementById('sum').innerHTML='<div class="err">Could not load schedule-snapshot.json.</div>';
 });
 /* light / dark (shares the main site's choice) */
