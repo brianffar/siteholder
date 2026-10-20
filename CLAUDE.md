@@ -6,6 +6,6 @@ Static site for Siteholder Records. This repo is public (GitHub Pages): keep pri
 - Commit messages end with the Co-Authored-By and Claude-Session lines. Commit and push before ending a session. Use a wip branch for anything not ready to go live.
 - Everything is in index.html (hash router, no build). Release data is embedded JSON. route() ends with enhanceSearch(); initCarousel(); fitHero();
 - Home carousel: We're Back -> Latest release -> Featured artist; auto-rotates every 8s. Artists page uses FEATURED + FEAT_IMG; carousel uses HOME_ARTISTS.
-- social/index.html is the social image generator.
+- admin/ holds the private tools (all behind one Cloudflare Access rule on /admin): admin/social (reel and image generator), admin/previews (Preview Clipping Tool), admin/health (Catalog Health). The old /social and /previews are redirect stubs. go/ is the public smart link pages (rebuild with python3 go/build.py).
 - Audio and media are on Cloudflare R2 (audio.siteholderrecords.com); the sandbox cannot reach it.
 - Brian wants direct step-by-step instructions. Mockup first, then approval, then push; small content edits can be pushed directly.
