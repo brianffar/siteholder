@@ -855,7 +855,7 @@ function buildCaption(){
     text = (head || 'Artist spotlight') + ': ' + S.artist + (hnd ? ' ' + hnd : '') + '\n\n' + (q ? '“' + q + '”\n\n' : '')
       + (p.length ? 'In this clip:\n' + p.map(function(o){ var by = trackArtists(o.r, o.t).filter(function(n){ return norm(n) !== norm(S.artist); }).join(', '); return '▸ ' + (by ? by + ' – ' : '') + full(o.t) + ' [' + o.r.cat + ']'; }).join('\n') + '\n\n' : '')
       + (rels.length ? 'On Siteholder: ' + rels.slice(0, 6).map(function(r){ return r.cat; }).join(', ') + (rels.length > 6 ? ' + ' + (rels.length - 6) + ' more' : '') + '\n\n' : '')
-      + 'Listen + buy: ' + SITE_URL + '\n\n' + HASHTAGS;
+      + 'Listen + buy: link in bio\n\n' + HASHTAGS;
     var others = []; p.forEach(function(o){ trackArtists(o.r, o.t).concat(remixersOf(o.t.m)).forEach(function(n){ if (norm(n) !== norm(S.artist) && others.indexOf(n) < 0) others.push(n); }); });
     var tg = tagsFor(others); if (tg.tags.length) text = text.replace('\n\nListen', '\nWith ' + tg.tags.join(' ') + '\n\nListen');
     if (!hnd) note.push('No confirmed handle for ' + S.artist + '.');
@@ -870,7 +870,7 @@ function buildCaption(){
       var tg2 = tagsFor(names);
       text = (head ? head + '\n' : '') + (r.artist === 'Various Artists' ? r.title : r.artist + ' – ' + r.title) + ' [' + r.cat + ', ' + r.year + ']\n\n'
         + r.tracks.map(function(t, i){ return (t.n || (i + 1) + '.') + ' ' + (t.a && r.artist === 'Various Artists' ? t.a + ' – ' : '') + full(t); }).join('\n') + '\n\n'
-        + (r.labelImg ? 'Vinyl + digital. ' : '') + 'Listen + buy: ' + SITE_URL + '\n\n'
+        + (r.labelImg ? 'Vinyl + digital. ' : '') + 'Listen + buy: link in bio\n\n'
         + (tg2.tags.length ? tg2.tags.join(' ') + '\n\n' : '') + HASHTAGS + ' #' + r.cat.toLowerCase().replace(/[^a-z0-9]/g, '');
       if (tg2.miss.length) note.push('No handle for: ' + tg2.miss.join(', ') + '.');
       if (tg2.likely.length) note.push('Not tagged (only “Likely”): ' + tg2.likely.join(', ') + '.');
