@@ -5,7 +5,7 @@ Reads the release data embedded in ../index.html and the store links in links.js
 then writes go/index.html (the hub), go/<release>/index.html (one smart link per
 release) and go/<release>/<store>/index.html (tiny redirect pages: each store
 button goes through one so Cloudflare Web Analytics counts the click by path).
-It never touches index.html.
+It only edits the STORE-LINKS block inside ../index.html (so the main site uses the same real links).
 """
 import html, json, os, re, shutil
 
@@ -202,8 +202,23 @@ def hub(rels, links):
     return h
 
 
+def sync_site_links(links):
+    """Keep the STORE_LINKS block in ../index.html (between its markers) in step with links.json."""
+    p = os.path.join(ROOT, 'index.html')
+    s = open(p, encoding='utf-8').read()
+    m = {k: {x: v[x] for x in ('beatport', 'discogs') if x in v} for k, v in links.items()}
+    m = {k: v for k, v in m.items() if v}
+    a = s.index('/*STORE-LINKS')
+    z = s.index('/*END STORE-LINKS*/') + len('/*END STORE-LINKS*/\n')
+    blk = ('/*STORE-LINKS (written by go/build.py from go/links.json: do not edit by hand)*/\nvar STORE_LINKS = '
+           + json.dumps(m, separators=(',', ':')) + ';\n/*END STORE-LINKS*/\n')
+    if s[a:z] != blk:
+        open(p, 'w', encoding='utf-8').write(s[:a] + blk + s[z:])
+
+
 def main():
     rel, links = load()
+    sync_site_links(links)
     for name in os.listdir(HERE):
         p = os.path.join(HERE, name)
         if os.path.isdir(p):
