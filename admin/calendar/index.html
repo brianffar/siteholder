@@ -124,7 +124,7 @@ footer{border-top:1px solid var(--line);padding-block:32px 48px}
       <h2 class="month" id="month"></h2>
       <div class="nav"><button class="btn sq" id="prev" aria-label="Previous month" type="button">&larr;</button><button class="btn" id="today" type="button">Today</button><button class="btn sq" id="next" aria-label="Next month" type="button">&rarr;</button></div>
     </div>
-    <div class="legend"><span><i class="dot posted"></i>Posted</span><span><i class="dot sched"></i>Scheduled</span><span><i class="dot todo"></i>To schedule</span><span><i class="dot miss"></i>Reel missing</span></div>
+    <div class="legend"><span><i class="dot posted"></i>Posted</span><span><i class="dot sched"></i>Scheduled</span><span><i class="dot todo"></i>To schedule</span><span><i class="dot miss"></i>Draft (reel missing)</span></div>
     <div class="grid" id="grid" role="grid"></div>
   </section>
   <aside class="side">
@@ -146,7 +146,7 @@ function key(y,m,d){return y+'-'+pad(m+1)+'-'+pad(d)}
 function parts(k){var a=k.split('-');return {y:+a[0],m:+a[1]-1,d:+a[2]}}
 function nice(k,short){var p=parts(k),w=new Date(p.y,p.m,p.d).getDay();return DOW[w]+' '+(short?MON[p.m].slice(0,3):MON[p.m])+' '+p.d}
 function cls(p){return p.miss?'miss':p.s==='Posted'?'posted':p.s==='Scheduled'?'sched':'todo'}
-function label(p){return p.miss?'Reel missing':p.s}
+function label(p){return p.miss?'Draft: reel missing':p.s}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function title(p){return p.ty==='S'?p.cat:p.ti}
 function sub(p){return p.ty==='S'?'Artist spotlight':p.ty==='A'?'Announcement':p.cat+' · '+p.ar}
@@ -159,14 +159,13 @@ function init(d){
   summary();draw();lists();document.getElementById('asof').innerHTML='&copy; Siteholder Records, Chicago. Schedule snapshot from the Master Sheet, '+esc(d.asOf)+'. <a href="'+SHEET+'900000001" target="_blank" rel="noopener">Open the Avery tab</a> &middot; <a href="../">Back to the admin</a>';
 }
 function summary(){
-  var P=DATA.posts,c={Posted:0,Scheduled:0,'To schedule':0};P.forEach(function(p){c[p.s]++});
-  var miss=P.filter(function(p){return p.miss&&p.d>=todayKey}).length;
+  var P=DATA.posts,c={Posted:0,Scheduled:0,Draft:0,'To schedule':0};P.forEach(function(p){c[p.s]++});
   var nx=P.filter(function(p){return p.d>=todayKey})[0];
   var h='';
   h+='<div class="stat"><i style="background:var(--muted)"></i><b>'+c.Posted+'</b><span>Posted</span></div>';
   h+='<div class="stat"><i style="background:var(--ok)"></i><b>'+c.Scheduled+'</b><span>Scheduled</span></div>';
   h+='<div class="stat"><i style="background:var(--warn)"></i><b>'+c['To schedule']+'</b><span>To schedule</span></div>';
-  h+='<div class="stat"><i style="background:var(--bad)"></i><b>'+miss+'</b><span>Reels missing</span></div>';
+  h+='<div class="stat"><i style="background:var(--bad)"></i><b>'+c.Draft+'</b><span>Draft, reel missing</span></div>';
   if(nx)h+='<div class="stat next"><i style="background:var(--accent)"></i><b>'+esc(nice(nx.d,true))+'</b><span>Next: '+esc(title(nx))+'</span></div>';
   document.getElementById('sum').innerHTML=h;
 }
@@ -201,7 +200,7 @@ function panel(){
     var r=p.r?DATA.reelBase+p.r+'.mp4':'',im=p.r?DATA.imgBase+p.r+'.png':'';
     h+='<div class="item"><h2>'+esc(title(p))+'</h2><p class="ar">'+esc(sub(p))+'</p>';
     h+='<span class="pill '+cls(p)+'">'+esc(label(p))+'</span>';
-    if(p.miss)h+='<div class="warnbox">This post has no reel yet. Make it in the Reel &amp; Image Maker, upload it, then add the link in the sheet.</div>';
+    if(p.miss)h+='<div class="warnbox">This post is a draft because it has no reel yet. Make it in the Reel &amp; Image Maker, upload it, add the link in the sheet, then change Status to Scheduled.</div>';
     h+='<div class="facts">Time <b>'+esc(p.t)+' CT</b><br>Type <b>'+esc(TYPE[p.ty])+'</b>'+(p.ty==='R'?'<br>Catalog <b>'+esc(p.cat)+'</b>':'')+'<br>Artist <b>'+esc(p.ar)+'</b><br>Post <b>#'+p.n+'</b> of '+DATA.posts.length+'</div>';
     if(r)h+='<video controls preload="none" playsinline src="'+r+'" style="margin-top:14px"></video><div class="links"><a href="'+r+'" target="_blank" rel="noopener">Reel &nearr;</a><a href="'+im+'" target="_blank" rel="noopener">Image &nearr;</a><a href="'+SHEET+'900000001" target="_blank" rel="noopener">Caption in sheet &nearr;</a></div>';
     else h+='<div class="links" style="margin-top:14px"><a href="../social/">Make the reel &rarr;</a><a href="'+SHEET+'900000001" target="_blank" rel="noopener">Sheet &nearr;</a></div>';
