@@ -130,8 +130,8 @@ def release_page(r, lk):
     for i, (key, label, small, _u) in enumerate(bt):
         h += '<a class="b%s" href="/go/%s/%s/" rel="nofollow">%s <small>%s</small></a>' % (
             ' main' if i == 0 else '', esc(rid), esc(key), esc(label), esc(small))
-    h += '<a class="b%s" href="%s/#release-%s">%s <small>Open</small></a>' % (
-        '' if bt else ' main', SITE, esc(rid), 'Hear it on siteholderrecords.com' if bt else 'Listen on siteholderrecords.com')
+    if not bt:  # no store links yet: send them to the label site so the page is never a dead end
+        h += '<a class="b main" href="%s/#release-%s">Listen on siteholderrecords.com <small>Open</small></a>' % (SITE, esc(rid))
     h += '</div>'
     tracks = [t for t in r['tracks'] if t.get('p')]
     if tracks:
