@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Catalog Health · Siteholder Records</title>
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="description" content="Siteholder Records tools.">
+<link rel="icon" href="../../favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="32x32" href="../../favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="../../icon-192.png">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script>try{var t=localStorage.getItem('sh-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<style>
+
+:root{color-scheme:light;
+  --bg:#f2f3f4;--surface:#ffffff;--ink:#0e0f11;--muted:#5b5f66;--line:#d8dadd;--accent:#2536ff;--on-ink:#ffffff;--ok:#12805c;--bad:#c4271c;--warn:#a86a00;
+  --display:'Archivo','Helvetica Neue',Arial,sans-serif;--mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  --gutter:clamp(16px,4vw,40px);--logo:url("../logo.png")}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e0f11;--surface:#17181b;--ink:#f1f2f3;--muted:#9b9fa7;--line:#2b2d32;--accent:#8a95ff;--on-ink:#0e0f11;--ok:#41c796;--bad:#ff6b5e;--warn:#e8b040;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e0f11;--surface:#17181b;--ink:#f1f2f3;--muted:#9b9fa7;--line:#2b2d32;--accent:#8a95ff;--on-ink:#0e0f11;--ok:#41c796;--bad:#ff6b5e;--warn:#e8b040;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--display);font-size:16px;line-height:1.5;padding-inline:var(--gutter)}
+a{color:inherit;text-decoration:none}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+h1,h2,p{margin:0}
+.wrap{max-width:1240px;margin-inline:auto}
+.top{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px 32px;padding-block:14px}
+.logo{display:block;height:56px;aspect-ratio:480/272;background-color:currentColor;-webkit-mask:var(--logo) no-repeat center/contain;mask:var(--logo) no-repeat center/contain}
+.theme{display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:13px;font-weight:500;color:var(--muted);background:none;border:0;padding:4px;cursor:pointer}
+.theme:hover{color:var(--ink)}
+.theme .track{width:38px;height:22px;border-radius:99px;border:1.5px solid var(--ink);position:relative;flex:none}
+.theme .track::after{content:"";position:absolute;top:2.5px;left:2.5px;width:14px;height:14px;border-radius:50%;background:var(--ink);transition:transform .2s}
+.theme[aria-checked="true"] .track::after{transform:translateX(16px)}
+@media (prefers-reduced-motion:reduce){.theme .track::after,.tile,.tile .go{transition:none}}
+main{padding-block:40px 72px;min-height:100vh;min-height:100svh}
+.page-title{font-size:clamp(44px,9vw,120px);font-weight:800;font-stretch:75%;text-transform:uppercase;letter-spacing:-.02em;line-height:.95;margin-bottom:32px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:20px}
+.tile{display:flex;flex-direction:column;justify-content:space-between;gap:28px;min-height:260px;padding:26px 28px;background:var(--surface);border:1px solid var(--line);transition:border-color .15s,transform .15s}
+.tile:hover{border-color:var(--ink)}
+.tile .k{font:12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.tile h2{font-size:clamp(28px,3.4vw,44px);font-weight:800;font-stretch:75%;text-transform:uppercase;letter-spacing:-.01em;line-height:1;margin-bottom:14px}
+.tile p{color:var(--muted);font-size:16px;max-width:46ch}
+.tile .go{font:500 13px var(--mono);letter-spacing:.14em;text-transform:uppercase}
+.tile.feat{background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+.tile.feat .k,.tile.feat p{color:color-mix(in srgb,var(--on-ink) 70%,transparent)}
+.tile.feat:hover{border-color:var(--accent)}
+@media(min-width:760px){.tile.feat{grid-column:span 2}}
+footer{border-top:1px solid var(--line);padding-block:32px 48px}
+.legal{font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.8}
+.legal a{border-bottom:1px solid currentColor}.legal a:hover{color:var(--accent)}
+
+.page-title{font-size:clamp(36px,6vw,80px)}
+.back{font:12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:inline-block;margin-bottom:14px}
+.back:hover{color:var(--ink)}
+.lede{color:var(--muted);max-width:62ch;margin:-12px 0 28px}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:16px;margin-bottom:32px}
+.stat{background:var(--surface);border:1px solid var(--line);padding:18px 20px}
+.stat b{display:block;font-size:40px;font-weight:800;font-stretch:75%;line-height:1}
+.stat span{font:11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.stat.bad b{color:var(--bad)}.stat.ok b{color:var(--ok)}
+h2.sec{font:12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:34px 0 12px;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+h2.sec small{font-size:11px;letter-spacing:.04em;text-transform:none}
+details.chk{background:var(--surface);border:1px solid var(--line);margin-bottom:10px}
+details.chk summary{display:flex;align-items:center;gap:14px;padding:14px 18px;cursor:pointer;list-style:none}
+details.chk summary::-webkit-details-marker{display:none}
+details.chk summary::after{content:"+";margin-left:auto;font:18px var(--mono);color:var(--muted)}
+details.chk[open] summary::after{content:"\2212"}
+.n{min-width:44px;font:700 22px var(--mono)}
+.n.ok{color:var(--ok)}.n.bad{color:var(--bad)}.n.warn{color:var(--warn)}
+.t{font-weight:600}.t small{display:block;font-weight:400;color:var(--muted);font-size:13px}
+.lst{padding:4px 18px 16px 76px;color:var(--muted);font-size:14px;columns:2 280px;column-gap:28px}
+.lst li{break-inside:avoid;margin:3px 0}
+.lst b{color:var(--ink);font-weight:600}
+.empty{padding:2px 18px 16px 76px;color:var(--ok);font-size:14px}
+.btn{display:inline-flex;font:inherit;font-size:13px;font-weight:600;padding:7px 14px;border:1.5px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;border-radius:2px}
+.btn:hover{background:var(--ink);color:var(--on-ink)}.btn:disabled{opacity:.4;cursor:default}
+.note{font-size:13px;color:var(--muted);margin-top:8px}
+</style></head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="../../" aria-label="Siteholder Records home"><span class="logo" role="img" aria-label="siteHolder"></span></a>
+  <button class="theme" id="theme" type="button" role="switch" aria-checked="false" aria-label="Dark mode"><span class="track"></span><span id="theme-label">Light</span></button>
+</div></header>
+<main class="wrap">
+<a class="back" href="../">&larr; Admin</a>
+<h1 class="page-title">Catalog Health</h1>
+<p class="lede">What is missing across the catalog. The first group is read live from the site every time you open this page. The second group comes from the Master Sheet and is a saved snapshot, so it shows its date.</p>
+<div class="sum" id="sum"></div>
+<h2 class="sec">Live from the site</h2>
+<div id="live"><p class="note">Reading the catalog&hellip;</p></div>
+<h2 class="sec">From the Master Sheet <small id="asof"></small></h2>
+<div id="sheet"></div>
+<p class="note">Sheet checks only show whether a link is filled in, not whether the file exists. The snapshot is refreshed when the sheet changes.</p>
+</main>
+<footer><div class="wrap"><p class="legal">&copy; Siteholder Records, Chicago. <a href="../">Back to admin</a></p></div></footer>
+<script>
+var AUDIO='https://audio.siteholderrecords.com/';
+function $(i){return document.getElementById(i)}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function row(n,title,sub,items,tone,extra){
+  var cls=n===0?'ok':(tone||'bad');
+  return '<details class="chk"'+(n&&items&&items.length<=0?'':'')+'><summary><span class="n '+cls+'">'+n+'</span><span class="t">'+title+(sub?'<small>'+sub+'</small>':'')+'</span></summary>'+
+    (n===0?'<p class="empty">All good.</p>':'<ul class="lst" style="list-style:none;margin:0">'+items.map(function(x){return '<li>'+x+'</li>'}).join('')+'</ul>')+(extra||'')+'</details>';
+}
+var SUM={};
+function renderSum(){
+  var h='';[['Releases',SUM.rel,''],['Tracks',SUM.trk,''],['Tracks with no preview',SUM.nop,SUM.nop?'bad':'ok'],['Artists with no reel',SUM.nr,SUM.nr?'bad':'ok']].forEach(function(s){
+    if(s[1]==null)return;h+='<div class="stat '+s[2]+'"><b>'+s[1]+'</b><span>'+s[0]+'</span></div>'});
+  $('sum').innerHTML=h;
+}
+var RELS=[];
+fetch('../../',{cache:'no-cache'}).then(function(r){return r.text()}).then(function(h){
+  var m=/<script type="application\/json" id="releases">([\s\S]*?)<\/script>/.exec(h);RELS=JSON.parse(m[1]);
+  var noImg=[],noPrev=[],trk=0;
+  RELS.forEach(function(r){
+    if(!r.img&&!r.labelImg)noImg.push('<b>'+esc(r.cat)+'</b> '+esc(r.title));
+    r.tracks.forEach(function(t){trk++;if(!t.p)noPrev.push('<b>'+esc(r.cat)+'</b> '+esc(t.t)+(t.m?' ('+esc(t.m)+')':''))});
+  });
+  SUM.rel=RELS.length;SUM.trk=trk;SUM.nop=noPrev.length;renderSum();
+  $('live').innerHTML=
+    row(noPrev.length,'Tracks with no preview audio','Nothing to play on the site for these tracks.',noPrev)+
+    row(noImg.length,'Releases with no cover image','',noImg)+
+    '<details class="chk" id="r2"><summary><span class="n warn" id="r2n">?</span><span class="t">Preview files missing from R2<small>Checks that every preview link actually opens. Takes about a minute.</small></span></summary><div style="padding:0 18px 16px 76px"><button class="btn" id="r2go" type="button">Check now</button><ul class="lst" id="r2out" style="list-style:none;margin:10px 0 0;padding:0"></ul><p class="note" id="r2msg"></p></div></details>';
+  $('r2go').onclick=checkR2;
+}).catch(function(){$('live').innerHTML='<p class="note">Could not read the catalog from the site.</p>'});
+async function checkR2(){
+  var b=$('r2go');b.disabled=true;var list=[];
+  RELS.forEach(function(r){r.tracks.forEach(function(t){if(t.p)list.push({r:r,t:t})})});
+  var done=0,bad=[],err=0,i=0;
+  async function w(){while(i<list.length){var x=list[i++];
+    try{var res=await fetch(AUDIO+x.t.p,{method:'HEAD',cache:'no-store'});if(!res.ok)bad.push(x)}catch(e){err++}
+    done++;$('r2msg').textContent='Checked '+done+' of '+list.length+'\u2026'}}
+  await Promise.all([w(),w(),w(),w(),w(),w()]);
+  b.disabled=false;
+  if(err>list.length/2){$('r2n').textContent='?';$('r2msg').textContent='This browser could not reach the audio host, so the check could not run.';return}
+  $('r2n').textContent=bad.length;$('r2n').className='n '+(bad.length?'bad':'ok');
+  $('r2out').innerHTML=bad.map(function(x){return '<li><b>'+esc(x.r.cat)+'</b> '+esc(x.t.t)+(x.t.m?' ('+esc(x.t.m)+')':'')+'</li>'}).join('');
+  $('r2msg').textContent=bad.length?'These links do not open. Upload the files or fix the path.':'Every preview link opens.';
+}
+fetch('sheet-snapshot.json',{cache:'no-cache'}).then(function(r){return r.json()}).then(function(s){
+  $('asof').textContent='snapshot of '+s.asOf;SUM.nr=s.artists.noReel.length;renderSum();
+  var n=function(a){return a.map(esc)};
+  $('sheet').innerHTML=
+    row(s.releases.noReel.length,'Releases with no reel','',n(s.releases.noReel))+
+    row(s.releases.noImage.length,'Releases with no social image','',n(s.releases.noImage))+
+    row(s.artists.noReel.length,'Artists with no reel','Of '+s.artists.total+' artists in Outreach.',n(s.artists.noReel))+
+    row(s.artists.noImage.length,'Artists with no image','',n(s.artists.noImage))+
+    row(s.artists.neither.length,'Artists with neither reel nor image','These need both made.',n(s.artists.neither));
+});
+(function(){
+  var root=document.documentElement,btn=$('theme'),lab=$('theme-label');
+  function eff(){var t=root.getAttribute('data-theme');return t||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}
+  function sync(){var d=eff()==='dark';btn.setAttribute('aria-checked',d);lab.textContent=d?'Dark':'Light'}
+  btn.addEventListener('click',function(){var n=eff()==='dark'?'light':'dark';root.setAttribute('data-theme',n);try{localStorage.setItem('sh-theme',n)}catch(e){}sync()});
+  if(window.matchMedia){try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',sync)}catch(e){}}
+  sync();
+})();
+</script>
+</body></html>
