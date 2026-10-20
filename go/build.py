@@ -55,6 +55,10 @@ CSS = """
 a{color:inherit}
 .wrap{max-width:460px;margin:auto;text-align:center}
 .wide{max-width:1040px}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:1040px;margin:0 auto;padding:14px 0;border-bottom:1px solid var(--line)}
+.bar a{text-decoration:none}.bar .logo{height:30px;margin:0}
+.bar .full{font:12px var(--mono);letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid currentColor;color:var(--muted)}
+.bar .full:hover{color:var(--ink)}
 .logo{display:block;height:48px;aspect-ratio:480/272;margin:22px auto 18px;background-color:currentColor;-webkit-mask:var(--logo) no-repeat center/contain;mask:var(--logo) no-repeat center/contain}
 .disc{width:min(72vw,300px);aspect-ratio:1;margin:0 auto 22px;border-radius:50%;background:var(--line) center/cover;box-shadow:0 24px 50px -24px rgba(0,0,0,.5);animation:sp 30s linear infinite}
 .disc.sq{border-radius:2px;animation:none}
@@ -108,6 +112,16 @@ def fmt_line(r, lk=None):
     return '%s · %s · %s' % (r['cat'], f, year)
 
 
+def bar():
+    return ('<div class="bar"><a href="%s/" aria-label="Siteholder Records website"><span class="logo" role="img" aria-label="siteHolder"></span></a>'
+            '<a class="full" href="%s/">Full site &rarr;</a></div>') % (SITE, SITE)
+
+
+def foot():
+    return ('<div class="foot"><a class="more" href="/go/">All releases</a><a class="more" href="%s/">Visit siteholderrecords.com</a>'
+            '<a class="more" href="%s" target="_blank" rel="noopener">Instagram</a></div>') % (SITE, IG)
+
+
 def release_page(r, lk):
     rid = r['id']
     url = '%s/go/%s/' % (SITE, rid)
@@ -118,7 +132,7 @@ def release_page(r, lk):
     desc = r.get('sub') or ('%s on Siteholder Records (%s).' % (r['title'], r['cat']))
     bt = buttons(r, lk)
     h = head(title + ' | Siteholder Records', desc, url, image, BEACON)
-    h += '<div class="wrap"><a href="/go/" aria-label="Siteholder Records, all releases"><span class="logo" role="img" aria-label="siteHolder"></span></a>'
+    h += bar() + '<div class="wrap" style="margin-top:22px">'
     if disc:
         h += '<div class="disc" style="background-image:url(%s)"></div>' % esc(disc)
     elif cover:
@@ -141,7 +155,7 @@ def release_page(r, lk):
                   % (i + 1, esc(t['t']), ' <em>(%s)</em>' % esc(t['m']) if t.get('m') and t['m'] != 'Original Mix' else '',
                      esc(t['t']), esc(AUDIO + t['p'])))
         h += '</div>'
-    h += '<div class="foot"><a class="more" href="/go/">More from Siteholder &rarr;</a><a class="more" href="%s" target="_blank" rel="noopener">Instagram</a></div></div>' % IG
+    h += foot() + '</div>'
     if tracks:
         h += PLAYER
     h += '</body></html>'
@@ -174,7 +188,7 @@ def hub(rels, links):
     top = rels[0]
     h = head('Siteholder Records | Listen and buy', 'Every Siteholder Records release, with preview and store links.',
              SITE + '/go/', SITE + '/og-image.jpg', BEACON)
-    h += '<div class="wrap wide"><a href="%s/" aria-label="Siteholder Records website"><span class="logo" role="img" aria-label="siteHolder"></span></a>' % SITE
+    h += bar() + '<div class="wrap wide">'
     h += '<div class="h2">Latest release</div><a class="t hero" href="/go/%s/"><img src="/%s" alt="%s cover"><div>' % (
         esc(top['id']), esc(art(top)), esc(top['title']))
     h += '<div class="cat">%s</div><h1>%s</h1><div class="by">%s</div><div class="sub">%s</div>' % (
@@ -184,7 +198,7 @@ def hub(rels, links):
     for r in rels[1:]:
         h += '<a class="t" href="/go/%s/"><img src="/%s" alt="" loading="lazy"><b>%s</b><span>%s</span></a>' % (
             esc(r['id']), esc(art(r)), esc(r['title']), esc(r['artist']))
-    h += '</div><div class="foot"><a class="more" href="%s/">siteholderrecords.com</a><a class="more" href="%s" target="_blank" rel="noopener">Follow on Instagram</a></div></div></body></html>' % (SITE, IG)
+    h += '</div>' + foot() + '</div></body></html>'
     return h
 
 
