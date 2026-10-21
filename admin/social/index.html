@@ -133,9 +133,10 @@ input[type=color]{width:42px;height:32px;padding:0;border:1px solid var(--line);
 footer{border-top:1px solid var(--line);padding-block:32px 48px}
 .legal{font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.8}
 .legal a{border-bottom:1px solid currentColor}.legal a:hover{color:var(--accent)}
+.lhs{display:flex;align-items:center;gap:18px;min-width:0}.adminlink{font:500 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);padding:8px 12px;white-space:nowrap}.adminlink:hover{color:var(--ink);border-color:var(--ink)}@media(max-width:520px){.lhs{gap:10px}.adminlink{padding:7px 9px;letter-spacing:.04em}}
 </style></head><body>
 <header class="top"><div class="wrap">
-  <a class="brand" href="../../" aria-label="Siteholder Records home"><span class="logo" role="img" aria-label="siteHolder"></span></a>
+  <div class="lhs"><a class="adminlink" href="../">&larr; Admin</a><a class="brand" href="../../" aria-label="Siteholder Records home"><span class="logo" role="img" aria-label="siteHolder"></span></a></div>
   <button class="theme" id="theme" type="button" role="switch" aria-checked="false" aria-label="Dark mode"><span class="track"></span><span id="theme-label">Light</span></button>
 </div></header>
 <main class="wrap">

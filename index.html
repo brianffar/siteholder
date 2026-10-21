@@ -114,6 +114,9 @@ main { padding-block: 40px 72px; min-height: 100vh; min-height: 100svh; }
 .btn:hover { background: var(--ink); color: var(--on-ink); }
 .btn.solid { background: var(--ink); color: var(--on-ink); }
 .btn.solid:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.share { border-color: var(--accent); color: var(--accent); }
+.btn.share:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.share svg { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 /* cover grid */
 .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 16px; }
@@ -2237,7 +2240,8 @@ nav .menu a.sub { padding-left: 32px; color: var(--muted); }
     "t": "Wetfood",
     "m": "Bumpin' Ugly Remix",
     "bpm": 128,
-    "k": "Gb min"
+    "k": "Gb min",
+    "p": "sh013/04-wetfood-bumpin-ugly-remix.mp3"
    }
   ],
   "img": "images/labels/wetfood-ep.webp",
@@ -4282,6 +4286,7 @@ function storeLinks(r) {
   if (r.digital) out += '<a class="btn solid" href="' + (r.beatport || lk.beatport || 'https://www.beatport.com/search/releases?q=' + q) + '" target="_blank" rel="noopener">Beatport</a>';
   if (r.bandcamp) out += '<a class="btn" href="' + r.bandcamp + '" target="_blank" rel="noopener">Bandcamp</a>';
   if (r.vinyl) out += '<a class="btn' + (r.digital ? '' : ' solid') + '" href="' + (r.discogs || lk.discogs || 'https://www.discogs.com/search/?type=release&q=' + q) + '" target="_blank" rel="noopener">Vinyl on Discogs</a>';
+  out += '<a class="btn share" href="go/' + r.id + '/" data-share="' + r.id + '" data-title="' + esc((r.artist === 'Various Artists' ? '' : r.artist + ' \u2013 ') + r.title) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 15V3"/><path d="M7.5 7.5L12 3l4.5 4.5"/></svg>Share</a>';
   return out;
 }
 
@@ -4519,7 +4524,6 @@ function release(id) {
     '<dl class="facts"><dt>Label</dt><dd><a class="more" href="#about-' + labelId(r.label) + '">' + r.label + '</a></dd><dt>Released</dt><dd>' + fmtDate(r.dateYear ? String(r.date).slice(0, 4) : r.date) + '</dd><dt>Format</dt><dd>' + r.fmtName + '</dd>' + (r.cat ? '<dt>Cat. no.</dt><dd>' + r.cat + '</dd>' : '') + '</dl>' +
     '<div class="buy">' + storeLinks(r) + '</div>' +
     (!r.digital || r.beatport || (STORE_LINKS[r.id] || {}).beatport ? '' : '<p class="buy-note">This button opens a Beatport search for the release.</p>') +
-    '<p class="buy-note"><a class="more" href="go/' + r.id + '/">Share this release</a></p>' +
     (r.tracks.length ? '<ol class="tracks">' + r.tracks.map(function (t) { return trackRow(t, r.tracks.some(function (x) { return x.p; })); }).join('') + '</ol>' + (r.tracks.some(function (t) { return t.p; }) ? '<p class="pv-note">Tap play to hear a preview. Drag the bar to skip ahead.</p>' : '') : '') + '</div></section>' +
     '<section class="block"><div class="sec-head"><h2>More releases</h2><a class="more" href="#catalog">Full catalog</a></div><div class="grid">' + more.map(card).join('') + '</div></section>';
 }
@@ -4754,6 +4758,17 @@ window.addEventListener('scroll', function () {
 }, { passive: true });
 window.addEventListener('hashchange', function () { clearTimeout(scrollTimer); });
 window.addEventListener('hashchange', route);
+/* Share button on release pages: native share sheet where available, else copy the smart link */
+document.addEventListener('click', function (e) {
+  var sh = e.target.closest && e.target.closest('a[data-share]');
+  if (!sh) return;
+  var url = new URL(sh.getAttribute('href'), location.href).href, title = sh.getAttribute('data-title') || 'Siteholder Records';
+  if (navigator.share) { e.preventDefault(); navigator.share({ title: title, url: url }).catch(function () {}); }
+  else if (navigator.clipboard && navigator.clipboard.writeText) {
+    e.preventDefault(); var old = sh.lastChild.textContent;
+    navigator.clipboard.writeText(url).then(function () { sh.lastChild.textContent = 'Link copied'; setTimeout(function () { sh.lastChild.textContent = old; }, 2000); }, function () { location.href = url; });
+  }
+});
 document.addEventListener('click', function (e) {
   /* the logo and the Home link always bring back the full list: clear any search and filters */
   if (e.target.closest && e.target.closest('.brand, #nav [data-r="home"]')) { F.label = 'All'; F.fmt = 'All'; F.q = ''; F.n = 24; }
