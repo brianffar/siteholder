@@ -254,8 +254,8 @@
    "cat": "SHUCLTD001",
    "ti": "Uncut Premium Part One",
    "ar": "Huge Hephner, The Shocker, Daniel Mnookin",
-   "s": "Draft",
-   "miss": "reel"
+   "s": "Scheduled",
+   "r": "shucltd001-qys"
   },
   {
    "n": 24,
@@ -342,8 +342,8 @@
    "cat": "SHUCLTD002",
    "ti": "Uncut Premium Part Two",
    "ar": "The Donk Boys, Bumpin' Ugly, Brian Ffar",
-   "s": "Draft",
-   "miss": "reel"
+   "s": "Scheduled",
+   "r": "shucltd002-k1p"
   },
   {
    "n": 32,
@@ -364,8 +364,8 @@
    "cat": "SHUCLTD003",
    "ti": "Uncut Premium Part Three",
    "ar": "Billy Dalessandro, Slutbox, Galuszka",
-   "s": "Draft",
-   "miss": "reel"
+   "s": "Scheduled",
+   "r": "shucltd003-ycq"
   },
   {
    "n": 34,
@@ -441,8 +441,8 @@
    "cat": "SHUCLTD004",
    "ti": "Uncut Premium Part Four",
    "ar": "Tyrone, Billy Dalessandro, Galuszka",
-   "s": "Draft",
-   "miss": "reel"
+   "s": "Scheduled",
+   "r": "shucltd004-xvv"
   },
   {
    "n": 41,
@@ -518,8 +518,8 @@
    "cat": "SHUCLTD005",
    "ti": "Uncut Premium Part Five",
    "ar": "Galuszka, Ana+one",
-   "s": "Draft",
-   "miss": "reel"
+   "s": "Scheduled",
+   "r": "shucltd005-c6w"
   },
   {
    "n": 48,
@@ -595,8 +595,8 @@
    "cat": "SHUCLTD006",
    "ti": "Uncut Premium Part Six",
    "ar": "Jason Emsley, Dark Maze, Marc Cotterell",
-   "s": "Draft",
-   "miss": "reel"
+   "s": "Scheduled",
+   "r": "shucltd006-59t"
   },
   {
    "n": 55,
