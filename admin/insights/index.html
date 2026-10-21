@@ -61,7 +61,8 @@ footer{border-top:1px solid var(--line);padding-block:32px 48px}
 .chart{background:var(--surface);border:1px solid var(--line);padding:18px}
 .chart svg{display:block;width:100%;height:auto}
 .bars{display:flex;align-items:flex-end;gap:3px;height:120px}
-.bars i{flex:1;background:var(--ink);min-height:2px}
+.bars i{flex:1;background:var(--ink);min-height:2px;opacity:.82;cursor:default}.bars i:hover{opacity:1}
+#tip{position:fixed;z-index:50;pointer-events:none;background:var(--surface);border:1px solid var(--line);padding:8px 12px;font:13px var(--mono);color:var(--muted);white-space:nowrap;display:none;box-shadow:0 2px 8px rgba(0,0,0,.12)}#tip b{color:var(--ink)}
 .axis{display:flex;justify-content:space-between;font:11px var(--mono);color:var(--muted);margin-top:6px}
 table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--line);font-size:13px}
 th,td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
@@ -117,7 +118,7 @@ function render(){
   var tiles=[['Views','views'],['Accounts reached','reach'],['Accounts engaged','accounts_engaged'],['Interactions','total_interactions'],['Profile link taps','profile_links_taps']];
   var h='<h2 class="sec">Total followers <small>'+esc(Object.keys(D.followers)[0]||'')+' \u2013 today</small></h2><div class="chart">'+followers()+'</div><p class="note">Instagram only reports today\u2019s total, so this chart is built from a count saved once a day, starting the day this page was first opened.</p>';
   h+='<h2 class="sec">Last 7 days <small>28 days in grey</small></h2><div class="sum">'+tiles.map(function(t){return '<div class="stat"><b>'+fmt(a[t[1]])+'</b><span>'+t[0]+'</span><small>'+fmt(b[t[1]])+' in 28 days</small></div>'}).join('')+'</div>';
-  if(D.reachDaily){var mx=Math.max.apply(null,D.reachDaily.map(function(x){return x.v}))||1;h+='<h2 class="sec">Accounts reached per day <small>last 28 days</small></h2><div class="chart"><div class="bars">'+D.reachDaily.map(function(x){return '<i title="'+esc(x.d)+': '+x.v+'" style="height:'+Math.max(2,x.v/mx*100)+'%"></i>'}).join('')+'</div><div class="axis"><span>'+esc(D.reachDaily[0].d)+'</span><span>max '+fmt(mx)+'</span><span>'+esc(D.reachDaily[D.reachDaily.length-1].d)+'</span></div></div>'}
+  if(D.reachDaily){var mx=Math.max.apply(null,D.reachDaily.map(function(x){return x.v}))||1;h+='<h2 class="sec">Accounts reached per day <small>last 28 days</small></h2><div class="chart"><div class="bars">'+D.reachDaily.map(function(x){return '<i data-tip="'+esc(x.d)+'|'+x.v+'" style="height:'+Math.max(2,x.v/mx*100)+'%"></i>'}).join('')+'</div><div class="axis"><span>'+esc(D.reachDaily[0].d)+'</span><span>max '+fmt(mx)+'</span><span>'+esc(D.reachDaily[D.reachDaily.length-1].d)+'</span></div></div>'}
   h+='<h2 class="sec">Reels <small>click a column to sort</small></h2><div class="tw" id="tbl"></div>';
   h+='<h2 class="sec">Audience</h2><div class="aud">'+[['Top countries','country',6],['Top cities','city',6],['Age','age',7],['Gender','gender',3]].map(function(x){return aud(x[0],D.demo[x[1]],x[2])}).join('')+'</div>';
   var er=Object.keys(D.errors||{});if(er.length)h+='<p class="note err">Instagram did not return: '+er.map(function(k){return esc(k)+' ('+esc(D.errors[k])+')'}).join('; ')+'</p>';
@@ -153,5 +154,8 @@ load(false);
   btn.addEventListener('click',function(){var n=eff()==='dark'?'light':'dark';root.setAttribute('data-theme',n);try{localStorage.setItem('sh-theme',n)}catch(e){}sync()});
   sync();
 })();
+(function(){var t=document.createElement('div');t.id='tip';document.body.appendChild(t);
+document.addEventListener('mousemove',function(e){var el=e.target.closest&&e.target.closest('[data-tip]');if(!el){t.style.display='none';return}var p=el.getAttribute('data-tip').split('|');t.innerHTML=p[0]+': <b>'+Number(p[1]).toLocaleString()+'</b> accounts reached';t.style.display='block';var w=t.offsetWidth,x=Math.min(Math.max(8,e.clientX-w/2),innerWidth-w-8);t.style.left=x+'px';t.style.top=(el.getBoundingClientRect().top-t.offsetHeight-8)+'px'});
+document.addEventListener('mouseleave',function(){t.style.display='none'});})();
 </script>
 </body></html>
