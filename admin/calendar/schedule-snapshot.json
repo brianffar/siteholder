@@ -782,8 +782,8 @@
    "cat": "SHUC036",
    "ti": "Micropiano",
    "ar": "Zarbeat",
-   "s": "Draft",
-   "miss": "reel"
+   "s": "Scheduled",
+   "r": "shuc036-cy8"
   },
   {
    "n": 72,
@@ -826,8 +826,8 @@
    "cat": "SHUC039",
    "ti": "Indoor League",
    "ar": "James Welsh",
-   "s": "Draft",
-   "miss": "reel"
+   "s": "Scheduled",
+   "r": "shuc039-ect"
   },
   {
    "n": 76,
