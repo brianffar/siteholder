@@ -92,7 +92,16 @@ main{padding-block:32px 72px;min-height:100vh;min-height:100svh}
 .media img{width:96px;height:96px;object-fit:cover;background:var(--hatch);display:block}
 .facts{font:12px var(--mono);color:var(--muted);line-height:1.9}
 .facts b{color:var(--ink);font-weight:500}
-video{width:100%;max-height:360px;background:#000;display:block;margin-bottom:12px}
+video{display:block;width:100%;max-width:300px;aspect-ratio:9/16;max-height:62vh;object-fit:contain;background:#000;margin:14px 0 12px}
+.cap{margin-top:16px}.cap label{display:block;font:11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.cap textarea{width:100%;min-height:190px;resize:vertical;font:13px/1.55 var(--mono);color:var(--ink);background:var(--surface);border:1px solid var(--line);padding:12px;box-sizing:border-box}
+.cap textarea:focus{outline:2px solid var(--ink);outline-offset:-1px}.cap textarea[readonly]{opacity:.7}
+.capbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}
+.capbar button{font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;padding:11px 16px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.capbar button.go{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.capbar button:disabled{opacity:.35;cursor:default}
+.capbar .cnt{margin-left:auto;font:11px var(--mono);color:var(--muted)}
+.capmsg{font:12px var(--mono);margin-top:8px;min-height:1em;color:var(--muted)}.capmsg.bad{color:var(--bad)}.capmsg.good{color:var(--ok)}
 .links{display:flex;flex-wrap:wrap;gap:8px}
 .links a{font:500 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;border:1px solid var(--line);padding:8px 12px}
 .links a:hover{border-color:var(--ink)}
@@ -151,6 +160,39 @@ function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp
 function title(p){return p.ty==='S'?p.cat:p.ti}
 function sub(p){return p.ty==='S'?'Artist spotlight':p.ty==='A'?'Announcement':p.cat+' · '+p.ar}
 
+
+var LIVE=null,EDIT={};
+function capVal(p){return EDIT[p.n]!=null?EDIT[p.n]:(LIVE&&LIVE[p.n]?LIVE[p.n].caption:'')}
+function capBox(p){
+  var ro=!LIVE||p.s==='Posted',v=capVal(p);
+  var note=!LIVE?'Caption editing is not connected yet.':p.s==='Posted'?'Already posted, so the caption is locked.':'';
+  return '<div class="cap" data-n="'+p.n+'"><label for="cap'+p.n+'">Caption</label><textarea id="cap'+p.n+'" maxlength="2200" spellcheck="true"'+(ro?' readonly':'')+'>'+esc(v)+'</textarea>'+
+   '<div class="capbar"><button type="button" class="go" data-act="save" disabled>Save caption</button><button type="button" data-act="undo" disabled>Undo</button><span class="cnt">'+v.length+'/2200</span></div><div class="capmsg">'+esc(note)+'</div></div>';
+}
+function capSaved(n){return LIVE&&LIVE[n]?LIVE[n].caption:''}
+document.addEventListener('input',function(e){
+  var t=e.target;if(t.tagName!=='TEXTAREA'||!t.closest('.cap'))return;
+  var box=t.closest('.cap'),n=box.getAttribute('data-n'),dirty=t.value!==capSaved(n);
+  EDIT[n]=t.value;box.querySelector('.cnt').textContent=t.value.length+'/2200';
+  box.querySelector('[data-act=save]').disabled=!dirty;box.querySelector('[data-act=undo]').disabled=!dirty;
+  var m=box.querySelector('.capmsg');m.textContent='';m.className='capmsg';
+});
+document.addEventListener('click',function(e){
+  var b=e.target.closest('[data-act]');if(!b)return;
+  var box=b.closest('.cap'),n=box.getAttribute('data-n'),ta=box.querySelector('textarea'),m=box.querySelector('.capmsg');
+  if(b.getAttribute('data-act')==='undo'){ta.value=capSaved(n);delete EDIT[n];ta.dispatchEvent(new Event('input',{bubbles:true}));delete EDIT[n];box.querySelector('[data-act=save]').disabled=true;box.querySelector('[data-act=undo]').disabled=true;return}
+  b.disabled=true;m.className='capmsg';m.textContent='Saving to the Master Sheet\u2026';
+  fetch('../api/captions',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({n:Number(n),caption:ta.value})})
+   .then(function(r){return r.json()}).then(function(d){
+     if(!d.ok)throw new Error(d.error||'failed');
+     LIVE[n].caption=ta.value;delete EDIT[n];m.className='capmsg good';m.textContent='Saved to the sheet ('+d.where+').';
+     box.querySelector('[data-act=undo]').disabled=true;
+   }).catch(function(x){m.className='capmsg bad';m.textContent='Not saved: '+x.message;b.disabled=false});
+  e.stopPropagation();
+});
+function loadLive(){
+  return fetch('../api/captions',{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(d){if(!d.posts)throw 0;LIVE=d.posts;panel()}).catch(function(){});
+}
 function init(d){
   DATA=d;d.posts.forEach(function(p){(BY[p.d]=BY[p.d]||[]).push(p)});
   var n=new Date();todayKey=key(n.getFullYear(),n.getMonth(),n.getDate());
@@ -202,7 +244,9 @@ function panel(){
     h+='<span class="pill '+cls(p)+'">'+esc(label(p))+'</span>';
     if(p.miss)h+='<div class="warnbox">This post is a draft because it has no reel yet. Make it in the Reel &amp; Image Maker, upload it, add the link in the sheet, then change Status to Scheduled.</div>';
     h+='<div class="facts">Time <b>'+esc(p.t)+' CT</b><br>Type <b>'+esc(TYPE[p.ty])+'</b>'+(p.ty==='R'?'<br>Catalog <b>'+esc(p.cat)+'</b>':'')+'<br>Artist <b>'+esc(p.ar)+'</b><br>Post <b>#'+p.n+'</b> of '+DATA.posts.length+'</div>';
-    if(r)h+='<video controls preload="none" playsinline src="'+r+'" style="margin-top:14px"></video><div class="links"><a href="'+r+'" target="_blank" rel="noopener">Reel &nearr;</a><a href="'+im+'" target="_blank" rel="noopener">Image &nearr;</a><a href="'+SHEET+'900000001" target="_blank" rel="noopener">Caption in sheet &nearr;</a></div>';
+    if(r)h+='<video controls preload="metadata" playsinline poster="'+im+'" src="'+r+'"></video>';
+    h+='<div class="facts" style="margin-top:6px">File <b>'+esc(p.r?p.r+'.mp4':'none yet')+'</b></div>'+capBox(p);
+    if(r)h+='<div class="links" style="margin-top:14px"><a href="'+r+'" target="_blank" rel="noopener">Video &nearr;</a><a href="'+im+'" target="_blank" rel="noopener">Image &nearr;</a><a href="'+SHEET+'900000001" target="_blank" rel="noopener">Sheet &nearr;</a></div>';
     else h+='<div class="links" style="margin-top:14px"><a href="../social/">Make the reel &rarr;</a><a href="'+SHEET+'900000001" target="_blank" rel="noopener">Sheet &nearr;</a></div>';
     h+='</div>';
   });
@@ -228,7 +272,7 @@ function step(n){view.m+=n;if(view.m<0){view.m=11;view.y--}if(view.m>11){view.m=
 document.getElementById('prev').onclick=function(){step(-1)};
 document.getElementById('next').onclick=function(){step(1)};
 document.getElementById('today').onclick=function(){var t=parts(todayKey);view={y:t.y,m:t.m};sel=BY[todayKey]?todayKey:sel;draw()};
-fetch('schedule-snapshot.json?v='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(init).catch(function(){
+fetch('schedule-snapshot.json?v='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(d){init(d);loadLive()}).catch(function(){
   document.getElementById('sum').innerHTML='<div class="err">Could not load schedule-snapshot.json.</div>';
 });
 /* light / dark (shares the main site's choice) */
