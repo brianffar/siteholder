@@ -122,9 +122,32 @@ fetch('../../',{cache:'no-cache'}).then(function(r){return r.text()}).then(funct
   $('live').innerHTML=
     row(noPrev.length,'Tracks with no preview audio','Nothing to play on the site for these tracks.',noPrev)+
     row(noImg.length,'Releases with no cover image','',noImg)+
-    '<details class="chk" id="r2"><summary><span class="n warn" id="r2n">?</span><span class="t">Preview files missing from R2<small>Checks that every preview link actually opens. Takes about a minute.</small></span></summary><div style="padding:0 18px 16px 76px"><button class="btn" id="r2go" type="button">Check now</button><ul class="lst" id="r2out" style="list-style:none;margin:10px 0 0;padding:0"></ul><p class="note" id="r2msg"></p></div></details>';
+    '<details class="chk" id="r2"><summary><span class="n warn" id="r2n">?</span><span class="t">Preview files missing from R2<small>Checks that every preview link actually opens. Takes about a minute.</small></span></summary><div style="padding:0 18px 16px 76px"><button class="btn" id="r2go" type="button">Check now</button><ul class="lst" id="r2out" style="list-style:none;margin:10px 0 0;padding:0"></ul><p class="note" id="r2msg"></p></div></details>'+
+    '<details class="chk" id="md"><summary><span class="n warn" id="mdn">?</span><span class="t">Reels and images missing from R2<small>Checks release reels, release images, artist reels and artist images listed in the sheet. Takes about a minute.</small></span></summary><div style="padding:0 18px 16px 76px"><button class="btn" id="mgo" type="button">Check now</button><div id="mdout"></div><p class="note" id="mdmsg"></p></div></details>';
   $('r2go').onclick=checkR2;
+  $('mgo').onclick=checkMedia;
 }).catch(function(){$('live').innerHTML='<p class="note">Could not read the catalog from the site.</p>'});
+async function checkMedia(){
+  var b=$('mgo');b.disabled=true;$('mdmsg').textContent='Loading list\u2026';
+  var M;try{M=await (await fetch('media-manifest.json',{cache:'no-cache'})).json()}catch(e){b.disabled=false;$('mdmsg').textContent='Could not load the media list.';return}
+  var list=[];
+  M.releases.forEach(function(r){list.push({g:'Release reels',n:r[0],u:M.base+'reels/'+r[1]+'.mp4',on:r[2]});list.push({g:'Release images',n:r[0],u:M.base+'images/'+r[1]+'.png',on:1})});
+  M.artists.forEach(function(a){list.push({g:'Artist reels',n:a[0],u:M.base+'reels/'+a[1]+'.mp4',on:a[2]});list.push({g:'Artist images',n:a[0],u:M.base+'images/'+a[1]+'.png',on:a[3]})});
+  list=list.filter(function(x){return x.on});
+  var done=0,bad=[],err=0,i=0;
+  async function w(){while(i<list.length){var x=list[i++];
+    try{var res=await fetch(x.u,{method:'HEAD',cache:'no-store'});if(!res.ok)bad.push(x)}catch(e){err++}
+    done++;$('mdmsg').textContent='Checked '+done+' of '+list.length+'\u2026'}}
+  await Promise.all([w(),w(),w(),w(),w(),w()]);
+  b.disabled=false;
+  if(err>list.length/2){$('mdn').textContent='?';$('mdmsg').textContent='This browser could not reach the audio host, so the check could not run.';return}
+  $('mdn').textContent=bad.length;$('mdn').className='n '+(bad.length?'bad':'ok');
+  var h='';['Release reels','Release images','Artist reels','Artist images'].forEach(function(g){
+    var l=bad.filter(function(x){return x.g===g});
+    h+='<p class="note" style="margin:12px 0 4px"><b>'+g+'</b> \u2014 '+(l.length?l.length+' missing':'all found')+'</p>'+(l.length?'<ul class="lst" style="list-style:none;margin:0;padding:0">'+l.map(function(x){return '<li>'+esc(x.n)+' <small>'+esc(x.u.split('/').pop())+'</small></li>'}).join('')+'</ul>':'')});
+  $('mdout').innerHTML=h;
+  $('mdmsg').textContent=bad.length?'These files are linked in the sheet but do not open. Upload them to R2 or fix the link. Files with no link at all are in the list below.':'Every linked reel and image opens.';
+}
 async function checkR2(){
   var b=$('r2go');b.disabled=true;var list=[];
   RELS.forEach(function(r){r.tracks.forEach(function(t){if(t.p)list.push({r:r,t:t})})});
