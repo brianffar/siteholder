@@ -90,9 +90,6 @@ details.chk[open] summary::after{content:"\2212"}
 <div class="sum" id="sum"></div>
 <h2 class="sec">Live from the site</h2>
 <div id="live"><p class="note">Reading the catalog&hellip;</p></div>
-<h2 class="sec">From the Master Sheet <small id="asof"></small></h2>
-<div id="sheet"></div>
-<p class="note">Sheet checks only show whether a link is filled in, not whether the file exists. The snapshot is refreshed when the sheet changes.</p>
 </main>
 <footer><div class="wrap"><p class="legal">&copy; Siteholder Records, Chicago. <a href="../">Back to admin</a></p></div></footer>
 <script>
@@ -106,7 +103,7 @@ function row(n,title,sub,items,tone,extra){
 }
 var SUM={};
 function renderSum(){
-  var h='';[['Releases',SUM.rel,''],['Tracks',SUM.trk,''],['Tracks with no preview',SUM.nop,SUM.nop?'bad':'ok'],['Artists with no reel',SUM.nr,SUM.nr?'bad':'ok']].forEach(function(s){
+  var h='';[['Releases',SUM.rel,''],['Tracks',SUM.trk,''],['Tracks with no preview',SUM.nop,SUM.nop?'bad':'ok']].forEach(function(s){
     if(s[1]==null)return;h+='<div class="stat '+s[2]+'"><b>'+s[1]+'</b><span>'+s[0]+'</span></div>'});
   $('sum').innerHTML=h;
 }
@@ -146,7 +143,7 @@ async function checkMedia(){
     var l=bad.filter(function(x){return x.g===g});
     h+='<p class="note" style="margin:12px 0 4px"><b>'+g+'</b> \u2014 '+(l.length?l.length+' missing':'all found')+'</p>'+(l.length?'<ul class="lst" style="list-style:none;margin:0;padding:0">'+l.map(function(x){return '<li>'+esc(x.n)+' <small>'+esc(x.u.split('/').pop())+'</small></li>'}).join('')+'</ul>':'')});
   $('mdout').innerHTML=h;
-  $('mdmsg').textContent=bad.length?'These files are linked in the sheet but do not open. Upload them to R2 or fix the link. Files with no link at all are in the list below.':'Every linked reel and image opens.';
+  $('mdmsg').textContent=bad.length?'These files are linked in the sheet but do not open. Upload them to R2 or fix the link.':'Every linked reel and image opens.';
 }
 async function checkR2(){
   var b=$('r2go');b.disabled=true;var list=[];
@@ -162,16 +159,6 @@ async function checkR2(){
   $('r2out').innerHTML=bad.map(function(x){return '<li><b>'+esc(x.r.cat)+'</b> '+esc(x.t.t)+(x.t.m?' ('+esc(x.t.m)+')':'')+'</li>'}).join('');
   $('r2msg').textContent=bad.length?'These links do not open. Upload the files or fix the path.':'Every preview link opens.';
 }
-fetch('sheet-snapshot.json',{cache:'no-cache'}).then(function(r){return r.json()}).then(function(s){
-  $('asof').textContent='snapshot of '+s.asOf;SUM.nr=s.artists.noReel.length;renderSum();
-  var n=function(a){return a.map(esc)};
-  $('sheet').innerHTML=
-    row(s.releases.noReel.length,'Releases with no reel','',n(s.releases.noReel))+
-    row(s.releases.noImage.length,'Releases with no social image','',n(s.releases.noImage))+
-    row(s.artists.noReel.length,'Artists with no reel','Of '+s.artists.total+' artists in Outreach.',n(s.artists.noReel))+
-    row(s.artists.noImage.length,'Artists with no image','',n(s.artists.noImage))+
-    row(s.artists.neither.length,'Artists with neither reel nor image','These need both made.',n(s.artists.neither));
-});
 (function(){
   var root=document.documentElement,btn=$('theme'),lab=$('theme-label');
   function eff(){var t=root.getAttribute('data-theme');return t||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}
