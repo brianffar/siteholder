@@ -110,7 +110,7 @@ function load(refresh){
   $('upd').disabled=true;$('msg').textContent='Loading from Instagram\u2026';
   var demoMode=/[?&]demo/.test(location.search);
   (demoMode?Promise.resolve(demo()):fetch('../api/insights'+(refresh?'?refresh=1':''),{cache:'no-store'}).then(function(r){if(!r.ok)return r.json().catch(function(){return {error:'HTTP '+r.status}}).then(function(j){throw new Error(j.error||('HTTP '+r.status))});return r.json()}))
-  .then(function(j){D=j;render();$('msg').textContent=''}).catch(function(e){$('msg').innerHTML='<span class="err">Could not load insights: '+esc(e.message)+'</span>'}).then(function(){$('upd').disabled=false});
+  .then(function(j){D=j;D.followers=Object.assign({'2026-10-17':11,'2026-10-18':27,'2026-10-19':39,'2026-10-20':40},D.followers||{});render();$('msg').textContent=''}).catch(function(e){$('msg').innerHTML='<span class="err">Could not load insights: '+esc(e.message)+'</span>'}).then(function(){$('upd').disabled=false});
 }
 function render(){
   var p=D.profile,a=D.last7||{},b=D.last28||{};
