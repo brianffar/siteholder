@@ -110,6 +110,8 @@ canvas{display:block;width:100%;height:100%}
 .cap textarea{min-height:210px;font-size:14px}
 .cap .row{margin-top:8px}
 .hint{font-size:13px;color:var(--muted);margin-top:8px}
+.ce{border:1px solid var(--line);padding:10px 12px;margin-top:8px}.ce .nm{font-size:14px;font-weight:600}.ce canvas{display:block;width:100%;height:56px;margin:8px 0 6px;touch-action:none;cursor:ew-resize;background:var(--surface)}
+.ce .row2{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font:12px var(--mono);color:var(--muted)}.ce .row2 button{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;padding:7px 10px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}.ce .row2 .grow{flex:1}
 .upl{display:flex;gap:10px;align-items:flex-start;margin:12px 0 0;font-size:14px;cursor:pointer}.upl input{margin-top:3px;width:18px;height:18px;flex:none}.upl small{display:block;color:var(--muted);font-size:12px;margin-top:2px;font-weight:400}
 .ord{list-style:none;margin:6px 0 0;padding:0;border:1px solid var(--line)}
 .ord li{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg);border-top:1px solid var(--line);font-size:14px;user-select:none;-webkit-user-select:none}
@@ -203,6 +205,7 @@ footer{border-top:1px solid var(--line);padding-block:32px 48px}
       <span class="lab">Tracks <span id="trkCount" style="text-transform:none;letter-spacing:0"></span></span>
       <ul class="tracks" id="trkList"></ul>
       <div id="ordWrap" hidden style="margin-top:16px"><span class="lab">Play order <span style="text-transform:none;letter-spacing:0">(drag ☰ to reorder)</span></span><ol class="ord" id="ordList"></ol></div>
+      <div id="clipEd" style="margin-top:16px"></div>
     </div>
 
     <div class="card">
@@ -464,7 +467,7 @@ function renderTracks(){
   countTracks(); renderOrder();
 }
 function renderOrder(){
-  var ol = $('ordList'), wrap = $('ordWrap'); ol.innerHTML = '';
+  var ol = $('ordList'), wrap = $('ordWrap'); ol.innerHTML = ''; renderClips();
   wrap.hidden = S.picks.length < 2; if (wrap.hidden) return;
   S.picks.forEach(function(idx, n){
     var o = S.items[idx], li = document.createElement('li'); li.dataset.idx = idx;
@@ -492,6 +495,60 @@ function renderOrder(){
       };
       ol.onpointerup = ol.onpointercancel = done;
     };
+  });
+}
+/* ---------- choose which part of each preview goes into the reel ---------- */
+var STARTS = {}; try { STARTS = JSON.parse(localStorage.getItem('sh-clipstart') || '{}') || {}; } catch (e) {}   // start second per preview file, remembered on this device
+var BUFS = {}, AUD = null;                                                                                    // decoded previews by path; the audition player
+function startOf(o){ var p = previewPath(o.t); return p && STARTS[p] > 0 ? STARTS[p] : 0; }
+function saveStarts(){ try { localStorage.setItem('sh-clipstart', JSON.stringify(STARTS)); } catch (e) {} }
+async function getBuf(path){
+  if (BUFS[path]) return BUFS[path];
+  var res = await fetch(AUDIO_BASE + path, { mode: 'cors' }); if (!res.ok) throw new Error('Audio not found');
+  var ac = new (window.AudioContext || window.webkitAudioContext)(); try { BUFS[path] = await ac.decodeAudioData(await res.arrayBuffer()); } finally { try { ac.close(); } catch (e) {} }
+  return BUFS[path];
+}
+function clipStartFor(o, buf){ return Math.min(startOf(o), Math.max(0, buf.duration - clipLen())); }
+function stopAudition(){ if (!AUD) return; try { AUD.src.stop(); } catch (e) {} try { AUD.ac.close(); } catch (e) {} clearTimeout(AUD.t); AUD = null; [].forEach.call(document.querySelectorAll('#clipEd [data-aud]'), function(b){ b.textContent = 'Play this part'; }); }
+function drawClip(cv, buf, start){
+  var dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+  var g = cv.getContext('2d'); g.scale(dpr, dpr); g.clearRect(0, 0, W, H);
+  var d = buf.channelData || buf.getChannelData(0), n = Math.floor(W / 3), step = Math.max(1, Math.floor(d.length / n)), CL = clipLen(), x0 = start / buf.duration * W, x1 = Math.min(W, x0 + CL / buf.duration * W);
+  var ink = getComputedStyle(document.documentElement).getPropertyValue('--ink').trim() || '#111', acc = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#d33';
+  g.globalAlpha = 1; g.fillStyle = acc; g.globalAlpha = .18; g.fillRect(x0, 0, x1 - x0, H); g.globalAlpha = 1;
+  for (var i = 0; i < n; i++) { var m = 0; for (var j = i * step; j < (i + 1) * step && j < d.length; j++) { var a = Math.abs(d[j]); if (a > m) m = a; }
+    var x = i * 3 + 1, h = Math.max(2, m * (H - 8)); g.fillStyle = (x >= x0 && x <= x1) ? ink : ink; g.globalAlpha = (x >= x0 && x <= x1) ? 1 : .35; g.fillRect(x, (H - h) / 2, 2, h); }
+  g.globalAlpha = 1; g.strokeStyle = acc; g.lineWidth = 2; g.strokeRect(x0 + 1, 1, Math.max(2, x1 - x0 - 2), H - 2);
+}
+function fmtT(t){ var m = Math.floor(t / 60), s = (t - m * 60).toFixed(1); return m + ':' + (s < 10 ? '0' : '') + s; }
+function renderClips(){
+  var box = $('clipEd'); if (!box) return; stopAudition(); box.innerHTML = '';
+  if (!S.picks.length) return;
+  box.innerHTML = '<span class="lab">Choose the part of each preview <span style="text-transform:none;letter-spacing:0">(drag on the wave, ' + clipLen() + ' seconds each)</span></span>';
+  S.picks.forEach(function(idx){
+    var o = S.items[idx], path = previewPath(o.t); if (!path) return;
+    var el = document.createElement('div'); el.className = 'ce';
+    el.innerHTML = '<div class="nm">' + esc(o.t.t + (o.t.m ? ' (' + o.t.m + ')' : '')) + '</div><canvas></canvas><div class="row2"><span class="rd">Loading…</span><span class="grow"></span><button type="button" data-aud>Play this part</button><button type="button" data-rst>Start of preview</button></div>';
+    box.appendChild(el);
+    var cv = el.querySelector('canvas'), rd = el.querySelector('.rd'), play = el.querySelector('[data-aud]'), rst = el.querySelector('[data-rst]');
+    getBuf(path).then(function(buf){
+      var CL = clipLen(), room = Math.max(0, buf.duration - CL);
+      if (room < 0.2) { cv.hidden = true; play.hidden = true; rst.hidden = true; rd.textContent = 'Uses the whole ' + Math.round(buf.duration) + ' second preview. Pick two or three tracks to choose parts.'; return; }
+      var cur = clipStartFor(o, buf);
+      function show(){ drawClip(cv, buf, cur); rd.textContent = fmtT(cur) + ' to ' + fmtT(cur + CL) + ' of ' + fmtT(buf.duration); }
+      function setFrom(ev){ var r = cv.getBoundingClientRect(), t = (ev.clientX - r.left) / r.width * buf.duration - CL / 2; cur = Math.round(Math.max(0, Math.min(room, t)) * 10) / 10; STARTS[path] = cur; saveStarts(); show(); }
+      var down = false; cv.onpointerdown = function(ev){ down = true; stopAudition(); try { cv.setPointerCapture(ev.pointerId); } catch (e) {} setFrom(ev); };
+      cv.onpointermove = function(ev){ if (down) setFrom(ev); }; cv.onpointerup = cv.onpointercancel = function(){ down = false; };
+      rst.onclick = function(){ cur = 0; delete STARTS[path]; saveStarts(); stopAudition(); show(); };
+      play.onclick = function(){
+        if (AUD) { stopAudition(); return; }
+        var ac = new (window.AudioContext || window.webkitAudioContext)(); if (ac.resume) ac.resume();
+        var src = ac.createBufferSource(), gn = ac.createGain(); src.buffer = buf; src.connect(gn); gn.connect(ac.destination);
+        var t0 = ac.currentTime + 0.05; gn.gain.setValueAtTime(0, t0); gn.gain.linearRampToValueAtTime(1, t0 + FADE_IN); gn.gain.setValueAtTime(1, t0 + CL - FADE_OUT); gn.gain.linearRampToValueAtTime(0, t0 + CL);
+        src.start(t0, cur, CL); AUD = { ac: ac, src: src, t: setTimeout(stopAudition, (CL + 0.3) * 1000) }; play.textContent = 'Stop';
+      };
+      show();
+    }).catch(function(){ rd.textContent = 'Could not load this preview.'; });
   });
 }
 function clipLen(){ return S.picks.length ? MUSIC / S.picks.length : CLIP; }   // 1 track = 30s, 2 = 15s each, 3 = 10s each
@@ -889,14 +946,16 @@ function refresh(){ renderText(); renderPos(); if (!running) draw(0); if (!S.cap
 async function decodeClips(ac){
   var out = [], p = picked();
   for (var k = 0; k < p.length; k++) { var url = AUDIO_BASE + previewPath(p[k].t);
+    var pp = previewPath(p[k].t);
+    if (BUFS[pp]) { out.push(BUFS[pp]); continue; }
     var res = await fetch(url, { mode: 'cors', cache: 'reload' }); if (!res.ok) throw new Error('Audio not found: ' + url);
-    out.push(await ac.decodeAudioData(await res.arrayBuffer())); }
+    out.push(BUFS[pp] = await ac.decodeAudioData(await res.arrayBuffer())); }
   return out;
 }
 function schedule(ac, bufs, dest, t0){
   bufs.forEach(function(buf, k){ var src = ac.createBufferSource(), g = ac.createGain(); src.buffer = buf; src.connect(g); g.connect(dest);
     var CL = clipLen(), st = t0 + k * CL, en = st + CL; g.gain.setValueAtTime(0, st); g.gain.linearRampToValueAtTime(1, st + FADE_IN);
-    g.gain.setValueAtTime(1, en - FADE_OUT); g.gain.linearRampToValueAtTime(0, en); src.start(st, 0, Math.min(CL, buf.duration)); });
+    g.gain.setValueAtTime(1, en - FADE_OUT); g.gain.linearRampToValueAtTime(0, en); var off = clipStartFor(picked()[k], buf); src.start(st, off, Math.min(CL, buf.duration - off)); });
 }
 function animate(sess, clock, total, done){
   function step(){ if (running !== sess) return; var t = clock(); if (sess.tick) sess.tick(t);
@@ -922,7 +981,7 @@ async function preview(){
     var els = picked().map(function(o){ var a = new Audio(AUDIO_BASE + previewPath(o.t)); a.preload = 'auto'; return a; });
     sess.stop.push(function(){ els.forEach(function(a){ a.pause(); }); });
     var start = performance.now() + 150, cur = -1; clock = function(){ return (performance.now() - start) / 1000; };
-    sess.tick = function(t){ var k = Math.floor(t / clipLen()); if (t >= 0 && k !== cur && k < els.length) { if (cur >= 0) els[cur].pause(); cur = k; els[k].currentTime = 0; els[k].play().catch(function(){}); } };
+    sess.tick = function(t){ var k = Math.floor(t / clipLen()); if (t >= 0 && k !== cur && k < els.length) { if (cur >= 0) els[cur].pause(); cur = k; els[k].currentTime = startOf(picked()[k]); els[k].play().catch(function(){}); } };
     setStatus('Preview only: the audio host must allow this page before videos can be downloaded.', 'warn');
   }
   animate(sess, clock, total, stop);
