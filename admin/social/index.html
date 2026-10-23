@@ -265,6 +265,7 @@ footer{border-top:1px solid var(--line);padding-block:32px 48px}
 // Published "Social feed" tab of the Siteholder-Catalog Google Sheet (File > Share > Publish to web > Social feed > CSV)
 var SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtcQmpyXNElEkBwjeLCBN7Iud3KTHuhcpv9apapX4oW8aqAK1uJG_hfiZqP4-_OsbWqNVLv3jgjQGn/pub?gid=1882382389&single=true&output=csv';
 var AUDIO_BASE = 'https://audio.siteholderrecords.com/';
+var FRESH = '?fresh=' + Date.now();   // new value each page load, so a replaced preview is never served from a cache
 var SITE_URL = 'siteholderrecords.com';
 var BG = '#06060e', INK = '#ffffff', SOFT = '#c9cbd1', TXT2 = '#e6e7ea', DIM = '#8f939b', EDGE = '#2b2d32', DEFAULT_BG = '#06060e';
 var CLIP = 10, MUSIC = 30, MAX_TRACKS = 3, SPIN = 30;           // seconds per track, tracks per video, label spin in deg/sec (matches the SH001 test)
@@ -504,7 +505,7 @@ function startOf(o){ var p = previewPath(o.t); return p && STARTS[p] > 0 ? START
 function saveStarts(){ try { localStorage.setItem('sh-clipstart', JSON.stringify(STARTS)); } catch (e) {} }
 async function getBuf(path){
   if (BUFS[path]) return BUFS[path];
-  var res = await fetch(AUDIO_BASE + path, { mode: 'cors' }); if (!res.ok) throw new Error('Audio not found');
+  var res = await fetch(AUDIO_BASE + path + FRESH, { mode: 'cors', cache: 'reload' }); if (!res.ok) throw new Error('Audio not found');
   var ac = new (window.AudioContext || window.webkitAudioContext)(); try { BUFS[path] = await ac.decodeAudioData(await res.arrayBuffer()); } finally { try { ac.close(); } catch (e) {} }
   return BUFS[path];
 }
@@ -945,7 +946,7 @@ function refresh(){ renderText(); renderPos(); if (!running) draw(0); if (!S.cap
 /* ---------- audio + playback ---------- */
 async function decodeClips(ac){
   var out = [], p = picked();
-  for (var k = 0; k < p.length; k++) { var url = AUDIO_BASE + previewPath(p[k].t);
+  for (var k = 0; k < p.length; k++) { var url = AUDIO_BASE + previewPath(p[k].t) + FRESH;
     var pp = previewPath(p[k].t);
     if (BUFS[pp]) { out.push(BUFS[pp]); continue; }
     var res = await fetch(url, { mode: 'cors', cache: 'reload' }); if (!res.ok) throw new Error('Audio not found: ' + url);
@@ -978,7 +979,7 @@ async function preview(){
     var t0 = ac.currentTime + 0.1; schedule(ac, bufs, ac.destination, t0); clock = function(){ return ac.currentTime - t0; }; setStatus('');
   } catch (e) {
     if (running !== sess) return;
-    var els = picked().map(function(o){ var a = new Audio(AUDIO_BASE + previewPath(o.t)); a.preload = 'auto'; return a; });
+    var els = picked().map(function(o){ var a = new Audio(AUDIO_BASE + previewPath(o.t) + FRESH); a.preload = 'auto'; return a; });
     sess.stop.push(function(){ els.forEach(function(a){ a.pause(); }); });
     var start = performance.now() + 150, cur = -1; clock = function(){ return (performance.now() - start) / 1000; };
     sess.tick = function(t){ var k = Math.floor(t / clipLen()); if (t >= 0 && k !== cur && k < els.length) { if (cur >= 0) els[cur].pause(); cur = k; els[k].currentTime = startOf(picked()[k]); els[k].play().catch(function(){}); } };
