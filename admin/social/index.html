@@ -419,7 +419,7 @@ function renderOtd(){
 
 /* ---------- UI: selection ---------- */
 async function selectRelease(r, headline){
-  stop(); S.rel = r;
+  stop(); BUFS = {}; FRESH = '?fresh=' + Date.now(); S.rel = r;
   S.items = r.tracks.map(function(t, i){ return { r: r, t: t, i: i }; });
   var fromSheet = (SH.releases[r.cat.toUpperCase()] || {}).tracks, picks = [];
   if (fromSheet) fromSheet.split(/[^0-9]+/).forEach(function(n){ n = +n; if (n >= 1 && n <= r.tracks.length && previewPath(r.tracks[n-1]) && picks.length < MAX_TRACKS) picks.push(n - 1); });
@@ -433,7 +433,7 @@ async function selectRelease(r, headline){
   await loadArt(); refresh();
 }
 async function selectArtist(n){
-  stop(); S.artist = n;
+  stop(); BUFS = {}; FRESH = '?fresh=' + Date.now(); S.artist = n;
   S.items = tracksForArtist(n).sort(function(a, b){ return String(b.r.date).localeCompare(String(a.r.date)); });
   // default: up to 3 with audio, preferring different releases
   var used = {}, picks = [];
