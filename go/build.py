@@ -3,8 +3,9 @@
 
 Reads the release data embedded in ../index.html and the store links in links.json,
 then writes go/index.html (the hub), go/<release>/index.html (one smart link per
-release) and go/<release>/<store>/index.html (tiny redirect pages: each store
-button goes through one so Cloudflare Web Analytics counts the click by path).
+release). Store buttons link straight to the store (no redirect stub pages, which
+Instagram's link scanner can read as cloaking). A tap briefly pushes a virtual
+/go/<release>/<store>/ URL so Cloudflare Web Analytics counts it as a pageview.
 It only edits the STORE-LINKS block inside ../index.html (so the main site uses the same real links).
 """
 import html, json, os, re, shutil
@@ -141,9 +142,9 @@ def release_page(r, lk):
     if r.get('sub'):
         h += '<div class="sub">%s</div>' % esc(r['sub'])
     h += '<div class="btns">'
-    for i, (key, label, small, _u) in enumerate(bt):
-        h += '<a class="b%s" href="/go/%s/%s/" rel="nofollow">%s <small>%s</small></a>' % (
-            ' main' if i == 0 else '', esc(rid), esc(key), esc(label), esc(small))
+    for i, (key, label, small, u) in enumerate(bt):
+        h += ('<a class="b%s" href="%s" target="_blank" rel="noopener nofollow" data-p="/go/%s/%s/">%s <small>%s</small></a>' % (
+            ' main' if i == 0 else '', esc(u), esc(rid), esc(key), esc(label), esc(small)))
     if not bt:  # no store links yet: send them to the label site so the page is never a dead end
         h += '<a class="b main" href="%s/#release-%s">Listen on siteholderrecords.com <small>Open</small></a>' % (SITE, esc(rid))
     h += '</div>'
@@ -158,7 +159,7 @@ def release_page(r, lk):
     h += foot() + '</div>'
     if tracks:
         h += PLAYER
-    h += '</body></html>'
+    h += TAP + '</body></html>'
     return h
 
 
@@ -172,15 +173,11 @@ off();cur=b;a.src=b.dataset.src;a.play().catch(function(){});b.innerHTML='&#1007
 </script>"""
 
 
-def redirect_page(r, label, target):
-    return ('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-            '<meta name="robots" content="noindex"><title>Opening %s</title>%s'
-            '<style>body{font:16px Helvetica,Arial,sans-serif;display:grid;place-items:center;min-height:100vh;margin:0;background:#f2f3f4;color:#0e0f11}'
-            '@media(prefers-color-scheme:dark){body{background:#0e0f11;color:#f1f2f3}}a{color:inherit}</style></head><body>'
-            '<p>Opening %s&hellip; <a href="%s">Tap here if nothing happens</a></p>'
-            '<script>setTimeout(function(){location.replace(%s)},450);</script>'
-            '<noscript><meta http-equiv="refresh" content="0;url=%s"></noscript></body></html>'
-            ) % (esc(label), BEACON, esc(label), esc(target), json.dumps(target), esc(target))
+TAP = """<script>
+(function(){document.querySelectorAll('.btns a[data-p]').forEach(function(a){a.addEventListener('click',function(){
+var o=location.pathname+location.search,v=a.getAttribute('data-p');
+try{history.pushState(null,'',v);setTimeout(function(){history.replaceState(null,'',o)},1500)}catch(e){}})})})();
+</script>"""
 
 
 def hub(rels, links):
@@ -229,13 +226,9 @@ def main():
         d = os.path.join(HERE, r['id'])
         os.makedirs(d, exist_ok=True)
         open(os.path.join(d, 'index.html'), 'w', encoding='utf-8').write(release_page(r, lk))
-        for key, label, _s, target in buttons(r, lk):
-            sd = os.path.join(d, key)
-            os.makedirs(sd, exist_ok=True)
-            open(os.path.join(sd, 'index.html'), 'w', encoding='utf-8').write(redirect_page(r, label, target))
-            n += 1
+        n += len(buttons(r, lk))
     open(os.path.join(HERE, 'index.html'), 'w', encoding='utf-8').write(hub(rel, links))
-    print('built %d release pages, %d store redirects, 1 hub' % (len(rel), n))
+    print('built %d release pages, %d direct store buttons, 1 hub' % (len(rel), n))
 
 
 if __name__ == '__main__':
