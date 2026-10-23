@@ -3,6 +3,7 @@
 // Cloudflare Access protects the routes; this Worker also refuses anything without the Access header.
 // Secrets: SHEET_URL (Apps Script web app URL), SHEET_SECRET (same value as the script's SECRET property).
 // R2 binding: MEDIA (the bucket behind https://audio.siteholderrecords.com/).
+const PREV = /^[a-z0-9]+\/\d\d-[a-z0-9-]+\.mp3$/;   // site previews, e.g. shuc004/02-teflon-villain-original-mix.mp3
 const KEY = /^share\/(reels|images)\/[a-z0-9-]+\.(mp4|png)$/;
 export default {
   async fetch(req, env) {
@@ -20,9 +21,13 @@ export default {
           return new Response(await r.text(), {status: r.ok ? 200 : 502, headers: {'content-type': 'application/json', 'cache-control': 'no-store'}});
         }
         const key = url.searchParams.get('key') || '';
-        if (!KEY.test(key)) return j({error: 'bad file name'}, 400);
+        if (!KEY.test(key) && !PREV.test(key)) return j({error: 'bad file name'}, 400);
         if (req.method === 'PUT') {
-          const type = key.endsWith('.mp4') ? 'video/mp4' : 'image/png';
+          const type = key.endsWith('.mp4') ? 'video/mp4' : key.endsWith('.mp3') ? 'audio/mpeg' : 'image/png';
+          if (PREV.test(key)) {                 // keep the old preview so a replacement can be undone
+            const old = await env.MEDIA.get(key);
+            if (old) await env.MEDIA.put('_backup/' + new Date().toISOString().replace(/[:.]/g, '-') + '/' + key, old.body, {httpMetadata: {contentType: 'audio/mpeg'}});
+          }
           const o = await env.MEDIA.put(key, req.body, {httpMetadata: {contentType: type, cacheControl: 'public, max-age=300'}});
           return j({ok: true, size: o.size});
         }

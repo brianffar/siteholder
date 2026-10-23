@@ -159,7 +159,7 @@ footer{border-top:1px solid var(--line);padding-block:32px 48px}
 <table id="tbl" style="display:none"><thead><tr><th>File</th><th class="c-rel">Release</th><th class="c-trk">Track</th><th>Result</th><th></th><th></th></tr></thead><tbody id="rows"></tbody></table>
 
 <div id="done"><h2 id="doneh"></h2><p id="donep" style="margin:0 0 12px;color:var(--muted)"></p>
-  <button class="btn solid" id="zip" type="button">Download all as a zip</button> <button class="btn" id="savedir" style="display:none">Save to a folder&hellip;</button>
+  <button class="btn solid" id="zip" type="button">Download all as a zip</button> <button class="btn" id="savedir" style="display:none">Save to a folder&hellip;</button> <button class="btn solid" id="upall" type="button" style="display:none">Upload all to the site</button>
   <p id="savemsg" class="pill" style="margin:10px 0 0"></p></div>
 </main>
 <footer><div class="wrap"><p class="legal">&copy; Siteholder Records, Chicago. <a href="../../">Back to the label</a><br>MP3 encoding by <a href="https://github.com/zhuker/lamejs">lamejs</a> (LAME, LGPL; <a href="LAME-LICENSE.txt">license</a>).</p></div></footer>
@@ -367,7 +367,7 @@ function render(){
     var dl=it.status==='done'?'<a class="dl" href="'+it.url+'" download="'+esc(it.outName.split('/').pop())+'">Save</a>':'';
     var cs=it.clipStart!=null?'<small class="clipnote">clip '+fmtT(it.clipStart)+' &rarr; '+fmtT(it.clipStart+(it.clipLen||0))+'</small>':'';
     return '<tr data-id="'+it.id+'"'+(it.open?' class="open"':'')+'><td class="fn">'+esc(nm)+(parts.length?'<small>'+esc(parts.join('/'))+'</small>':'')+cs+'</td>'+
-      (CATALOG?'<td>'+cbHtml('rel',it)+'</td><td>'+cbHtml('track',it)+'</td>':'')+'<td>'+st+(dl?' &nbsp;'+dl:'')+'</td>'+
+      (CATALOG?'<td>'+cbHtml('rel',it)+'</td><td>'+cbHtml('track',it)+'</td>':'')+'<td>'+st+(dl?' &nbsp;'+dl:'')+(dl&&CATALOG?' <button class="btn mini" data-k="up" title="Upload to the site, replacing the current preview">Upload</button>':'')+'</td>'+
       '<td class="edit">'+(it.status==='done'?'<button class="play'+(playing===it.id?' on':'')+'" data-k="play" aria-label="Play preview">'+(playing===it.id?'❚❚':'▶')+'</button> ':'')+'<button class="btn mini" data-k="edit" aria-expanded="'+(it.open?'true':'false')+'"'+(busy?' disabled':'')+'>Edit clip '+(it.open?'&#9652;':'&#9662;')+'</button></td><td><button class="x" data-k="del" title="Remove">×</button></td></tr>'+(it.open?panelHtml(it):'');
   }).join('');
   $('go').disabled=busy||!ready;$('go').textContent=busy?'Working…':'Make previews'+(ready?' ('+ready+')':'');
@@ -380,6 +380,7 @@ $('rows').addEventListener('click',function(e){
   var b=e.target.closest('button');if(!b)return;var tr=b.closest('tr'),it=ITEMS.filter(function(x){return x.id==tr.dataset.id})[0];
   if(b.dataset.k==='del'){if(CP.it===it)stopClip();if(playing===it.id){audio.pause();playing=null}freeResult(it);ITEMS.splice(ITEMS.indexOf(it),1);render()}
   if(b.dataset.k==='edit'&&!busy){it.open=!it.open;if(!it.open&&CP.it===it)stopClip();render();if(it.open)loadPeaks(it)}
+  if(b.dataset.k==='up')uploadPreviews([it]);
   if(b.dataset.k==='pclip')playClip(it);
   if(b.dataset.k==='reset'){it.clipStart=null;it.clipLen=null;commit(it)}
   if(b.dataset.k==='usedef')useAsDefault(it);
@@ -570,7 +571,7 @@ $('go').addEventListener('click',async function(){
   var okc=ITEMS.filter(function(x){return x.status==='done'}).length,bad=ITEMS.filter(function(x){return x.status==='err'}).length;
   $('doneh').textContent=okc+' preview'+(okc===1?'':'s')+' ready'+(bad?' ('+bad+' failed)':'');
   $('donep').textContent=CATALOG?'Named and filed for the site: one folder per release. Download the zip, or save straight to a folder.':'Download the zip, or save each one with the Save link.';
-  $('savedir').style.display=window.showDirectoryPicker?'':'none';
+  $('savedir').style.display=window.showDirectoryPicker?'':'none';$('upall').style.display=CATALOG?'':'none';
   $('done').style.display=okc?'block':'none';
 });
 /* ---------- clip editor (waveform, drag to choose the clip) ---------- */
@@ -806,6 +807,31 @@ $('zip').addEventListener('click',async function(){
   var blob=makeZip(entries),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='previews-'+new Date().toISOString().slice(0,16).replace(/[-:T]/g,'')+'.zip';
   document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href)},60000);
 });
+
+/* ---------- upload straight to the site's R2 storage (replaces the file with the same name) ---------- */
+async function uploadPreviews(list){
+  var msg=$('savemsg');
+  if(!CATALOG){msg.textContent='Switch to "Siteholder catalog" naming first so the files get the right names.';return}
+  list=list.filter(function(x){return x.status==='done'&&x.blob});if(!list.length)return;
+  try{
+    var info=[];
+    for(var i=0;i<list.length;i++){
+      var r=await fetch('../api/media?key='+encodeURIComponent(list[i].outName),{credentials:'same-origin'});
+      if(!r.ok)throw new Error(r.status===403||r.status===404?'Upload needs the live site (siteholderrecords.com/admin), not a local copy':'Could not check storage ('+r.status+')');
+      var h=await r.json();info.push(h);
+    }
+    var lines=list.map(function(x,i){return (info[i].exists?'REPLACE ':'NEW     ')+x.outName+(info[i].exists?'  ('+(info[i].size/1048576).toFixed(1)+' MB now, '+(x.blob.size/1048576).toFixed(1)+' MB new)':'')}).join('\n');
+    if(!confirm('Upload to the site?\n\n'+lines+'\n\nThe old version of a replaced file is kept in a backup folder.'))return;
+    for(var k=0;k<list.length;k++){
+      msg.textContent='Uploading '+(k+1)+' of '+list.length+'…';
+      var p=await fetch('../api/media?key='+encodeURIComponent(list[k].outName),{method:'PUT',body:list[k].blob,credentials:'same-origin'});
+      if(!p.ok)throw new Error('Upload failed for '+list[k].outName+' ('+p.status+')');
+      list[k].uploaded=true;
+    }
+    msg.textContent='Uploaded '+list.length+' preview'+(list.length>1?'s':'')+'. The site may take a few minutes to start serving the new audio.';
+  }catch(e){msg.textContent=(e&&e.message)||'Upload failed'}
+}
+$('upall').addEventListener('click',function(){uploadPreviews(doneItems())});
 $('savedir').addEventListener('click',async function(){
   try{
     var root=await window.showDirectoryPicker({mode:'readwrite'}),done=doneItems();
