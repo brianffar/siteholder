@@ -110,6 +110,7 @@ canvas{display:block;width:100%;height:100%}
 .cap textarea{min-height:210px;font-size:14px}
 .cap .row{margin-top:8px}
 .hint{font-size:13px;color:var(--muted);margin-top:8px}
+.upl{display:flex;gap:10px;align-items:flex-start;margin:12px 0 0;font-size:14px;cursor:pointer}.upl input{margin-top:3px;width:18px;height:18px;flex:none}.upl small{display:block;color:var(--muted);font-size:12px;margin-top:2px;font-weight:400}
 .ord{list-style:none;margin:6px 0 0;padding:0;border:1px solid var(--line)}
 .ord li{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg);border-top:1px solid var(--line);font-size:14px;user-select:none;-webkit-user-select:none}
 .ord li:first-child{border-top:0}
@@ -186,6 +187,7 @@ footer{border-top:1px solid var(--line);padding-block:32px 48px}
       <details id="bDet"><summary id="bSum" style="cursor:pointer">Choose</summary>
         <div class="row" style="margin:8px 0"><button class="btn" id="bAll" type="button" style="padding:5px 10px;font-size:13px">All</button><button class="btn" id="bNone" type="button" style="padding:5px 10px;font-size:13px">None</button></div>
         <div id="bList" style="max-height:200px;overflow:auto;display:grid;gap:4px"></div></details>
+      <label class="upl" style="margin-top:12px"><input type="checkbox" id="bUp"> <span><b>Also upload to R2 and update the sheet</b><small>Off unless ticked. Uploads every image and reel it makes, links the reels in the Master Sheet and switches ready Drafts to Scheduled.</small></span></label>
       <div class="row" style="margin-top:12px"><button class="btn solid" id="bGo" type="button">Choose folder &amp; generate all</button><button class="btn" id="bStop" type="button" hidden>Cancel</button></div>
       <p class="hint">Uses the background, pattern and look you have set right now (for artists, set black + Geometric first; each release uses its own artwork look). Saves into <b>images/</b> and <b>reels/</b> folders with a <b>captions.csv</b>. Videos record in real time (about 35 seconds each), so keep this tab open and visible. Needs Chrome.</p>
     </div>
@@ -240,6 +242,7 @@ footer{border-top:1px solid var(--line);padding-block:32px 48px}
       <button class="btn" id="play" type="button">Preview</button>
       <button class="btn solid" id="dl" type="button">Download video</button>
     </div>
+    <label class="upl" id="upWrap"><input type="checkbox" id="upOn"> <span><b>Also upload to R2 and update the sheet</b><small id="upNote">Off unless ticked. Uploads the file you make, adds the reel link to the Master Sheet and updates the posting calendar.</small></span></label>
     <div id="status"></div>
     <div class="cap">
       <span class="lab">Caption <span class="pill" id="capSrc" style="text-transform:none"></span></span>
@@ -967,6 +970,41 @@ async function recordVideo(){
     $('prog').style.width = '0%'; draw(0);
   }
 }
+/* ---------- optional upload to R2 + Master Sheet (off unless ticked) ---------- */
+var MEDIA_API = '../api/media', PUBLIC_BASE = 'https://audio.siteholderrecords.com/', replaceAll = null;
+function upKey(kind, name){ return 'share/' + kind + '/' + name; }
+async function askReplace(key, inBatch){
+  if (inBatch && replaceAll !== null) return replaceAll;
+  var yes = confirm(key.split('/').pop() + ' is already in R2. Replace it?' + (inBatch ? '\n\nOK also replaces any others found in this batch. Cancel keeps them and skips.' : ''));
+  if (inBatch) replaceAll = yes; return yes;
+}
+async function putMedia(kind, name, blob, type, inBatch){
+  var key = upKey(kind, name), q = MEDIA_API + '?key=' + encodeURIComponent(key);
+  var ex = await fetch(q, { cache: 'no-store' }); if (!ex.ok) throw new Error('upload service answered ' + ex.status);
+  if ((await ex.json()).exists && !(await askReplace(key, inBatch))) return false;
+  var r = await fetch(q, { method: 'PUT', body: blob, headers: { 'content-type': type } });
+  if (!r.ok) throw new Error('upload failed (' + r.status + ')'); return true;
+}
+async function linkSheet(reelName, imgName){
+  var isA = S.mode === 'artist', body = { kind: isA ? 'artist' : 'release', key: isA ? S.artist : S.rel.cat,
+    reel: reelName ? PUBLIC_BASE + 'share/reels/' + reelName : '', image: imgName && isA ? PUBLIC_BASE + 'share/images/' + imgName : '' };
+  var r = await fetch(MEDIA_API, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  var d = await r.json().catch(function(){ return {}; }); if (!r.ok || !d.ok) throw new Error(d.error || 'sheet not updated'); return d;
+}
+/* uploads what was just made; returns a short message for the status line */
+async function uploadMade(imgBlob, vidBlob, vidExt, inBatch){
+  var base = fileBase(), parts = [], reelName = '', imgName = '';
+  if (vidBlob) { if (vidExt !== 'mp4') throw new Error('only MP4 reels can be uploaded (use Chrome)'); if (await putMedia('reels', base + '.mp4', vidBlob, 'video/mp4', inBatch)) { reelName = base + '.mp4'; parts.push('reel'); } else parts.push('reel already there, kept'); }
+  if (imgBlob) { if (await putMedia('images', base + '.png', imgBlob, 'image/png', inBatch)) { imgName = base + '.png'; parts.push('image'); } else parts.push('image already there, kept'); }
+  var d = null; if (reelName || (imgName && S.mode === 'artist')) d = await linkSheet(reelName, imgName);
+  return 'Uploaded ' + parts.join(' + ') + (d ? ' and updated the sheet' + (d.flipped && d.flipped.length ? ' (post' + (d.flipped.length > 1 ? 's' : '') + ' #' + d.flipped.join(', #') + ' switched to Scheduled)' : '') : '') + '.';
+}
+function upWanted(){ return S.mode !== 'otd' && $('upOn') && $('upOn').checked; }
+async function maybeUpload(imgBlob, vidBlob, vidExt){
+  if (!upWanted()) return null;
+  try { setStatus('Uploading to R2…'); replaceAll = null; return { msg: await uploadMade(imgBlob, vidBlob, vidExt, false), ok: true }; }
+  catch (e) { return { msg: 'Upload problem: ' + e.message, ok: false }; }
+}
 async function download(){
   if (READY) {
     var rd = READY; READY = null; $('dl').textContent = dlLabel(true);
@@ -977,7 +1015,7 @@ async function download(){
   if (S.mode === 'artist' ? !S.artist : !S.rel) { setStatus('Pick a ' + (S.mode === 'artist' ? 'artist' : 'release') + ' first.', 'warn'); return; }
   if (S.fmt === 'feed') {
     stop(); draw(0);
-    try { cv.toBlob(async function(b){ var r = await saveOrShare(b, fileBase() + '.png', 'image/png'); setStatus(r === 'shared' ? 'Choose Save Image to put it in Photos.' : r === 'cancel' ? 'Not saved.' : 'Saved ' + fileBase() + '.png', r === 'cancel' ? 'warn' : 'ok'); }, 'image/png'); }
+    try { cv.toBlob(async function(b){ var u = await maybeUpload(b, null, ''); var r = await saveOrShare(b, fileBase() + '.png', 'image/png'); setStatus((u ? u.msg + ' ' : '') + (r === 'shared' ? 'Choose Save Image to put it in Photos.' : r === 'cancel' ? 'Not saved.' : 'Saved ' + fileBase() + '.png'), (u && !u.ok) || r === 'cancel' ? 'warn' : 'ok'); }, 'image/png'); }
     catch (e) { setStatus('This photo can’t be exported because its host blocks it. Drop the photo in instead.', 'bad'); }
     return;
   }
@@ -985,15 +1023,15 @@ async function download(){
   if (!S.picks.length) { setStatus('Pick at least one track.', 'warn'); return; }
   $('dl').disabled = true; $('play').disabled = true;
   try {
-    var out = await recordVideo();
+    var out = await recordVideo(), up = await maybeUpload(null, out.blob, out.ext), upMsg = up ? up.msg + ' ' : '';
     if (PHONE && shareFile(out.blob, fileBase() + '.' + out.ext, out.ext === 'mp4' ? 'video/mp4' : 'video/webm')) {
       READY = { blob: out.blob, name: fileBase() + '.' + out.ext, type: out.ext === 'mp4' ? 'video/mp4' : 'video/webm' };
       $('dl').textContent = 'Save video to Photos';
-      setStatus('Video ready. Tap Save video to Photos, then choose Save Video.', 'ok');
+      setStatus(upMsg + 'Video ready. Tap Save video to Photos, then choose Save Video.', up && !up.ok ? 'warn' : 'ok');
       return;
     }
     save(out.blob, fileBase() + '.' + out.ext);
-    setStatus(out.ext === 'mp4' ? 'Saved ' + fileBase() + '.mp4' : 'Saved as WebM. Use Chrome for an Instagram-ready MP4.', out.ext === 'mp4' ? 'ok' : 'warn');
+    setStatus(upMsg + (out.ext === 'mp4' ? 'Saved ' + fileBase() + '.mp4' : 'Saved as WebM. Use Chrome for an Instagram-ready MP4.'), out.ext === 'mp4' && !(up && !up.ok) ? 'ok' : 'warn');
   } catch (e) {
     setStatus(/fetch|Failed|CORS/i.test(e.message) ? 'Download blocked: the audio host (audio.siteholderrecords.com) must allow this page. See setup notes.' : (e.photo ? e.message : 'Export failed: ' + e.message), 'bad');
   } finally { $('dl').disabled = false; $('play').disabled = false; }
@@ -1030,7 +1068,7 @@ async function batchRun(){
     catch (e) { setStatus('No folder chosen, so nothing was started.', 'warn'); return; }
   } else if (!confirm('This browser cannot save into a folder, so each file will download separately. Use Chrome for folders. Continue?')) return;
   async function put(dir, name, blob){ if (dir) { var fh = await dir.getFileHandle(name, { create: true }), w = await fh.createWritable(); await w.write(blob); await w.close(); } else save(blob, name); }
-  var finalMsg = null, origFmt = S.fmt, origArtist = S.mode === 'artist' ? S.artist : (S.rel && S.rel.cat), rows = [[S.mode === 'artist' ? 'artist' : 'catalog', 'image_file', 'video_file', 'caption']], problems = [], done = 0;
+  var finalMsg = null, origFmt = S.fmt, origArtist = S.mode === 'artist' ? S.artist : (S.rel && S.rel.cat), rows = [[S.mode === 'artist' ? 'artist' : 'catalog', 'image_file', 'video_file', 'caption']], problems = [], done = 0, wantUp = $('bUp').checked, upDone = 0; replaceAll = null;
   batchOn = true; batchStop = false; stop(); $('bGo').hidden = true; $('bStop').hidden = false; $('dl').disabled = true; $('play').disabled = true;
   try {
     for (var i = 0; i < names.length && !batchStop; i++) {
@@ -1038,22 +1076,23 @@ async function batchRun(){
       try {
         setStatus(tagline + 'loading…'); await selectItem(n);
         if (skipNoPhoto && !S.photo) { problems.push(n + ': no photo'); continue; }
-        var base = fileBase(), imgName = '', vidName = '', cap = '';
+        var base = fileBase(), imgName = '', vidName = '', cap = '', imgBlobU = null, vidBlobU = null, vidExtU = '';
         if (wantImg) {
           S.fmt = 'feed'; renderSegs(); refresh(); await new Promise(function(r){ setTimeout(r, 80); }); cap = $('caption').value;
           var ib = await new Promise(function(res){ try { cv.toBlob(res, 'image/png'); } catch (e) { res(null); } });
-          if (!ib) problems.push(n + ': image blocked (photo host)'); else { await put(dImg, base + '.png', ib); imgName = base + '.png'; }
+          if (!ib) problems.push(n + ': image blocked (photo host)'); else { await put(dImg, base + '.png', ib); imgName = base + '.png'; imgBlobU = ib; }
         }
         if (wantVid && !batchStop) {
           if (!S.picks.length) problems.push(n + ': no audio preview, so no video');
           else { S.fmt = 'video'; renderSegs(); refresh(); await new Promise(function(r){ setTimeout(r, 80); }); if (!cap) cap = $('caption').value;
-            setStatus(tagline + 'recording video… keep this tab visible'); var out = await recordVideo(); await put(dVid, base + '.' + out.ext, out.blob); vidName = base + '.' + out.ext; }
+            setStatus(tagline + 'recording video… keep this tab visible'); var out = await recordVideo(); await put(dVid, base + '.' + out.ext, out.blob); vidName = base + '.' + out.ext; vidBlobU = out.blob; vidExtU = out.ext; }
         }
+        if (wantUp && (imgBlobU || vidBlobU)) { setStatus(tagline + 'uploading…'); try { await uploadMade(imgBlobU, vidBlobU, vidExtU, true); upDone++; } catch (ue) { problems.push(n + ': upload problem, ' + ue.message); } }
         if (imgName || vidName) { rows.push([n, imgName, vidName, cap]); done++; }
       } catch (e) { problems.push(n + ': ' + (e && e.message || e)); }
     }
     if (root && rows.length > 1) { var cb = new Blob([rows.map(function(r){ return r.map(csvCell).join(','); }).join('\n')], { type: 'text/csv' }); await put(root, 'captions.csv', cb); }
-    finalMsg = [(batchStop ? 'Cancelled. ' : 'Finished. ') + done + ' of ' + names.length + ' ' + noun + ' saved' + (root ? ' to the folder you chose' : '') + '.' + (problems.length ? ' Skipped: ' + problems.join('; ') + '.' : ''), problems.length ? 'warn' : 'ok'];
+    finalMsg = [(batchStop ? 'Cancelled. ' : 'Finished. ') + done + ' of ' + names.length + ' ' + noun + ' saved' + (root ? ' to the folder you chose' : '') + (wantUp ? ', ' + upDone + ' uploaded to R2 and the sheet' : '') + '.' + (problems.length ? ' Skipped: ' + problems.join('; ') + '.' : ''), problems.length ? 'warn' : 'ok'];
   } catch (e) { finalMsg = ['Batch stopped: ' + e.message, 'bad']; }
   finally {
     batchOn = false; $('bGo').hidden = false; $('bStop').hidden = true; $('dl').disabled = false; $('play').disabled = false;
@@ -1068,7 +1107,7 @@ $('bStop').onclick = function(){ batchStop = true; setStatus('Cancelling after t
 function setMode(m){
   stop(); S.mode = m;
   [].forEach.call(document.querySelectorAll('.tabs button'), function(b){ b.setAttribute('aria-selected', b.dataset.mode === m); });
-  $('otdCard').hidden = m !== 'otd'; $('relCard').hidden = m !== 'release'; $('artCard').hidden = m !== 'artist'; $('artInfo').hidden = m !== 'artist' || !S.artist; $('batchCard').hidden = m === 'otd'; if (m !== 'otd') renderBatchList();
+  $('otdCard').hidden = m !== 'otd'; $('upWrap').hidden = m === 'otd'; $('bUp').closest('label').hidden = m === 'otd'; $('relCard').hidden = m !== 'release'; $('artCard').hidden = m !== 'artist'; $('artInfo').hidden = m !== 'artist' || !S.artist; $('batchCard').hidden = m === 'otd'; if (m !== 'otd') renderBatchList();
   if (m === 'artist') { if (S.artist) selectArtist(S.artist); else { S.items = []; S.picks = []; renderTracks(); renderArtList(); renderSegs(); refresh(); } }
   else { if (m === 'otd') renderOtd(); else renderRelList(); if (S.rel) selectRelease(S.rel, m === 'otd' ? $('headline').value : ''); else { S.items = []; S.picks = []; renderTracks(); renderSegs(); refresh(); } }
 }

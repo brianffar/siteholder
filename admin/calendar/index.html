@@ -191,7 +191,11 @@ document.addEventListener('click',function(e){
   e.stopPropagation();
 });
 function loadLive(){
-  return fetch('../api/captions',{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(d){if(!d.posts)throw 0;LIVE=d.posts;panel()}).catch(function(){});
+  return fetch('../api/captions',{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(d){if(!d.posts)throw 0;LIVE=d.posts;
+    DATA.posts.forEach(function(p){var l=LIVE[p.n];if(!l)return;
+      var m=/\/([a-z0-9-]+)\.mp4$/.exec(l.reel||'');p.r=m?m[1]:'';p.miss=!m&&p.s!=='Posted';
+      if(l.status)p.s=l.status;});
+    summary();draw();lists()}).catch(function(){});
 }
 function init(d){
   DATA=d;d.posts.forEach(function(p){(BY[p.d]=BY[p.d]||[]).push(p)});

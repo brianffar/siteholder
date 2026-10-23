@@ -1,12 +1,35 @@
-// siteholder-captions: Cloudflare Worker, route siteholderrecords.com/admin/api/captions*
-// Cloudflare Access protects the route; this Worker also refuses anything without the Access header.
+// siteholder-captions: Cloudflare Worker.
+// Routes: siteholderrecords.com/admin/api/captions*  and  siteholderrecords.com/admin/api/media*
+// Cloudflare Access protects the routes; this Worker also refuses anything without the Access header.
 // Secrets: SHEET_URL (Apps Script web app URL), SHEET_SECRET (same value as the script's SECRET property).
+// R2 binding: MEDIA (the bucket behind https://audio.siteholderrecords.com/).
+const KEY = /^share\/(reels|images)\/[a-z0-9-]+\.(mp4|png)$/;
 export default {
   async fetch(req, env) {
     const j = (o, s = 200) => new Response(JSON.stringify(o), {status: s, headers: {'content-type': 'application/json', 'cache-control': 'no-store'}});
     if (!req.headers.get('cf-access-jwt-assertion')) return j({error: 'forbidden'}, 403);
-    if (!env.SHEET_URL || !env.SHEET_SECRET) return j({error: 'not configured'}, 503);
+    const url = new URL(req.url);
     try {
+      if (url.pathname.startsWith('/admin/api/media')) {
+        if (!env.MEDIA) return j({error: 'storage not connected'}, 503);
+        if (req.method === 'POST') {            // link a finished upload into the sheet
+          if (!env.SHEET_URL || !env.SHEET_SECRET) return j({error: 'not configured'}, 503);
+          const b = await req.json();
+          const r = await fetch(env.SHEET_URL, {method: 'POST', redirect: 'follow', headers: {'content-type': 'text/plain'},
+            body: JSON.stringify({secret: env.SHEET_SECRET, action: 'reel', kind: b.kind, key: b.key, reel: b.reel, image: b.image})});
+          return new Response(await r.text(), {status: r.ok ? 200 : 502, headers: {'content-type': 'application/json', 'cache-control': 'no-store'}});
+        }
+        const key = url.searchParams.get('key') || '';
+        if (!KEY.test(key)) return j({error: 'bad file name'}, 400);
+        if (req.method === 'PUT') {
+          const type = key.endsWith('.mp4') ? 'video/mp4' : 'image/png';
+          const o = await env.MEDIA.put(key, req.body, {httpMetadata: {contentType: type, cacheControl: 'public, max-age=300'}});
+          return j({ok: true, size: o.size});
+        }
+        const h = await env.MEDIA.head(key);
+        return j({exists: !!h, size: h ? h.size : 0});
+      }
+      if (!env.SHEET_URL || !env.SHEET_SECRET) return j({error: 'not configured'}, 503);
       let r;
       if (req.method === 'POST') {
         const b = await req.json();
@@ -17,7 +40,7 @@ export default {
       }
       return new Response(await r.text(), {status: r.ok ? 200 : 502, headers: {'content-type': 'application/json', 'cache-control': 'no-store'}});
     } catch (e) {
-      return j({error: 'sheet unreachable'}, 502);
+      return j({error: 'request failed: ' + e.message}, 502);
     }
   }
 };
