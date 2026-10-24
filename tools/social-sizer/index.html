@@ -63,7 +63,10 @@
     <label>Logo position<select id="lpos"><option value="br">Bottom right</option><option value="bl">Bottom left</option><option value="bc">Bottom center</option><option value="tr">Top right</option><option value="tl">Top left</option><option value="c">Center</option></select></label>
     <label>Logo size<input type="range" id="lsize" min="10" max="70" value="30"></label>
     <label>Logo color<select id="lcol"><option value="orig">Original colors</option><option value="white">All white</option><option value="black">All black</option></select></label>
-    <label>Empty space color<input type="color" id="bg" value="#000000"></label>
+    <label>Empty space<select id="bgmode"><option value="blur">Blurred copy of the image</option><option value="color">Solid color</option></select></label>
+    <label id="bgcw">Color<input type="color" id="bg" value="#000000"></label>
+    <label id="blw">Blur amount<input type="range" id="blur" min="10" max="100" value="45"></label>
+    <label id="dmw">Darken<input type="range" id="dim" min="0" max="70" value="20"></label>
     <label>Save as<select id="fmt"><option value="jpg">JPG (smaller)</option><option value="png">PNG (sharper)</option></select></label>
     <label class="check"><input type="checkbox" id="safe" checked> Show story safe zones</label>
   </div></div>
@@ -115,7 +118,7 @@
   function draw(cv,f,s,k,preview){
     var W=f.w,H=f.h;cv.width=Math.round(W*k);cv.height=Math.round(H*k);
     var g=cv.getContext('2d');g.setTransform(k,0,0,k,0,0);g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';
-    g.fillStyle=$('bg').value;g.fillRect(0,0,W,H);
+    if($('bgmode').value==='blur')blurBg(g,W,H);else{g.fillStyle=$('bg').value;g.fillRect(0,0,W,H)}
     var sc=cover(f)*s.z,dw=IMG.naturalWidth*sc,dh=IMG.naturalHeight*sc;
     g.drawImage(IMG,s.cx*W-dw/2,s.cy*H-dh/2,dw,dh);
     if(LOGO){
@@ -135,6 +138,24 @@
       g.restore();
     }
   }
+  /* Blurred background: the image stretched to cover the frame, shrunk and re-enlarged in steps so it works in every browser. */
+  function blurBg(g,W,H){
+    var strength=parseInt($('blur').value,10)||45,fct=1+strength*0.5,iw=IMG.naturalWidth,ih=IMG.naturalHeight;
+    var sw=Math.max(4,Math.round(W/fct)),sh=Math.max(4,Math.round(H/fct));
+    var c1=document.createElement('canvas');c1.width=sw;c1.height=sh;
+    var x1=c1.getContext('2d');x1.imageSmoothingQuality='high';
+    var cs=Math.max(sw/iw,sh/ih),dw=iw*cs,dh=ih*cs;
+    /* step the image down in halves first so small sizes stay smooth */
+    var src=IMG,cw=iw,ch=ih;
+    while(cw/2>dw&&ch/2>dh){var t=document.createElement('canvas');t.width=Math.max(1,Math.round(cw/2));t.height=Math.max(1,Math.round(ch/2));var tx=t.getContext('2d');tx.imageSmoothingQuality='high';tx.drawImage(src,0,0,t.width,t.height);src=t;cw=t.width;ch=t.height}
+    x1.drawImage(src,(sw-dw)/2,(sh-dh)/2,dw,dh);
+    var c2=document.createElement('canvas');c2.width=Math.max(8,Math.round(W/3));c2.height=Math.max(8,Math.round(H/3));
+    var x2=c2.getContext('2d');x2.imageSmoothingQuality='high';x2.drawImage(c1,0,0,c2.width,c2.height);
+    g.save();g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(c2,0,0,W,H);
+    var d=parseInt($('dim').value,10)||0;if(d>0){g.fillStyle='rgba(0,0,0,'+(d/100)+')';g.fillRect(0,0,W,H)}
+    g.restore();
+  }
+  function bgUi(){var b=$('bgmode').value==='blur';$('bgcw').style.display=b?'none':'';$('blw').style.display=b?'':'none';$('dmw').style.display=b?'':'none'}
   function pk(f){return Math.min(1,560/Math.max(f.w,f.h))}
   function paint(fr){draw(fr.cv,fr.f,fr.s,pk(fr.f),true)}
   function paintAll(){FR.forEach(paint)}
@@ -177,7 +198,8 @@
       if(b.dataset.k==='save')exportOne(fr).then(function(x){download(x.blob,x.name)});
     });
   }
-  ['lpos','lsize','lcol','bg','safe'].forEach(function(id){$(id).addEventListener('input',paintAll);$(id).addEventListener('change',paintAll)});
+  ['lpos','lsize','lcol','bg','safe','bgmode','blur','dim'].forEach(function(id){$(id).addEventListener('input',function(){bgUi();paintAll()});$(id).addEventListener('change',function(){bgUi();paintAll()})});
+  bgUi();
   $('resetAll').addEventListener('click',function(){FR.forEach(function(fr){fr.s={z:1,cx:.5,cy:.5};fr.zr.value='1'});paintAll()});
 
   /* ---------- loading images ---------- */
