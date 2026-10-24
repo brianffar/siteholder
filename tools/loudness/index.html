@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Loudness Checker · Siteholder Records</title>
+<meta name="description" content="Drop in a master and see integrated loudness (LUFS), peak, true peak, clipping and file format. Runs in your browser, nothing is uploaded. Free.">
+<link rel="canonical" href="https://siteholderrecords.com/tools/loudness/">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Siteholder Records"><meta property="og:title" content="Loudness Checker · Siteholder Records"><meta property="og:description" content="Check loudness, peaks and format of a master before you send it. Free, in your browser, nothing uploaded."><meta property="og:url" content="https://siteholderrecords.com/tools/loudness/"><meta property="og:image" content="https://siteholderrecords.com/og-image.jpg"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../../favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="32x32" href="../../favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="../../icon-192.png">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script>try{var t=localStorage.getItem('sh-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<link rel="stylesheet" href="../tools.css">
+<style>
+#drop{border:1.5px dashed var(--line);background:var(--surface);padding:48px 20px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
+#drop:hover,#drop.over{border-color:var(--accent)}
+#drop.over{background:color-mix(in srgb,var(--accent) 7%,var(--surface))}
+#drop strong{font-size:20px;font-weight:700;display:block;margin-bottom:6px}#drop span{color:var(--muted);font-size:15px}
+#status{display:none;margin:16px 0;font:13px var(--mono);color:var(--muted)}
+#status.on{display:block}
+.pbar{height:4px;background:var(--line);margin-top:8px}.pbar i{display:block;height:100%;width:0;background:var(--accent);transition:width .1s}
+#err{display:none;background:var(--surface);border:1px solid var(--bad);color:var(--bad);padding:12px 16px;margin:16px 0;font-size:14px}
+#res{display:none;margin-top:28px;scroll-margin-top:88px}
+.fname{font-weight:600;font-size:18px;word-break:break-all}.fmeta{font:12px var(--mono);color:var(--muted);margin:4px 0 20px;letter-spacing:.02em}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,210px),1fr));gap:16px;margin-bottom:20px}
+.card{background:var(--surface);border:1px solid var(--line);padding:16px 18px}
+.card .l{font:11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.card .v{font-size:34px;font-weight:800;font-stretch:75%;letter-spacing:-.01em;line-height:1}
+.card .v small{font-size:14px;font-weight:500;color:var(--muted);margin-left:4px;letter-spacing:0;font-stretch:100%}
+.card .d{font-size:13px;color:var(--muted);margin-top:8px}
+.card.warn{border-color:var(--warn)}.card.warn .v{color:var(--warn)}
+.card.bad{border-color:var(--bad)}.card.bad .v{color:var(--bad)}
+.chart{background:var(--surface);border:1px solid var(--line);padding:14px 16px 10px;margin-bottom:20px}
+.chart .t{font:11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.chart canvas{width:100%;height:170px;display:block}
+.notes{background:var(--surface);border:1px solid var(--line);padding:18px 22px;margin-bottom:20px}
+.notes h2,.refs h2{font-size:15px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+.notes ul{margin:0;padding-left:20px}.notes li{margin:7px 0;font-size:15px}.notes li.ok{color:var(--ok)}.notes li.w{color:var(--ink)}
+.refs{background:var(--surface);border:1px solid var(--line);padding:18px 22px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{font:11px var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-align:left;padding:8px 10px 8px 0;border-bottom:1px solid var(--line);font-weight:400}
+td{padding:9px 10px 9px 0;border-bottom:1px solid var(--line)}tr:last-child td{border-bottom:0}
+.fine{font:11px var(--mono);color:var(--muted);margin-top:18px;max-width:84ch;line-height:1.7}
+</style>
+</head><body>
+<header class="top"><div class="wrap">
+  <div class="lhs"><a class="brand" href="../../" aria-label="Siteholder Records home"><span class="logo" role="img" aria-label="siteHolder"></span></a><a class="pill-link" href="../">&larr; All tools</a></div>
+  <button class="theme" id="theme" type="button" role="switch" aria-checked="false" aria-label="Dark mode"><span class="track"></span><span id="theme-label">Light</span></button>
+</div></header>
+<main class="wrap">
+<div class="eyebrow">Free tool</div>
+<h1 class="page-title">Loudness Checker</h1>
+<p class="sub">Drop in a master and see how loud it is, how close it gets to the ceiling, and whether anything needs a second look.</p>
+<p class="note"><b>Private by design.</b> Your audio is analyzed right here in your browser and never uploaded anywhere.</p>
+
+<div id="drop" tabindex="0" role="button" aria-label="Choose an audio file"><strong>Drag an audio file here</strong><span>or click to choose one. WAV, AIFF, FLAC, MP3, M4A. One file at a time.</span></div>
+<input type="file" id="pick" accept="audio/*,.wav,.mp3,.aif,.aiff,.flac,.m4a,.aac,.ogg" hidden>
+<div id="status" role="status" aria-live="polite"><span id="stxt"></span><div class="pbar"><i id="pfill"></i></div></div>
+<div id="err" role="alert"></div>
+
+<div id="res">
+  <div class="fname" id="fname"></div><div class="fmeta" id="fmeta"></div>
+  <div class="cards" id="cards"></div>
+  <div class="chart"><div class="t">Loudness over time (momentary, LUFS)</div><canvas id="plot" aria-label="Chart of loudness over time"></canvas></div>
+  <div class="notes"><h2>Worth a look</h2><ul id="notes"></ul></div>
+  <div class="refs"><h2>Against typical streaming targets</h2><table><thead><tr><th>Service</th><th>Typical target</th><th>Turned down by</th></tr></thead><tbody id="refs"></tbody></table>
+    <p class="fine">Services normalize playback to a target loudness and change these settings from time to time. Dance masters are often louder than streaming targets, and that is fine for clubs. A louder track is simply turned down on those services.</p></div>
+  <p class="fine">Loudness follows ITU-R BS.1770-4 (K-weighted, gated), tested against reference tones. True peak is estimated with 4x oversampling and can differ from other meters by a fraction of a dB. Compressed files (MP3, AAC) are measured after decoding. This tool gives information, not pass or fail.</p>
+</div>
+</main>
+<footer><div class="wrap"><p class="legal">&copy; Siteholder Records, Chicago. Free to use. <a href="../">All tools</a> &middot; <a href="../../">Back to the label</a></p></div></footer>
+<script src="meter.js"></script>
+<script>
+(function(){
+  function $(i){return document.getElementById(i)}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  var busy=false,LAST=null;
+  var REFS=[['Spotify',-14],['Apple Music (Sound Check)',-16],['YouTube',-14],['Tidal',-14]];
+  function fmtDb(v,d){return isFinite(v)?(v>0?'+':'')+v.toFixed(d==null?1:d):'-inf'}
+  function fmtDur(s){var m=Math.floor(s/60),x=Math.round(s%60);if(x===60){m++;x=0}return m+':'+('0'+x).slice(-2)}
+  function fmtSize(b){return b>=1048576?(b/1048576).toFixed(1)+' MB':Math.max(1,Math.round(b/1024))+' KB'}
+  function ascii(dv,o,n){var s='';for(var i=0;i<n;i++)s+=String.fromCharCode(dv.getUint8(o+i));return s}
+  /* read the real sample rate and bit depth of WAV / AIFF files from the header */
+  async function header(file){
+    var info={};
+    try{
+      var dv=new DataView(await file.slice(0,Math.min(file.size,1<<16)).arrayBuffer());
+      if(dv.byteLength>=12&&ascii(dv,0,4)==='RIFF'&&ascii(dv,8,4)==='WAVE'){
+        var o=12;while(o+8<=dv.byteLength){var id=ascii(dv,o,4),sz=dv.getUint32(o+4,true);
+          if(id==='fmt '){var tag=dv.getUint16(o+8,true);info={type:tag===3?'WAV (float)':'WAV',ch:dv.getUint16(o+10,true),sr:dv.getUint32(o+12,true),bits:dv.getUint16(o+22,true)};break}
+          o+=8+sz+(sz&1)}
+      }else if(dv.byteLength>=12&&ascii(dv,0,4)==='FORM'&&/AIF[FC]/.test(ascii(dv,8,4))){
+        var p=12;while(p+8<=dv.byteLength){var id2=ascii(dv,p,4),sz2=dv.getUint32(p+4,false);
+          if(id2==='COMM'){var ex=dv.getUint16(p+16,false)&0x7fff,hi=dv.getUint32(p+18,false),lo=dv.getUint32(p+22,false);
+            info={type:'AIFF',ch:dv.getUint16(p+8,false),bits:dv.getUint16(p+14,false),sr:Math.round((hi*4294967296+lo)*Math.pow(2,ex-16383-63))};break}
+          p+=8+sz2+(sz2&1)}
+      }else if(dv.byteLength>=4&&ascii(dv,0,4)==='fLaC'){
+        var b=dv.getUint8(21)<<16|dv.getUint8(22)<<8|dv.getUint8(23);
+        info={type:'FLAC',sr:(dv.getUint8(18)<<12|dv.getUint8(19)<<4|dv.getUint8(20)>>4),ch:((dv.getUint8(20)>>1)&7)+1,bits:(((dv.getUint8(20)&1)<<4)|(dv.getUint8(21)>>4))+1};
+      }
+    }catch(e){}
+    if(!info.type){var m=/\.([a-z0-9]+)$/i.exec(file.name);info.type=m?m[1].toUpperCase():'Audio'}
+    return info;
+  }
+  function setStatus(txt,pct){$('status').classList.add('on');$('stxt').textContent=txt;$('pfill').style.width=(pct||0)+'%'}
+  function tick(){return new Promise(function(r){setTimeout(r,0)})}
+  async function decode(file,sr){
+    var AC=window.AudioContext||window.webkitAudioContext,ctx;
+    try{ctx=sr&&sr>=8000&&sr<=96000?new AC({sampleRate:sr}):new AC()}catch(e){ctx=new AC()}
+    try{
+      var ab=await file.arrayBuffer();
+      return await new Promise(function(res,rej){var p=ctx.decodeAudioData(ab,res,rej);if(p&&p.catch)p.catch(rej)});
+    }finally{try{ctx.close()}catch(e){}}
+  }
+  async function run(file){
+    if(busy)return;busy=true;$('err').style.display='none';$('res').style.display='none';
+    try{
+      setStatus('Reading the file…',3);await tick();
+      var h=await header(file),buf=await decode(file,h.sr);
+      var nch=Math.min(buf.numberOfChannels,2),chs=[];for(var c=0;c<nch;c++)chs.push(buf.getChannelData(c));
+      var n=buf.length,fs=buf.sampleRate,M=new LoudMeter.Meter(fs,nch),CH=1<<19;
+      for(var a=0;a<n;a+=CH){M.process(chs,a,Math.min(n,a+CH));setStatus('Measuring loudness…',5+Math.round(a/n*55));await tick()}
+      var tp=0;
+      for(var k=0;k<nch;k++){for(var a2=0;a2<n;a2+=CH){var v=LoudMeter.truePeakChunk(chs[k],a2,Math.min(n,a2+CH));if(v>tp)tp=v;setStatus('Checking true peak…',60+Math.round(((k*n+a2)/(nch*n))*38));await tick()}}
+      var L=M.loudness(),S=M.stats();
+      LAST={file:file,h:h,fs:fs,nch:buf.numberOfChannels,dur:buf.duration,L:L,S:S,tp:LoudMeter.toDb(tp),n:n};
+      $('status').classList.remove('on');show();
+    }catch(e){
+      $('status').classList.remove('on');
+      $('err').textContent='Could not read this file. Try a WAV, AIFF, FLAC or MP3.';$('err').style.display='block';
+    }
+    busy=false;
+  }
+  function card(label,val,unit,desc,cls){return '<div class="card'+(cls?' '+cls:'')+'"><div class="l">'+label+'</div><div class="v">'+val+(unit?'<small>'+unit+'</small>':'')+'</div><div class="d">'+desc+'</div></div>'}
+  function show(){
+    var d=LAST,L=d.L,S=d.S,lufs=L.integrated,notes=[],cards=[];
+    $('fname').textContent=d.file.name;
+    var bits=[d.h.type,fmtSize(d.file.size),fmtDur(d.dur),d.fs+' Hz'+(d.h.sr?'':' (as decoded)')];
+    if(d.h.bits)bits.splice(3,0,d.h.bits+'-bit');
+    bits.push(d.nch===1?'mono':d.nch===2?'stereo':d.nch+' channels (first two measured)');
+    $('fmeta').textContent=bits.join('  ·  ');
+    cards.push(card('Integrated loudness',fmtDb(lufs,1),'LUFS','The average loudness of the whole track, quiet parts and silence gated out.'));
+    cards.push(card('Loudest section',fmtDb(L.shortTermMax,1),'LUFS','Highest 3 second loudness.'));
+    cards.push(card('Sample peak',fmtDb(S.samplePeakDb,1),'dBFS','Highest sample in the file.',S.samplePeakDb>-0.1?'warn':''));
+    var tpv=d.tp,tpc=tpv>0?'bad':tpv>-1?'warn':'';
+    cards.push(card('True peak',fmtDb(tpv,1),'dBTP','Peak after conversion to analog or lossy formats.',tpc));
+    if(isFinite(lufs))cards.push(card('Peak to loudness',(tpv-lufs).toFixed(1),'dB','Distance from true peak to average loudness. Higher means more dynamic.'));
+    if(d.nch>1)cards.push(card('Stereo correlation',S.correlation.toFixed(2),'','+1 is mono, 0 is wide, below 0 can cancel in mono.',S.correlation<0?'warn':''));
+    $('cards').innerHTML=cards.join('');
+    /* notes */
+    if(tpv>0)notes.push('True peak is above 0 dBTP, so it can clip when converted. Many mastering engineers leave at least 1 dB of room (-1 dBTP or lower).');
+    else if(tpv>-1)notes.push('True peak is above -1 dBTP. This can clip when the file is converted to MP3 or AAC for streaming and downloads.');
+    if(S.clipRuns>0)notes.push('Found '+S.clipRuns+' spot'+(S.clipRuns===1?'':'s')+' where the audio sits at full scale for three or more samples in a row. That can be audible clipping, or it can be intentional.');
+    if(/^(MP3|M4A|AAC|OGG|OPUS)$/i.test(d.h.type))notes.push('This is a compressed file. For a distributor, a mastering engineer or a pressing plant, send a WAV or FLAC at 16 or 24-bit.');
+    if(d.h.bits&&d.h.bits<16)notes.push('Bit depth is below 16-bit.');
+    if(d.fs<44100)notes.push('Sample rate is below 44.1 kHz. Distributors usually ask for 44.1 kHz or higher.');
+    if(d.nch===1)notes.push('This is a mono file. If you meant it to be stereo, check your bounce settings.');
+    else if(S.identical)notes.push('Left and right are identical, so this stereo file is really mono.');
+    else if(S.correlation<0)notes.push('Left and right are mostly out of phase (correlation below 0). The track can lose level or disappear on a mono system, like a club PA.');
+    var dcMax=0;S.dc.forEach(function(v){if(Math.abs(v)>dcMax)dcMax=Math.abs(v)});
+    if(dcMax>0.005)notes.push('There is a DC offset (the waveform is not centered on zero). A high-pass filter before the final bounce usually removes it.');
+    if(!isFinite(lufs))notes.push('Could not measure loudness. The file may be silent or too short (under half a second).');
+    else if(lufs>-6)notes.push('This is very loud (above -6 LUFS). Check it against your reference tracks for squashed dynamics.');
+    else if(lufs<-23)notes.push('This is quiet (below -23 LUFS). That is fine for a mix that still gets mastered, but a finished master is usually louder.');
+    if(!notes.length)notes.push('<span class="ok">Nothing flagged: peaks have headroom, no clipping found and the format looks normal.</span>');
+    $('notes').innerHTML=notes.map(function(t){return '<li>'+(t.charAt(0)==='<'?t:esc(t))+'</li>'}).join('');
+    /* references */
+    $('refs').innerHTML=REFS.map(function(r){
+      var diff=isFinite(lufs)?r[1]-lufs:null,txt=diff===null?'-':diff<-0.05?Math.abs(diff).toFixed(1)+' dB':'not turned down';
+      return '<tr><td>'+esc(r[0])+'</td><td>'+r[1]+' LUFS</td><td>'+txt+'</td></tr>';
+    }).join('');
+    $('res').style.display='block';drawPlot();
+    $('res').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  function drawPlot(){
+    if(!LAST)return;
+    var cv=$('plot'),dpr=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;if(!w)return;
+    cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);var c=cv.getContext('2d');c.scale(dpr,dpr);
+    var cs=getComputedStyle(document.documentElement),muted=cs.getPropertyValue('--muted').trim()||'#888',line=cs.getPropertyValue('--line').trim()||'#ddd',acc=cs.getPropertyValue('--accent').trim()||'#26f',ink=cs.getPropertyValue('--ink').trim()||'#000';
+    var m=LAST.L.momentary,lo=-60,hi=0,pl=34,pb=18,W=w-pl,H=h-pb;
+    c.font='10px '+(cs.getPropertyValue('--mono').trim()||'monospace');c.textBaseline='middle';
+    [0,-10,-20,-30,-40,-50,-60].forEach(function(g){var y=(hi-g)/(hi-lo)*H;c.strokeStyle=line;c.lineWidth=1;c.beginPath();c.moveTo(pl,y+.5);c.lineTo(w,y+.5);c.stroke();c.fillStyle=muted;c.textAlign='right';c.fillText(String(g),pl-6,y)});
+    if(!m.length)return;
+    var step=Math.max(1,Math.floor(m.length/(W*1.2)));c.beginPath();c.strokeStyle=acc;c.lineWidth=1.4;var st=false;
+    for(var i=0;i<m.length;i+=step){var mx=-Infinity;for(var j=i;j<Math.min(m.length,i+step);j++)if(m[j]>mx)mx=m[j];
+      var v=Math.max(lo,mx),x=pl+i/m.length*W,y=(hi-v)/(hi-lo)*H;if(!st){c.moveTo(x,y);st=true}else c.lineTo(x,y)}
+    c.stroke();
+    if(isFinite(LAST.L.integrated)){var yi=(hi-Math.max(lo,LAST.L.integrated))/(hi-lo)*H;c.setLineDash([5,4]);c.strokeStyle=ink;c.lineWidth=1;c.beginPath();c.moveTo(pl,yi);c.lineTo(w,yi);c.stroke();c.setLineDash([]);c.fillStyle=ink;c.textAlign='right';c.fillText('integrated '+LAST.L.integrated.toFixed(1),w-4,Math.max(8,yi-8))}
+    c.fillStyle=muted;c.textAlign='left';c.textBaseline='alphabetic';c.fillText('0:00',pl,h-3);c.textAlign='right';c.fillText(fmtDur(LAST.dur),w,h-3);
+  }
+  window.addEventListener('resize',drawPlot);
+  try{new MutationObserver(drawPlot).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']})}catch(e){}
+  try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',drawPlot)}catch(e){}
+  var drop=$('drop');
+  drop.addEventListener('click',function(){$('pick').click()});
+  drop.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();$('pick').click()}});
+  $('pick').addEventListener('change',function(e){var f=e.target.files[0];e.target.value='';if(f)run(f)});
+  ['dragenter','dragover'].forEach(function(n){document.addEventListener(n,function(e){e.preventDefault();drop.classList.add('over')})});
+  ['dragleave','drop'].forEach(function(n){document.addEventListener(n,function(e){e.preventDefault();if(n==='dragleave'&&e.relatedTarget)return;drop.classList.remove('over')})});
+  document.addEventListener('drop',function(e){var f=e.dataTransfer.files&&e.dataTransfer.files[0];if(f)run(f)});
+})();
+</script>
+<script src="../theme.js"></script>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "8818c4a270ca4d31b50a3cee9aa6625e"}'></script><!-- End Cloudflare Web Analytics -->
+</body></html>

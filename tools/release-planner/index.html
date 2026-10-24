@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Release Planner · Siteholder Records</title>
+<meta name="description" content="Pick a release date and get a dated checklist working backwards: mastering, artwork, distributor upload, pre-save, promo and posts. Print it, copy it or add it to your calendar. Free.">
+<link rel="canonical" href="https://siteholderrecords.com/tools/release-planner/">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Siteholder Records"><meta property="og:title" content="Release Planner · Siteholder Records"><meta property="og:description" content="Pick a release date and get a dated checklist for your next record. Free, in your browser."><meta property="og:url" content="https://siteholderrecords.com/tools/release-planner/"><meta property="og:image" content="https://siteholderrecords.com/og-image.jpg"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../../favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="32x32" href="../../favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="../../icon-192.png">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script>try{var t=localStorage.getItem('sh-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<link rel="stylesheet" href="../tools.css">
+<style>
+.fields input[type=text]{width:min(100%,300px)}
+.msg{display:none;margin:0 0 16px;padding:12px 16px;background:var(--surface);border:1px solid var(--warn);color:var(--warn);font-size:14px}
+.msg.on{display:block}
+.prog{font:12px var(--mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.tl{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line)}
+.tl li{display:grid;grid-template-columns:28px 128px minmax(0,1fr) auto;gap:6px 14px;align-items:start;padding:14px 18px;border-bottom:1px solid var(--line)}
+.tl li:last-child{border-bottom:0}
+.tl li.done .tt{color:var(--muted);text-decoration:line-through}
+.tl li.rel{background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+.tl .dt{font:500 14px var(--mono);letter-spacing:.01em}
+.tl .dt small{display:block;font:11px var(--mono);color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-top:2px}
+.tl .tt{font-weight:600;font-size:16px}
+.tl .hh{display:block;color:var(--muted);font-weight:400;font-size:14px;margin-top:2px}
+.tl .tg{font:11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);padding:2px 8px;white-space:nowrap;align-self:start}
+.tl .od{color:var(--bad);border-color:var(--bad)}.tl .td{color:var(--accent);border-color:var(--accent)}
+.tl input[type=checkbox]{margin-top:3px}
+@media(max-width:640px){.tl li{grid-template-columns:28px minmax(0,1fr);}.tl .dt{grid-column:2}.tl .tt{grid-column:2}.tl .tg{grid-column:2;justify-self:start}}
+.empty{background:var(--surface);border:1px dashed var(--line);padding:36px 20px;text-align:center;color:var(--muted)}
+.fine{font:11px var(--mono);color:var(--muted);margin-top:18px;max-width:78ch;line-height:1.7}
+.printhead{display:none}
+@media print{
+  body{background:#fff;color:#000;padding:0}
+  .top,footer,.noprint,.bar,.fields,.fine,.msg{display:none!important}
+  main{padding:0}.page-title{font-size:28px;margin-bottom:6px}.eyebrow,.sub,.note{display:none}
+  .printhead{display:block;font:14px var(--mono);margin-bottom:14px}
+  .tl{border:0;background:#fff}.tl li{border-bottom:1px solid #bbb;padding:8px 0;break-inside:avoid;background:#fff!important}
+  .tl .tt,.tl .dt{color:#000}.tl .tg{display:none}
+  input[type=checkbox]{accent-color:#000}
+}
+</style>
+</head><body>
+<header class="top"><div class="wrap">
+  <div class="lhs"><a class="brand" href="../../" aria-label="Siteholder Records home"><span class="logo" role="img" aria-label="siteHolder"></span></a><a class="pill-link" href="../">&larr; All tools</a></div>
+  <button class="theme" id="theme" type="button" role="switch" aria-checked="false" aria-label="Dark mode"><span class="track"></span><span id="theme-label">Light</span></button>
+</div></header>
+<main class="wrap">
+<div class="eyebrow">Free tool</div>
+<h1 class="page-title" id="ptitle">Release Planner</h1>
+<p class="sub">Pick your release date and get a dated checklist, working backwards from it.</p>
+<p class="note"><b>Saved on this device.</b> Your dates and ticked boxes stay in your browser. Nothing is sent anywhere. The timings are typical, so adjust them to your distributor and plant.</p>
+<div class="printhead" id="printhead"></div>
+
+<div class="panel noprint"><div class="fields">
+  <label>Release name (optional)<input type="text" id="name" placeholder="Artist - Title EP" maxlength="80" autocomplete="off"></label>
+  <label>Release date<input type="date" id="date"></label>
+  <label class="check"><input type="checkbox" id="vinyl"> Includes vinyl</label>
+</div></div>
+<div class="msg" id="msg"></div>
+
+<div class="bar noprint">
+  <button class="btn solid" id="print" type="button" disabled>Print or save as PDF</button>
+  <button class="btn" id="copy" type="button" disabled>Copy as text</button>
+  <button class="btn" id="cal" type="button" disabled>Add to calendar (.ics)</button>
+  <button class="btn" id="reset" type="button" disabled>Untick all</button>
+  <span style="flex:1"></span><span class="prog" id="prog"></span>
+</div>
+
+<div id="out"></div>
+<p class="fine noprint">A guide, not a rule. Distributors, stores and pressing plants set their own deadlines and they change, so check yours before you commit. Release dates here are plain calendar dates, so the calendar file creates all day events.</p>
+</main>
+<footer><div class="wrap"><p class="legal">&copy; Siteholder Records, Chicago. Free to use. <a href="../">All tools</a> &middot; <a href="../../">Back to the label</a></p></div></footer>
+<script src="plan.js"></script>
+<script>
+(function(){
+  var KEY='sh-release-planner',S={name:'',date:'',vinyl:false,checks:{}};
+  function $(i){return document.getElementById(i)}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  try{var raw=localStorage.getItem(KEY);if(raw){var o=JSON.parse(raw);if(o&&typeof o==='object'){S.name=String(o.name||'');S.date=String(o.date||'');S.vinyl=!!o.vinyl;S.checks=o.checks&&typeof o.checks==='object'?o.checks:{}}}}catch(e){}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+  function todayIso(){var d=new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
+  function list(){return Plan.build(S.date,S.vinyl)}
+  function render(){
+    var L=list(),has=L.length>0,t=todayIso(),done=0;
+    $('name').value=S.name;$('date').value=S.date;$('vinyl').checked=S.vinyl;
+    ['print','copy','cal','reset'].forEach(function(id){$(id).disabled=!has});
+    var msg=$('msg');
+    if(has&&!Plan.isFriday(S.date)){msg.textContent='Heads up: most stores and streaming services release on Fridays. Check which day your distributor and stores use.';msg.classList.add('on')}else msg.classList.remove('on');
+    $('ptitle').textContent=S.name&&has?S.name:'Release Planner';
+    $('printhead').textContent=has?'Release date: '+Plan.fmt(Plan.parse(S.date)):'';
+    if(!has){$('out').innerHTML='<div class="empty">Choose a release date to see your checklist.</div>';$('prog').textContent='';return}
+    L.forEach(function(x){if(S.checks[x.id])done++});
+    $('prog').textContent=done+' of '+L.length+' done';
+    $('out').innerHTML='<ul class="tl">'+L.map(function(x){
+      var c=!!S.checks[x.id],r=x.d===0,tag='';
+      if(!c&&x.iso<t)tag='<span class="tg od">Overdue</span>';else if(!c&&x.iso===t)tag='<span class="tg td">Today</span>';else tag='<span class="tg">'+esc(x.g)+'</span>';
+      return '<li class="'+(c?'done ':'')+(r?'rel':'')+'"><input type="checkbox" id="c-'+x.id+'" data-id="'+x.id+'"'+(c?' checked':'')+' aria-label="Done: '+esc(x.t)+'"><div class="dt">'+esc(Plan.fmtShort(x.at))+'<small>'+esc(Plan.rel(x.d))+'</small></div><label for="c-'+x.id+'" class="tt" style="display:block;cursor:pointer">'+esc(x.t)+(x.h?'<span class="hh">'+esc(x.h)+'</span>':'')+'</label>'+tag+'</li>';
+    }).join('')+'</ul>';
+  }
+  $('name').addEventListener('input',function(){S.name=this.value;save();var L=list();$('ptitle').textContent=S.name&&L.length?S.name:'Release Planner'});
+  $('date').addEventListener('change',function(){S.date=this.value;save();render()});
+  $('vinyl').addEventListener('change',function(){S.vinyl=this.checked;save();render()});
+  $('out').addEventListener('change',function(e){var id=e.target.dataset&&e.target.dataset.id;if(!id)return;if(e.target.checked)S.checks[id]=1;else delete S.checks[id];save();render()});
+  $('reset').addEventListener('click',function(){S.checks={};save();render()});
+  $('print').addEventListener('click',function(){window.print()});
+  $('copy').addEventListener('click',function(){
+    var txt=Plan.text(S.name,S.date,list(),S.checks),b=this;
+    function ok(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy as text'},1600)}
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(ok,function(){fallback()});else fallback();
+    function fallback(){var ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');ok()}catch(e){}ta.remove()}
+  });
+  $('cal').addEventListener('click',function(){
+    var blob=new Blob([Plan.ics(S.name,list())],{type:'text/calendar'}),a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);a.download=(S.name?S.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''):'release')+'-plan.ics';
+    document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href)},30000);
+  });
+  render();
+})();
+</script>
+<script src="../theme.js"></script>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "8818c4a270ca4d31b50a3cee9aa6625e"}'></script><!-- End Cloudflare Web Analytics -->
+</body></html>
