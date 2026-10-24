@@ -121,10 +121,8 @@ footer{border-top:1px solid var(--line);padding-block:32px 48px}
 
 <div class="settings">
   <label>Length (seconds)<input type="number" id="len" value="30" min="5" max="90"></label>
-  <label>Start at<select id="mode"><option value="pct">% into the track</option><option value="time">a set time (m:ss)</option></select></label>
-  <label id="startw"><span id="startlab">Percent</span><input type="text" id="start" value="35" style="width:84px"></label>
   <label>Fade in/out (seconds)<input type="number" id="fade" value="1" min="0" max="5" step="0.5"></label>
-  <label>Quality<input type="text" value="MP3 320 kbps" disabled style="width:130px"></label>
+  <label>Quality<select id="q"><option value="320">MP3 320 kbps (best)</option><option value="256">MP3 256 kbps</option><option value="192">MP3 192 kbps</option><option value="128">MP3 128 kbps (small)</option><option value="96">MP3 96 kbps (smallest)</option></select></label>
 </div>
 
 <div id="drop"><strong>Drag audio files or whole folders here</strong><span>or click to choose files. WAV, AIFF, MP3, FLAC, M4A. Your originals are never touched.</span></div>
@@ -183,33 +181,28 @@ function freeResult(it){if(it.url){URL.revokeObjectURL(it.url)}it.url=null;it.bl
 $('rows').addEventListener('click',function(e){
   var b=e.target.closest('button');if(!b)return;var tr=b.closest('tr'),it=ITEMS.filter(function(x){return x.id==tr.dataset.id})[0];
   if(b.dataset.k==='del'){if(CP.it===it)stopClip();if(playing===it.id){audio.pause();playing=null}freeResult(it);ITEMS.splice(ITEMS.indexOf(it),1);render()}
-  if(b.dataset.k==='edit'&&!busy){it.open=!it.open;if(!it.open&&CP.it===it)stopClip();render();if(it.open)loadPeaks(it)}
+  if(b.dataset.k==='edit'&&!busy){it.open=!it.open;if(!it.open&&CP.it===it)stopClip();render();if(it.open)queuePeaks()}
   if(b.dataset.k==='pclip')playClip(it);
   if(b.dataset.k==='reset'){it.clipStart=null;it.clipLen=null;commit(it)}
-  if(b.dataset.k==='usedef')useAsDefault(it);
   if(b.dataset.k==='play'){
     stopClip();if(playing===it.id){audio.pause();playing=null}else{audio.src=it.url;audio.play();playing=it.id}render();
   }
 });
 audio.addEventListener('ended',function(){playing=null;render()});
-var uid=1;
-function addFiles(list){
-  list.forEach(function(x){
-    if(!EXT.test(x.path)||/(^|\/)\._/.test(x.path))return;
-    if(ITEMS.some(function(i){return i.path===x.path&&i.file.size===x.file.size}))return;
-    ITEMS.push({id:uid++,file:x.file,path:x.path,status:''});
-  });
-  render();
-}
 /* ---------- adding files ---------- */
 var uid=1;
 function addFiles(list){
   list.forEach(function(x){
     if(!EXT.test(x.path)||/(^|\/)\._/.test(x.path))return;
     if(ITEMS.some(function(i){return i.path===x.path&&i.file.size===x.file.size}))return;
-    ITEMS.push({id:uid++,file:x.file,path:x.path,status:''});
+    ITEMS.push({id:uid++,file:x.file,path:x.path,status:'',open:true});
   });
-  render();
+  render();queuePeaks();
+}
+var pkRun=false;
+async function queuePeaks(){
+  if(pkRun)return;pkRun=true;
+  try{var n;while((n=ITEMS.filter(function(x){return x.open&&!x.peaks&&!x.peaksErr&&!x.peaksBusy})[0])){await loadPeaks(n)}}finally{pkRun=false}
 }
 function walk(entry,prefix,out){
   return new Promise(function(res){
@@ -239,8 +232,8 @@ $('pickdir').addEventListener('change',function(e){addFiles(Array.prototype.map.
 $('clear').addEventListener('click',function(){stopClip();ITEMS=[];$('done').style.display='none';render()});
 
 /* ---------- settings ---------- */
-$('mode').addEventListener('change',function(){var t=$('mode').value==='time';$('startlab').textContent=t?'Start (m:ss)':'Percent';$('start').value=t?'0:45':'35'});
-function startVal(){var v=$('start').value.trim();if($('mode').value==='pct')return parseFloat(v)||0;var m=v.split(':');return m.length>1?(parseFloat(m[0])||0)*60+(parseFloat(m[1])||0):(parseFloat(v)||0)}
+/* Clips start 35% into the track until you move the box on the waveform. */
+var DEF_PCT=35;
 /* ---------- audio engine (all in the browser) ---------- */
 var SR=44100;
 function readAscii(dv,o,n){var s='';for(var i=0;i<n;i++)s+=String.fromCharCode(dv.getUint8(o+i));return s}
@@ -322,13 +315,13 @@ function applyFades(chs,sr,fade){
   chs.forEach(function(ch){for(var i=0;i<f;i++){var g=i/f;ch[i]*=g;ch[n-1-i]*=g}});
 }
 function toInt16(f){var o=new Int16Array(f.length);for(var i=0;i<f.length;i++){var v=Math.max(-1,Math.min(1,f[i]));o[i]=v<0?v*32768:v*32767}return o}
-function encodeMp3(chs){
-  var L=toInt16(chs[0]),R=chs.length>1?toInt16(chs[1]):L,enc=new lamejs.Mp3Encoder(2,SR,320),out=[],B=1152;
+function encodeMp3(chs,kbps){
+  var L=toInt16(chs[0]),R=chs.length>1?toInt16(chs[1]):L,enc=new lamejs.Mp3Encoder(2,SR,kbps||320),out=[],B=1152;
   for(var i=0;i<L.length;i+=B){var d=enc.encodeBuffer(L.subarray(i,i+B),R.subarray(i,i+B));if(d.length)out.push(new Uint8Array(d))}
   var e=enc.flush();if(e.length)out.push(new Uint8Array(e));
   return new Blob(out,{type:'audio/mpeg'});
 }
-async function makePreview(file,len,mode,sv,fade){
+async function makePreview(file,len,mode,sv,fade,kbps){
   var clip=null,name=file.name.toLowerCase();
   try{
     var p=null;
@@ -341,19 +334,19 @@ async function makePreview(file,len,mode,sv,fade){
   clip=await resample(clip);
   if(clip.chs.length===1)clip.chs=[clip.chs[0],clip.chs[0]];
   applyFades(clip.chs,SR,fade);
-  return encodeMp3(clip.chs);
+  return encodeMp3(clip.chs,kbps);
 }
 /* ---------- make ---------- */
 function tick(){return new Promise(function(r){setTimeout(r,15)})}
 $('go').addEventListener('click',async function(){
   var todo=ITEMS.filter(function(it){return isReady(it)&&it.status!=='done'});
   if(!todo.length)return;busy=true;$('done').style.display='none';
-  var len=Math.max(5,Math.min(90,parseFloat($('len').value)||30)),mode=$('mode').value,sv=startVal(),fade=Math.max(0,parseFloat($('fade').value)||0);
+  var len=Math.max(5,Math.min(90,parseFloat($('len').value)||30)),mode='pct',sv=DEF_PCT,fade=Math.max(0,parseFloat($('fade').value)||0),kbps=parseInt($('q').value,10)||320;
   for(var i=0;i<todo.length;i++){
     var it=todo[i];it.status='work';render();await tick();
     try{
       var m2=mode,s2=sv,l2=len;if(it.clipStart!=null){m2='time';s2=it.clipStart;l2=it.clipLen||len}
-      it.blob=await makePreview(it.file,l2,m2,s2,fade);
+      it.blob=await makePreview(it.file,l2,m2,s2,fade,kbps);
       it.url=URL.createObjectURL(it.blob);it.outName=uniqueName(it,outName(it));it.status='done';
     }catch(e){it.status='err';it.err=(e&&e.message)?e.message:'Could not read this file'}
     render();
@@ -370,7 +363,7 @@ var PK=1400,CP={it:null,ctx:null,src:null,ready:false,raf:0,t0:0,S:0,tok:0},DR=n
 function fmtT(t){t=Math.max(0,t);var m=Math.floor(t/60),sc=Math.floor(t%60);return m+':'+('0'+sc).slice(-2)}
 function parseT(v){v=String(v).trim();var p=v.split(':');return p.length>1?(parseFloat(p[0])||0)*60+(parseFloat(p[1])||0):(parseFloat(v)||0)}
 function byId(id){return ITEMS.filter(function(x){return String(x.id)===String(id)})[0]}
-function gset(){return {len:Math.max(5,Math.min(90,parseFloat($('len').value)||30)),mode:$('mode').value,sv:startVal(),fade:Math.max(0,parseFloat($('fade').value)||0)}}
+function gset(){return {len:Math.max(5,Math.min(90,parseFloat($('len').value)||30)),mode:'pct',sv:DEF_PCT,fade:Math.max(0,parseFloat($('fade').value)||0)}}
 function curClip(it){
   var g=gset(),max=Math.min(90,it.dur);
   if(it.clipStart!=null){var L=Math.min(it.clipLen||g.len,max);return {S:Math.max(0,Math.min(it.dur-L,it.clipStart)),L:L}}
@@ -380,8 +373,7 @@ function panelHtml(it){
   return '<tr class="panel" data-id="'+it.id+'"><td colspan="4"><div class="ed">'+
     '<div class="edhead"><div class="readout"><b data-r="range">&nbsp;</b><span data-r="len"></span></div>'+
     '<div class="ctl"><button class="btn mini" data-k="pclip" type="button">&#9654; Play</button>'+
-    '<button class="btn mini" data-k="reset" type="button" title="Go back to the Start at setting above">Reset</button>'+
-    '<button class="btn mini" data-k="usedef" type="button" title="Use this start and length as the Start at and Length settings for tracks you have not edited">Use as default</button>'+
+    '<button class="btn mini" data-k="reset" type="button" title="Go back to the automatic start (35% into the track)">Reset</button>'+
     '<label>Start<input type="text" data-r="st" aria-label="Clip start (m:ss)"></label>'+
     '<label>Length<input type="number" data-r="ln" min="5" max="90" step="1" aria-label="Clip length in seconds"></label></div></div>'+
     '<div class="wf" tabindex="0" role="group" aria-label="Waveform. Drag the box to choose the clip, or use the left and right arrow keys."><canvas></canvas>'+
@@ -409,7 +401,7 @@ function syncPanel(it,redraw){
   var tr=panelEl(it);if(!tr)return;
   var msg=tr.querySelector('.wmsg'),pb=tr.querySelector('[data-k=pclip]');
   pb.innerHTML=CP.it===it?(CP.ready?'&#9632; Stop':'&hellip;'):'&#9654; Play';
-  if(!it.peaks){msg.style.display='flex';msg.textContent=it.peaksErr?'Could not read this file to draw it. You can still use Start at above.':'Reading audio…';
+  if(!it.peaks){msg.style.display='flex';msg.textContent=it.peaksErr?'Could not read this file to draw it. The preview will still start 35% into the track.':'Reading audio…';
     tr.querySelector('.win').style.display='none';return}
   msg.style.display='none';
   var win=tr.querySelector('.win'),wf=tr.querySelector('.wf');win.style.display='block';
@@ -431,12 +423,6 @@ function setClip(it,S,L){
 }
 function commit(it){
   if(it.status==='done'){if(playing===it.id){audio.pause();playing=null}freeResult(it)}
-  render();
-}
-function useAsDefault(it){
-  var c=curClip(it);$('mode').value='pct';$('startlab').textContent='Percent';
-  $('start').value=(Math.round(c.S/it.dur*1000)/10).toString();$('len').value=Math.round(c.L);
-  ITEMS.forEach(function(x){if(x.clipStart==null&&x.status==='done'){if(playing===x.id){audio.pause();playing=null}freeResult(x)}});
   render();
 }
 /* reading the waveform: WAV/AIFF are scanned straight from the file, everything else is decoded */
