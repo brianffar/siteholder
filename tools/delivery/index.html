@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Delivery Check · Siteholder Records</title>
+<meta name="description" content="Drop in a release folder and check the audio and artwork against typical store and distributor specs, then rename everything consistently. Runs in your browser, nothing is uploaded. Free.">
+<link rel="canonical" href="https://siteholderrecords.com/tools/delivery/">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Siteholder Records"><meta property="og:title" content="Delivery Check · Siteholder Records"><meta property="og:description" content="Check a release is ready for a distributor or store, and rename the files consistently. Free, in your browser."><meta property="og:url" content="https://siteholderrecords.com/tools/delivery/"><meta property="og:image" content="https://siteholderrecords.com/og-image.jpg"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../../favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="32x32" href="../../favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="../../icon-192.png">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script>try{var t=localStorage.getItem('sh-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<link rel="stylesheet" href="../tools.css">
+<style>
+.fields input[type=text],.fields select{width:min(100%,240px)}
+.fields select#safe{width:min(100%,270px)}
+.fields .wide{min-width:min(100%,300px)}
+.fields select{background:var(--bg);border:1px solid var(--line);padding:8px 10px;border-radius:2px;font-size:15px}
+#drop{border:1.5px dashed var(--line);background:var(--surface);padding:40px 20px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;margin-bottom:16px}
+#drop:hover,#drop.over{border-color:var(--accent)}
+#drop.over{background:color-mix(in srgb,var(--accent) 7%,var(--surface))}
+#drop strong{font-size:20px;font-weight:700;display:block;margin-bottom:6px}#drop span{color:var(--muted);font-size:15px}
+#status{display:none;margin:0 0 16px;font:13px var(--mono);color:var(--muted)}
+#status.on{display:block}
+.pbar{height:4px;background:var(--line);margin-top:8px}.pbar i{display:block;height:100%;width:0;background:var(--accent);transition:width .1s}
+#summary{display:none;margin:20px 0 12px;gap:10px;flex-wrap:wrap;align-items:center}
+#summary.on{display:flex}
+.sum{font:600 13px var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:7px 12px;border:1.5px solid var(--line);background:var(--surface)}
+.sum.ok{color:var(--ok);border-color:var(--ok)}.sum.warn{color:var(--warn);border-color:var(--warn)}.sum.bad{color:var(--bad);border-color:var(--bad)}
+#relbox{display:none;background:var(--surface);border:1px solid var(--line);padding:14px 18px;margin-bottom:12px}
+#relbox.on{display:block}
+#relbox h2{font:12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.iss{list-style:none;margin:0;padding:0}.iss li{display:grid;grid-template-columns:20px 1fr;gap:6px;margin:5px 0;font-size:14px;line-height:1.45}
+.iss .s{font:700 13px var(--mono)}
+.iss .ok{color:var(--ok)}.iss .warn{color:var(--warn)}.iss .bad{color:var(--bad)}
+.iss .ok .m{color:var(--muted)}
+.list{background:var(--surface);border:1px solid var(--line)}
+.row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.1fr) minmax(0,1.6fr) minmax(0,1.2fr) 32px;gap:10px 18px;padding:14px 18px;border-bottom:1px solid var(--line);align-items:start}
+.row:last-child{border-bottom:0}
+.row.head{font:11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding-block:10px;background:var(--bg)}
+.fn{font-weight:600;font-size:15px;word-break:break-all}
+.meta{font:11px var(--mono);color:var(--muted);margin-top:4px;line-height:1.6}
+.ed{display:grid;grid-template-columns:54px 1fr;gap:8px}
+.ed input{width:100%;min-width:0;background:var(--bg);border:1px solid var(--line);padding:7px 9px;border-radius:2px;font-size:14px}
+.ed .art{grid-column:1/-1;font:12px var(--mono);color:var(--muted);padding-top:7px;letter-spacing:.06em;text-transform:uppercase}
+.nm{font:12.5px var(--mono);word-break:break-all;line-height:1.5}
+.x{background:none;border:0;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;padding:2px 6px}.x:hover{color:var(--bad)}
+.wait{font:12px var(--mono);color:var(--muted)}
+@media(max-width:860px){.row.head{display:none}.row{grid-template-columns:minmax(0,1fr) 32px}.row>*:nth-child(1){grid-column:1}.row>.x{grid-row:1;grid-column:2}.row>*:nth-child(2),.row>*:nth-child(3),.row>*:nth-child(4){grid-column:1/-1}}
+.bar .grow{flex:1}
+details.spec{margin-top:28px;background:var(--surface);border:1px solid var(--line);padding:14px 18px}
+details.spec summary{cursor:pointer;font:12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+details.spec ul{margin:12px 0 0;padding-left:20px;font-size:14px}details.spec li{margin:6px 0}
+.fine{font:11px var(--mono);color:var(--muted);margin-top:18px;max-width:84ch;line-height:1.7}
+</style>
+</head><body>
+<header class="top"><div class="wrap">
+  <div class="lhs"><a class="brand" href="../../" aria-label="Siteholder Records home"><span class="logo" role="img" aria-label="siteHolder"></span></a><a class="pill-link" href="../">&larr; All tools</a></div>
+  <button class="theme" id="theme" type="button" role="switch" aria-checked="false" aria-label="Dark mode"><span class="track"></span><span id="theme-label">Light</span></button>
+</div></header>
+<main class="wrap">
+<div class="eyebrow">Free tool</div>
+<h1 class="page-title">Delivery Check</h1>
+<p class="sub">Drop in a release folder. We check the audio and artwork against typical store and distributor specs, then rename everything the same way.</p>
+<p class="note"><b>Private by design.</b> Your files are read right here in your browser and never uploaded anywhere. The checks are typical specs, so confirm them with your distributor.</p>
+
+<div class="panel"><div class="fields">
+  <label>Catalog number<input type="text" id="cat" placeholder="SHUC004" maxlength="30" autocomplete="off"></label>
+  <label>Artist<input type="text" id="artist" placeholder="Artist name" maxlength="60" autocomplete="off"></label>
+  <label>Release title<input type="text" id="reltitle" placeholder="Release title" maxlength="80" autocomplete="off"></label>
+  <label class="wide">File names<select id="style">
+    <option value="cat_nn_title">CAT_01_Title</option>
+    <option value="nn_title">01 - Title</option>
+    <option value="artist_title">Artist - Title</option>
+    <option value="cat_nn_artist_title">CAT_01_Artist_Title</option>
+    <option value="artist_release_nn_title">Artist - Release - 01 - Title</option>
+  </select></label>
+  <label>Characters<select id="safe"><option value="safe">Safe for stores (A-Z, 0-9, _ -)</option><option value="keep">Keep spaces and accents</option></select></label>
+  <label class="check"><input type="checkbox" id="levels" checked> Also check levels (slower)</label>
+</div></div>
+
+<div id="drop" tabindex="0" role="button" aria-label="Choose release files"><strong>Drag the release folder here</strong><span>or click to choose files. Audio (WAV, AIFF, FLAC, MP3) and artwork (JPG, PNG).</span></div>
+<input type="file" id="pick" multiple accept="audio/*,image/*,.wav,.aif,.aiff,.flac,.mp3,.jpg,.jpeg,.png" hidden>
+<input type="file" id="pickdir" webkitdirectory hidden>
+<div id="status" role="status" aria-live="polite"><span id="stxt"></span><div class="pbar"><i id="pfill"></i></div></div>
+
+<div id="summary"></div>
+<div id="relbox" aria-live="polite"><h2>Whole release</h2><ul class="iss" id="reliss"></ul></div>
+<div class="list" id="list" style="display:none">
+  <div class="row head"><div>File</div><div>Track and title</div><div>Checks</div><div>New name</div><div></div></div>
+  <div id="rows"></div>
+</div>
+<div class="bar" id="bar" style="display:none">
+  <button class="btn solid" id="zip" type="button">Download renamed files (zip)</button>
+  <button class="btn" id="savedir" type="button">Save to a folder&hellip;</button>
+  <button class="btn" id="copy" type="button">Copy report</button>
+  <span class="grow"></span>
+  <button class="btn" id="clear" type="button">Clear</button>
+</div>
+
+<details class="spec"><summary>What we check</summary>
+<ul>
+  <li><b>Audio format:</b> WAV or AIFF is the safe choice. FLAC is accepted by some stores. MP3 is flagged because most stores want lossless masters.</li>
+  <li><b>Bit depth and sample rate:</b> 16 or 24 bit at 44.1, 48, 88.2 or 96 kHz is typical. 32-bit float and odd sample rates are flagged.</li>
+  <li><b>Levels (optional):</b> true peak above 0 dBTP, clipped samples, silence at the start or end, and files that are really mono.</li>
+  <li><b>Artwork:</b> square, JPG or PNG, at least 1400 px a side (3000 px is the usual distributor spec), RGB colour, under 10 MB.</li>
+  <li><b>Whole release:</b> missing artwork, duplicate track numbers, and mixed sample rates or bit depths.</li>
+</ul></details>
+<p class="fine">Store and distributor requirements change and differ. Treat these as a first pass and check the current spec from your distributor before you submit. The zip puts your renamed files in a folder with a short report.</p>
+</main>
+<footer><div class="wrap"><p class="legal">&copy; Siteholder Records, Chicago. Free to use. <a href="../">All tools</a> &middot; <a href="../../">Back to the label</a></p></div></footer>
+<script src="meter.js"></script>
+<script>
+(function(){
+  var ITEMS=[],uid=1,busy=false,AUDIO=/\.(wav|aiff?|flac|mp3|m4a|aac|ogg)$/i,IMG=/\.(jpe?g|png)$/i;
+  function $(i){return document.getElementById(i)}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  function tick(){return new Promise(function(r){setTimeout(r,0)})}
+  function fmtSize(b){return b>=1048576?(b/1048576).toFixed(1)+' MB':Math.max(1,Math.round(b/1024))+' KB'}
+  function fmtDur(s){var m=Math.floor(s/60),x=Math.round(s%60);if(x===60){m++;x=0}return m+':'+('0'+x).slice(-2)}
+  function fmtDb(v,d){return isFinite(v)?(v>0?'+':'')+v.toFixed(d==null?1:d):'-inf'}
+  function ascii(dv,o,n){var s='';for(var i=0;i<n;i++)s+=String.fromCharCode(dv.getUint8(o+i));return s}
+
+  /* ---------- reading headers ---------- */
+  async function audioHeader(file){
+    var info={};
+    try{
+      var dv=new DataView(await file.slice(0,Math.min(file.size,1<<16)).arrayBuffer());
+      if(dv.byteLength>=12&&ascii(dv,0,4)==='RIFF'&&ascii(dv,8,4)==='WAVE'){
+        var o=12;while(o+8<=dv.byteLength){var id=ascii(dv,o,4),sz=dv.getUint32(o+4,true);
+          if(id==='fmt '){var tag=dv.getUint16(o+8,true);info={type:'WAV',float:tag===3,ch:dv.getUint16(o+10,true),sr:dv.getUint32(o+12,true),bits:dv.getUint16(o+22,true)};break}
+          o+=8+sz+(sz&1)}
+      }else if(dv.byteLength>=12&&ascii(dv,0,4)==='FORM'&&/AIF[FC]/.test(ascii(dv,8,4))){
+        var p=12;while(p+8<=dv.byteLength){var id2=ascii(dv,p,4),sz2=dv.getUint32(p+4,false);
+          if(id2==='COMM'){var ex=dv.getUint16(p+16,false)&0x7fff,hi=dv.getUint32(p+18,false),lo=dv.getUint32(p+22,false);
+            info={type:'AIFF',ch:dv.getUint16(p+8,false),bits:dv.getUint16(p+14,false),sr:Math.round((hi*4294967296+lo)*Math.pow(2,ex-16383-63))};break}
+          p+=8+sz2+(sz2&1)}
+      }else if(dv.byteLength>=22&&ascii(dv,0,4)==='fLaC'){
+        info={type:'FLAC',sr:(dv.getUint8(18)<<12|dv.getUint8(19)<<4|dv.getUint8(20)>>4),ch:((dv.getUint8(20)>>1)&7)+1,bits:(((dv.getUint8(20)&1)<<4)|(dv.getUint8(21)>>4))+1};
+      }
+    }catch(e){}
+    if(!info.type){var m=/\.([a-z0-9]+)$/i.exec(file.name);info.type=m?m[1].toUpperCase():'Audio'}
+    return info;
+  }
+  async function jpegInfo(file){
+    /* finds the frame header to read colour components and whether it is progressive */
+    var r={};
+    try{
+      var dv=new DataView(await file.slice(0,Math.min(file.size,1<<20)).arrayBuffer());
+      if(dv.getUint16(0)!==0xFFD8)return r;
+      var o=2;
+      while(o+4<dv.byteLength){
+        if(dv.getUint8(o)!==0xFF){o++;continue}
+        var mk=dv.getUint8(o+1);
+        if(mk===0xFF){o++;continue}
+        if(mk>=0xC0&&mk<=0xCF&&mk!==0xC4&&mk!==0xC8&&mk!==0xCC){r.comps=dv.getUint8(o+9);r.prog=(mk===0xC2||mk===0xC6||mk===0xCA||mk===0xCE);break}
+        if(mk===0xD8||mk===0x01||(mk>=0xD0&&mk<=0xD7)){o+=2;continue}
+        o+=2+dv.getUint16(o+2);
+      }
+    }catch(e){}
+    return r;
+  }
+  function imageSize(file){
+    return new Promise(function(res){
+      var u=URL.createObjectURL(file),im=new Image();
+      im.onload=function(){URL.revokeObjectURL(u);res({w:im.naturalWidth,h:im.naturalHeight})};
+      im.onerror=function(){URL.revokeObjectURL(u);res(null)};
+      im.src=u;
+    });
+  }
+  async function decode(file,sr){
+    var AC=window.AudioContext||window.webkitAudioContext,ctx;
+    try{ctx=sr&&sr>=8000&&sr<=96000?new AC({sampleRate:sr}):new AC()}catch(e){ctx=new AC()}
+    try{var ab=await file.arrayBuffer();return await new Promise(function(res,rej){var p=ctx.decodeAudioData(ab,res,rej);if(p&&p.catch)p.catch(rej)})}
+    finally{try{ctx.close()}catch(e){}}
+  }
+  function setStatus(t,p){$('status').classList.add('on');$('stxt').textContent=t;$('pfill').style.width=(p||0)+'%'}
+
+  /* ---------- checks ---------- */
+  function add(it,lvl,msg){it.issues.push({l:lvl,m:msg})}
+  async function inspect(it){
+    it.issues=[];
+    if(it.kind==='audio'){
+      var h=await audioHeader(it.file);it.h=h;
+      var lossless=h.type==='WAV'||h.type==='AIFF'||h.type==='FLAC';
+      if(h.type==='WAV'||h.type==='AIFF')add(it,'ok','Format: '+h.type);
+      else if(h.type==='FLAC')add(it,'warn','FLAC. Some stores take it, but most want WAV or AIFF.');
+      else if(h.type==='MP3')add(it,'warn','MP3. Most stores want a lossless WAV or AIFF master. Fine for promos.');
+      else add(it,'bad',h.type+' is not a normal delivery format. Export a WAV or AIFF master.');
+      if(lossless){
+        if(h.float||h.bits===32)add(it,'warn',(h.float?'32-bit float. ':'32-bit. ')+'Export 24-bit or 16-bit for delivery, some distributors reject 32-bit.');
+        else if(h.bits===16||h.bits===24)add(it,'ok',h.bits+'-bit');
+        else if(h.bits)add(it,'bad',h.bits+'-bit is not accepted by most stores. Use 16 or 24-bit.');
+        if([44100,48000,88200,96000].indexOf(h.sr)>=0)add(it,'ok',(h.sr/1000)+' kHz');
+        else if(h.sr)add(it,'warn',(h.sr/1000)+' kHz is unusual. 44.1 or 48 kHz is the safe choice.');
+        if(h.ch===1)add(it,'warn','Mono file. Most stores expect stereo.');
+        else if(h.ch>2)add(it,'bad',h.ch+' channels. Deliver stereo.');
+      }
+      if(levelsOn()){
+        try{
+          var buf=await decode(it.file,h.sr),nch=Math.min(buf.numberOfChannels,2),chs=[];
+          for(var c=0;c<nch;c++)chs.push(buf.getChannelData(c));
+          var n=buf.length,M=new LoudMeter.Meter(buf.sampleRate,nch),CH=1<<19;
+          for(var a=0;a<n;a+=CH){M.process(chs,a,Math.min(n,a+CH));await tick()}
+          var tp=0;for(var k=0;k<nch;k++)for(var a2=0;a2<n;a2+=CH){var v=LoudMeter.truePeakChunk(chs[k],a2,Math.min(n,a2+CH));if(v>tp)tp=v;await tick()}
+          var L=M.loudness(),S=M.stats();it.dur=buf.duration;
+          it.lufs=L.integrated;it.tp=LoudMeter.toDb(tp);
+          var th=0.001,first=-1,last=-1;
+          for(var i=0;i<n&&first<0;i++){for(var q=0;q<nch;q++){var x=chs[q][i];if(x>th||x<-th){first=i;break}}}
+          for(var j=n-1;j>=0&&last<0;j--){for(var q2=0;q2<nch;q2++){var y=chs[q2][j];if(y>th||y<-th){last=j;break}}}
+          var lead=first<0?buf.duration:first/buf.sampleRate,trail=first<0?0:(n-1-last)/buf.sampleRate;
+          if(it.tp>0)add(it,'bad','True peak is '+fmtDb(it.tp,1)+' dBTP. It can clip when converted to MP3 or AAC. Aim for -1 dBTP or lower.');
+          else if(it.tp>-0.1)add(it,'warn','True peak is '+fmtDb(it.tp,1)+' dBTP. Leave about 1 dB of room.');
+          else add(it,'ok','Peak '+fmtDb(it.tp,1)+' dBTP');
+          if(S.clipRuns>0)add(it,'warn','Found '+S.clipRuns+' spots at full scale. That can be audible clipping.');
+          if(lead>1.5)add(it,'warn',lead.toFixed(1)+' s of silence at the start.');
+          if(trail>6)add(it,'warn',trail.toFixed(1)+' s of silence at the end.');
+          if(nch>1&&S.identical)add(it,'warn','Left and right are identical, so this stereo file is really mono.');
+          if(!isFinite(L.integrated))add(it,'bad','No audio found, the file seems to be silent.');
+          it.metaExtra=(isFinite(L.integrated)?fmtDb(L.integrated,1)+' LUFS · ':'')+fmtDb(it.tp,1)+' dBTP';
+        }catch(e){add(it,'warn','Could not read the audio to check levels.')}
+      }
+      if(it.dur!=null&&it.dur<30)add(it,'warn','Very short ('+fmtDur(it.dur)+'). Check this is a full track.');
+    }else{
+      var sz=await imageSize(it.file);it.dim=sz;
+      if(!sz){add(it,'bad','Could not read this image.');return}
+      var ext=(/\.([a-z0-9]+)$/i.exec(it.file.name)||[])[1]||'';
+      add(it,'ok','Format: '+ext.toUpperCase());
+      if(sz.w!==sz.h)add(it,'bad','Not square ('+sz.w+' x '+sz.h+'). Stores need square artwork.');
+      var m=Math.min(sz.w,sz.h);
+      if(m<1400)add(it,'bad',sz.w+' x '+sz.h+' is below the 1400 x 1400 minimum most stores ask for.');
+      else if(m<3000)add(it,'warn',sz.w+' x '+sz.h+'. 3000 x 3000 is the usual distributor spec.');
+      else if(m>6000)add(it,'warn',sz.w+' x '+sz.h+' is very large. Some stores cap artwork size.');
+      else if(sz.w===sz.h)add(it,'ok',sz.w+' x '+sz.h);
+      if(it.file.size>10*1048576)add(it,'warn','File is '+fmtSize(it.file.size)+'. Many distributors cap artwork around 10 MB.');
+      if(/jpe?g/i.test(ext)){var j=await jpegInfo(it.file);
+        if(j.comps===4)add(it,'bad','CMYK colour. Convert to RGB, many stores reject CMYK.');
+        else if(j.comps===1)add(it,'warn','Greyscale JPG. Convert to RGB if the store complains.');
+        if(j.prog)add(it,'warn','Progressive JPG. Save as baseline if a store rejects it.');}
+    }
+  }
+  function levelsOn(){return $('levels').checked}
+
+  /* ---------- names ---------- */
+  var STYLES={cat_nn_title:{p:['cat','nn','title'],j:'_'},nn_title:{p:['nn','title'],j:' - '},artist_title:{p:['artist','title'],j:' - '},cat_nn_artist_title:{p:['cat','nn','artist','title'],j:'_'},artist_release_nn_title:{p:['artist','release','nn','title'],j:' - '}};
+  function clean(s,safe){
+    s=String(s||'').replace(/[\\\/:*?"<>|\u0000-\u001f]+/g,'-').replace(/\s+/g,' ').trim();
+    if(safe){s=s.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9._-]+/g,'_').replace(/_*-_*/g,'-').replace(/_+/g,'_').replace(/^[_.-]+|[_.-]+$/g,'')}
+    return s.replace(/^\.+/,'');
+  }
+  function ext(f){var m=/(\.[a-z0-9]+)$/i.exec(f.name);return m?m[1].toLowerCase().replace('.jpeg','.jpg').replace('.aif','.aif'):''}
+  function guess(it){
+    var base=it.file.name.replace(/\.[^.]+$/,'').replace(/_/g,' ').trim(),m=/^\s*(\d{1,2})\s*[-.)\s]+\s*(.*)$/.exec(base);
+    if(m&&m[2]){it.nn=m[1];it.title=m[2].trim()}else{it.nn='';it.title=base}
+  }
+  function numFor(it){return it.nn===''||it.nn==null?'':('0'+String(parseInt(it.nn,10)||0)).slice(-2).replace(/^0$/,'')}
+  function pad(n){var v=parseInt(n,10);return isNaN(v)?'':(v<10?'0'+v:String(v))}
+  function computeNames(){
+    var safe=$('safe').value==='safe',st=STYLES[$('style').value],j=safe?st.j.replace(/\s-\s/,'-'):st.j;
+    var vals={cat:clean($('cat').value,safe),artist:clean($('artist').value,safe),release:clean($('reltitle').value,safe)};
+    var used={},arts=0,rank={};
+    ITEMS.filter(function(x){return x.kind==='art'}).sort(function(a,b){var sq=function(x){return x.dim&&x.dim.w===x.dim.h?1:0},ms=function(x){return x.dim?Math.min(x.dim.w,x.dim.h):0};return sq(b)-sq(a)||ms(b)-ms(a)||a.id-b.id}).forEach(function(x,i){rank[x.id]=i+1});
+    ITEMS.forEach(function(it){
+      var base,e=ext(it.file);
+      if(it.kind==='audio'){
+        var v={cat:vals.cat,artist:vals.artist,release:vals.release,nn:pad(it.nn),title:clean(it.title,safe)};
+        var parts=st.p.map(function(k){return v[k]}).filter(Boolean);
+        base=parts.join(j)||clean(it.file.name.replace(/\.[^.]+$/,''),safe)||'track';
+      }else{
+        var lead=vals.cat||vals.release||vals.artist;arts=rank[it.id]||1;
+        base=(lead?lead+'_':'')+'cover'+(arts>1?'_'+arts:'');
+      }
+      var nm=base+e,n=2;
+      while(used[nm.toLowerCase()]){nm=base+'_'+n+e;n++}
+      used[nm.toLowerCase()]=1;it.newName=nm;
+    });
+  }
+
+  /* ---------- rendering ---------- */
+  function relIssues(){
+    var out=[],au=ITEMS.filter(function(x){return x.kind==='audio'}),ar=ITEMS.filter(function(x){return x.kind==='art'});
+    if(!ITEMS.length)return out;
+    if(!au.length)out.push({l:'warn',m:'No audio files yet.'});
+    if(!ar.length)out.push({l:'warn',m:'No artwork found. Add a square JPG or PNG.'});
+    if(ar.length>1)out.push({l:'warn',m:ar.length+' images found. Only one cover is normally needed, the others are named cover_2 and so on.'});
+    var seen={},dup={};au.forEach(function(x){var n=pad(x.nn);if(!n)return;if(seen[n])dup[n]=1;seen[n]=1});
+    var d=Object.keys(dup);if(d.length)out.push({l:'warn',m:'Duplicate track numbers: '+d.join(', ')+'.'});
+    var nonum=au.filter(function(x){return !pad(x.nn)}).length;
+    if(nonum&&au.length>1&&/nn/.test($('style').value))out.push({l:'warn',m:nonum+' track'+(nonum>1?'s have':' has')+' no track number. Fill it in so the names sort in order.'});
+    var srs={},bd={};au.forEach(function(x){if(x.h&&x.h.sr)srs[x.h.sr]=1;if(x.h&&x.h.bits)bd[x.h.bits]=1});
+    if(Object.keys(srs).length>1)out.push({l:'warn',m:'Mixed sample rates: '+Object.keys(srs).map(function(k){return k/1000+' kHz'}).join(', ')+'. Most releases use one.'});
+    if(Object.keys(bd).length>1)out.push({l:'warn',m:'Mixed bit depths: '+Object.keys(bd).join(', ')+'.'});
+    var lu=au.filter(function(x){return isFinite(x.lufs)}).map(function(x){return x.lufs});
+    if(lu.length>1){var sp=Math.max.apply(null,lu)-Math.min.apply(null,lu);if(sp>6)out.push({l:'warn',m:'Loudness differs by '+sp.toFixed(1)+' LU across tracks. That may be intentional.'})}
+    var a=au.length&&ar.length;
+    if(a&&!out.length)out.push({l:'ok',m:'Release looks complete: '+au.length+' track'+(au.length>1?'s':'')+' and '+ar.length+' artwork file'+(ar.length>1?'s':'')+'.'});
+    return out;
+  }
+  function issuesHtml(list){
+    return '<ul class="iss">'+list.map(function(i){return '<li class="'+i.l+'"><span class="s">'+(i.l==='ok'?'✓':i.l==='warn'?'!':'✕')+'</span><span class="m">'+esc(i.m)+'</span></li>'}).join('')+'</ul>';
+  }
+  function metaLine(it){
+    var p=[];
+    if(it.kind==='audio'&&it.h){p.push(it.h.type);if(it.h.bits)p.push(it.h.bits+(it.h.float?'-bit float':'-bit'));if(it.h.sr)p.push((it.h.sr/1000)+' kHz');if(it.h.ch)p.push(it.h.ch===1?'mono':it.h.ch===2?'stereo':it.h.ch+' ch');if(it.dur!=null)p.push(fmtDur(it.dur))}
+    if(it.kind==='art'&&it.dim)p.push(it.dim.w+' x '+it.dim.h);
+    p.push(fmtSize(it.file.size));
+    if(it.metaExtra)p.push(it.metaExtra);
+    return p.join(' · ');
+  }
+  function render(){
+    computeNames();
+    var has=ITEMS.length;
+    $('list').style.display=has?'block':'none';$('bar').style.display=has?'flex':'none';
+    $('rows').innerHTML=ITEMS.map(function(it){
+      var checks=it.issues?issuesHtml(it.issues):'<span class="wait">'+(it.working?'Checking…':'Waiting…')+'</span>';
+      var ed=it.kind==='audio'?'<div class="ed"><input type="text" data-f="nn" value="'+esc(it.nn)+'" inputmode="numeric" maxlength="3" aria-label="Track number"><input type="text" data-f="title" value="'+esc(it.title)+'" aria-label="Track title"></div>':'<div class="ed"><div class="art">Artwork</div></div>';
+      return '<div class="row" data-id="'+it.id+'"><div><div class="fn">'+esc(it.file.name)+'</div><div class="meta">'+esc(metaLine(it))+'</div></div>'+ed+'<div>'+checks+'</div><div class="nm" data-n>'+esc(it.newName)+'</div><button class="x" data-k="del" aria-label="Remove '+esc(it.file.name)+'" title="Remove">&times;</button></div>';
+    }).join('');
+    var ri=relIssues();$('relbox').classList.toggle('on',ri.length>0&&ITEMS.every(function(x){return x.issues}));$('reliss').innerHTML=ri.map(function(i){return '<li class="'+i.l+'"><span class="s">'+(i.l==='ok'?'✓':i.l==='warn'?'!':'✕')+'</span><span class="m">'+esc(i.m)+'</span></li>'}).join('');
+    var done=ITEMS.length&&ITEMS.every(function(x){return x.issues}),bad=0,warn=0;
+    if(done){ITEMS.forEach(function(x){x.issues.forEach(function(i){if(i.l==='bad')bad++;else if(i.l==='warn')warn++})});ri.forEach(function(i){if(i.l==='warn')warn++;if(i.l==='bad')bad++})}
+    var s=$('summary');s.classList.toggle('on',!!done);
+    s.innerHTML=done?(bad?'<span class="sum bad">'+bad+' problem'+(bad>1?'s':'')+' to fix</span>':'')+(warn?'<span class="sum warn">'+warn+' to look at</span>':'')+(!bad&&!warn?'<span class="sum ok">Ready to deliver</span>':''):'';
+    $('zip').disabled=!done||busy;$('copy').disabled=!done;$('savedir').style.display=window.showDirectoryPicker?'':'none';$('savedir').disabled=!done||busy;
+  }
+  function updateNames(){
+    computeNames();
+    var rows=$('rows').children;
+    for(var i=0;i<rows.length;i++){var it=ITEMS.filter(function(x){return String(x.id)===rows[i].dataset.id})[0];if(it)rows[i].querySelector('[data-n]').textContent=it.newName}
+    var ri=relIssues();$('reliss').innerHTML=ri.map(function(i){return '<li class="'+i.l+'"><span class="s">'+(i.l==='ok'?'✓':i.l==='warn'?'!':'✕')+'</span><span class="m">'+esc(i.m)+'</span></li>'}).join('');
+  }
+  ['cat','artist','reltitle','style','safe'].forEach(function(id){$(id).addEventListener('input',updateNames);$(id).addEventListener('change',updateNames)});
+  $('rows').addEventListener('input',function(e){
+    var f=e.target.dataset.f;if(!f)return;var id=e.target.closest('.row').dataset.id,it=ITEMS.filter(function(x){return String(x.id)===id})[0];
+    if(it){it[f]=e.target.value;updateNames()}
+  });
+  $('rows').addEventListener('click',function(e){
+    var b=e.target.closest('button');if(!b||b.dataset.k!=='del')return;
+    var id=b.closest('.row').dataset.id;ITEMS=ITEMS.filter(function(x){return String(x.id)!==id});render();
+  });
+  $('clear').addEventListener('click',function(){ITEMS=[];render()});
+
+  /* ---------- adding and checking ---------- */
+  async function queue(){
+    if(busy)return;busy=true;
+    try{
+      var n;
+      while((n=ITEMS.filter(function(x){return !x.issues})[0])){
+        n.working=true;var total=ITEMS.length,doneN=ITEMS.filter(function(x){return x.issues}).length;
+        setStatus('Checking '+n.file.name+' ('+(doneN+1)+' of '+total+')…',Math.round(doneN/total*100));render();await tick();
+        try{await inspect(n)}catch(e){n.issues=[{l:'bad',m:'Could not read this file.'}]}
+        n.working=false;if(!n.issues)n.issues=[];
+        render();
+      }
+    }finally{busy=false;$('status').classList.remove('on');render()}
+  }
+  function addFiles(list){
+    list.sort(function(a,b){return a.path<b.path?-1:a.path>b.path?1:0});
+    list.forEach(function(x){
+      var isA=AUDIO.test(x.path),isI=IMG.test(x.path);
+      if((!isA&&!isI)||/(^|\/)\._/.test(x.path))return;
+      if(ITEMS.some(function(i){return i.path===x.path&&i.file.size===x.file.size}))return;
+      var it={id:uid++,file:x.file,path:x.path,kind:isA?'audio':'art'};
+      if(isA)guess(it);
+      ITEMS.push(it);
+    });
+    /* fill missing track numbers in order when none of the names had one */
+    var au=ITEMS.filter(function(x){return x.kind==='audio'});
+    if(au.length&&au.every(function(x){return x.nn===''}))au.forEach(function(x,i){x.nn=String(i+1)});
+    render();queue();
+  }
+  function walk(entry,prefix,out){
+    return new Promise(function(res){
+      if(entry.isFile)entry.file(function(f){out.push({file:f,path:prefix+f.name});res()},function(){res()});
+      else if(entry.isDirectory){
+        var rd=entry.createReader(),all=[];
+        (function next(){rd.readEntries(function(es){
+          if(!es.length){Promise.all(all.map(function(e){return walk(e,prefix+entry.name+'/',out)})).then(res);return}
+          all=all.concat(Array.prototype.slice.call(es));next();
+        },function(){res()})})();
+      }else res();
+    });
+  }
+  var drop=$('drop');
+  drop.addEventListener('click',function(){$('pick').click()});
+  drop.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();$('pick').click()}});
+  ['dragenter','dragover'].forEach(function(t){drop.addEventListener(t,function(e){e.preventDefault();drop.classList.add('over')})});
+  ['dragleave','drop'].forEach(function(t){drop.addEventListener(t,function(e){e.preventDefault();drop.classList.remove('over')})});
+  drop.addEventListener('drop',function(e){
+    var items=e.dataTransfer.items,out=[];
+    if(items&&items.length&&items[0].webkitGetAsEntry){
+      var jobs=[];for(var i=0;i<items.length;i++){var en=items[i].webkitGetAsEntry();if(en)jobs.push(walk(en,'',out))}
+      Promise.all(jobs).then(function(){addFiles(out)});
+    }else addFiles(Array.prototype.map.call(e.dataTransfer.files,function(f){return {file:f,path:f.name}}));
+  });
+  $('pick').addEventListener('change',function(e){addFiles(Array.prototype.map.call(e.target.files,function(f){return {file:f,path:f.name}}));e.target.value=''});
+  $('pickdir').addEventListener('change',function(e){addFiles(Array.prototype.map.call(e.target.files,function(f){return {file:f,path:f.webkitRelativePath||f.name}}));e.target.value=''});
+  drop.querySelector('span').insertAdjacentHTML('beforeend',' <a href="#" id="dirlink" style="text-decoration:underline">Or pick a folder.</a>');
+  $('dirlink').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();$('pickdir').click()});
+
+  /* ---------- report, zip, save ---------- */
+  function report(){
+    var L=['Delivery check ('+new Date().toISOString().slice(0,10)+')'];
+    var t=[$('cat').value,$('artist').value,$('reltitle').value].filter(function(s){return s.trim()}).join(' · ');if(t)L.push(t);L.push('');
+    ITEMS.forEach(function(it){
+      L.push(it.file.name+'  ->  '+it.newName);L.push('   '+metaLine(it));
+      it.issues.forEach(function(i){L.push('   '+(i.l==='ok'?'[ok]  ':i.l==='warn'?'[look] ':'[fix]  ')+i.m)});
+    });
+    var ri=relIssues();if(ri.length){L.push('','Whole release');ri.forEach(function(i){L.push('   '+(i.l==='ok'?'[ok]  ':i.l==='warn'?'[look] ':'[fix]  ')+i.m)})}
+    L.push('','Checks are typical store and distributor specs. Confirm them with your distributor.');
+    return L.join('\n');
+  }
+  $('copy').addEventListener('click',function(){
+    var b=this,t=report();
+    function ok(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy report'},1600)}
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(ok,fb);else fb();
+    function fb(){var ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');ok()}catch(e){}ta.remove()}
+  });
+  function folderName(){
+    var safe=$('safe').value==='safe',p=[$('cat').value,$('artist').value,$('reltitle').value].map(function(s){return clean(s,safe)}).filter(Boolean);
+    return (p.join(safe?'_':' - ')||'release')+'_delivery';
+  }
+  var CRC=(function(){var t=new Uint32Array(256);for(var n=0;n<256;n++){var c=n;for(var k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+  function crcUpd(c,u8){for(var i=0;i<u8.length;i++)c=CRC[(c^u8[i])&255]^(c>>>8);return c}
+  async function crcBlob(b,onp){
+    var c=0xFFFFFFFF,CH=4*1048576;
+    for(var o=0;o<b.size;o+=CH){c=crcUpd(c,new Uint8Array(await b.slice(o,o+CH).arrayBuffer()));if(onp)onp(o/b.size);await tick()}
+    return (c^0xFFFFFFFF)>>>0;
+  }
+  async function makeZip(entries,onp){
+    var enc=new TextEncoder(),parts=[],central=[],off=0,now=new Date();
+    var dt=((now.getFullYear()-1980)<<9|(now.getMonth()+1)<<5|now.getDate()),tm=(now.getHours()<<11|now.getMinutes()<<5|(now.getSeconds()>>1));
+    for(var i=0;i<entries.length;i++){
+      var e=entries[i],blob=e.blob,nm=enc.encode(e.name),crc=await crcBlob(blob,function(f){onp&&onp((i+f)/entries.length)}),sz=blob.size,h=new DataView(new ArrayBuffer(30));
+      h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(10,tm,true);h.setUint16(12,dt,true);
+      h.setUint32(14,crc,true);h.setUint32(18,sz,true);h.setUint32(22,sz,true);h.setUint16(26,nm.length,true);
+      parts.push(h.buffer,nm,blob);
+      var c=new DataView(new ArrayBuffer(46));
+      c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x0800,true);c.setUint16(12,tm,true);c.setUint16(14,dt,true);
+      c.setUint32(16,crc,true);c.setUint32(20,sz,true);c.setUint32(24,sz,true);c.setUint16(28,nm.length,true);c.setUint32(42,off,true);
+      central.push(c.buffer,nm);off+=30+nm.length+sz;
+    }
+    var csz=0;central.forEach(function(b){csz+=b.byteLength||b.length});
+    var end=new DataView(new ArrayBuffer(22));end.setUint32(0,0x06054b50,true);end.setUint16(8,entries.length,true);end.setUint16(10,entries.length,true);end.setUint32(12,csz,true);end.setUint32(16,off,true);
+    return new Blob(parts.concat(central,[end.buffer]),{type:'application/zip'});
+  }
+  $('zip').addEventListener('click',async function(){
+    var total=0;ITEMS.forEach(function(x){total+=x.file.size});
+    if(total>3.8*1024*1024*1024){alert('This release is larger than a zip can hold here. Use "Save to a folder" instead.');return}
+    busy=true;render();
+    try{
+      var dir=folderName(),ents=ITEMS.map(function(x){return {name:dir+'/'+x.newName,blob:x.file}});
+      ents.push({name:dir+'/delivery-report.txt',blob:new Blob([report()],{type:'text/plain'})});
+      var blob=await makeZip(ents,function(f){setStatus('Building the zip…',Math.round(f*100))});
+      var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=dir+'.zip';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href)},120000);
+    }finally{busy=false;$('status').classList.remove('on');render()}
+  });
+  $('savedir').addEventListener('click',async function(){
+    try{
+      var root=await window.showDirectoryPicker({mode:'readwrite'}),d=await root.getDirectoryHandle(folderName(),{create:true});
+      busy=true;render();
+      for(var i=0;i<ITEMS.length;i++){
+        setStatus('Saving '+ITEMS[i].newName+'…',Math.round(i/ITEMS.length*100));
+        var fh=await d.getFileHandle(ITEMS[i].newName,{create:true}),w=await fh.createWritable();await w.write(ITEMS[i].file);await w.close();
+      }
+      var rh=await d.getFileHandle('delivery-report.txt',{create:true}),rw=await rh.createWritable();await rw.write(report());await rw.close();
+      $('status').classList.remove('on');setStatus('Saved to the folder "'+folderName()+'".',100);
+    }catch(e){$('status').classList.remove('on')}
+    finally{busy=false;render()}
+  });
+  render();
+})();
+</script>
+<script src="../theme.js"></script>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "8818c4a270ca4d31b50a3cee9aa6625e"}'></script><!-- End Cloudflare Web Analytics -->
+</body></html>
