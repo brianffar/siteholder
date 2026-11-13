@@ -20,6 +20,9 @@ h1 { font-size: clamp(28px, 4vw, 40px); font-weight: 800; font-stretch: 92%; lin
 select, input[type=search] { padding: 9px 12px; border: 1.5px solid var(--line); border-radius: 2px; background: var(--surface); }
 select:focus, input[type=search]:focus { border-color: var(--ink); outline: none; }
 .camp { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.camp { min-width: 0; max-width: 100%; }
+.camp select { min-width: 0; max-width: 100%; }
+@media (max-width: 640px) { .camp select { width: 100%; } }
 
 .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 26px; }
 @media (min-width: 700px) { .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
@@ -29,15 +32,17 @@ select:focus, input[type=search]:focus { border-color: var(--ink); outline: none
 .tile .v { font-size: 30px; font-weight: 700; line-height: 1.1; margin-top: 6px; font-variant-numeric: tabular-nums; }
 .tile .s { font-size: 13px; color: var(--muted); }
 
-.grid2 { display: grid; gap: 16px; margin-top: 16px; grid-template-columns: 1fr; }
-@media (min-width: 900px) { .grid2 { grid-template-columns: 1fr 1fr 1fr; } }
+.grid3 { display: grid; gap: 16px; margin-top: 16px; grid-template-columns: 1fr; }
+@media (min-width: 900px) { .grid3 { grid-template-columns: 1fr 1fr 1fr; } }
+.gridA { display: grid; gap: 16px; margin-top: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 18px 20px; min-width: 0; }
 .panel h2 { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .panel .ph { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; margin-bottom: 14px; flex-wrap: wrap; }
+.panel .ph .muted { font-size: 12px; }
 
 /* bar lists: one series, one ink */
 .bars { display: grid; gap: 10px; }
-.brow { display: grid; grid-template-columns: minmax(0, 1fr) 40px; gap: 4px 10px; align-items: center; position: relative; }
+.brow { display: grid; grid-template-columns: minmax(0, 1fr) 40px; gap: 4px 10px; align-items: center; }
 .brow .lb { grid-column: 1 / 3; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .brow .tr { height: 10px; position: relative; }
 .brow .tr b { position: absolute; inset: 0 auto 0 0; background: var(--ink); border-radius: 0 4px 4px 0; min-width: 2px; }
@@ -46,26 +51,26 @@ select:focus, input[type=search]:focus { border-color: var(--ink); outline: none
 .tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--on-ink); font-size: 12px; padding: 6px 9px; border-radius: 3px; z-index: 10; white-space: nowrap; }
 
 /* recipients table */
-.tablebox { margin-top: 16px; }
 .filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .filters input[type=search] { flex: 1 1 180px; min-width: 0; }
 .scroll { overflow-x: auto; margin-top: 14px; border-top: 1px solid var(--line); }
-table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 860px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 900px; }
 th { text-align: left; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding: 10px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
 td { padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
 td.c { text-align: center; }
 td .nm { font-weight: 600; }
 td .em { font-size: 12px; color: var(--muted); }
-.chip { display: inline-block; font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; border: 1px solid var(--line); border-radius: 99px; padding: 1px 7px; margin: 0 4px 3px 0; color: var(--muted); white-space: nowrap; }
+.chip { display: inline-block; font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; border: 1px solid var(--line); border-radius: 99px; padding: 1px 7px; color: var(--muted); white-space: nowrap; }
+.chip.in { border-color: var(--good); color: var(--good); }
+.chip.out { border-color: var(--bad); color: var(--bad); }
 .yes { color: var(--good); font-weight: 600; }
 .no { color: var(--muted); }
-.bounce { color: var(--bad); font-weight: 600; }
 .cm { color: var(--muted); max-width: 320px; }
 .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--ink); }
 .dot.off { background: transparent; border: 1.5px solid var(--line); }
 .count { font-size: 13px; color: var(--muted); margin-top: 10px; }
 
-/* quotes */
+/* quotes, supported by, sheet changes */
 .quotes { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; max-height: 420px; overflow: auto; }
 .quotes label { display: grid; grid-template-columns: 18px 1fr; gap: 10px; cursor: pointer; padding: 10px 12px; border: 1px solid var(--line); border-radius: 3px; }
 .quotes label:has(input:checked) { border-color: var(--ink); }
@@ -73,11 +78,16 @@ td .em { font-size: 12px; color: var(--muted); }
 .quotes .who { display: block; font-size: 12px; color: var(--muted); margin-top: 4px; font-family: var(--mono); }
 .supp { font-size: 14px; line-height: 1.7; }
 .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.wb { list-style: none; margin: 0; padding: 0; font-size: 14px; }
+.wb li { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 9px 0; border-bottom: 1px solid var(--line); }
+.wb li:last-child { border-bottom: 0; }
+.wb .when { grid-column: 1 / 3; font-size: 12px; color: var(--muted); font-family: var(--mono); }
+.note { font-size: 13px; color: var(--muted); }
 .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: var(--on-ink); padding: 12px 18px; border-radius: 3px; font-size: 14px; max-width: calc(100% - 32px); }
 </style>
 </head>
 <body>
-<div class="wrap mockbar"><span>MOCK-UP · your private dashboard at /admin/promo · made-up recipients and feedback</span><a href="../">All mock-ups</a></div>
+<div class="wrap mockbar"><span>MOCK-UP · your private dashboard at /admin/promo · made-up names and feedback</span><a href="../">All mock-ups</a></div>
 <header class="top"><div class="wrap"><a href="/" aria-label="Siteholder Records"><span class="logo"></span></a><span class="tag">Admin</span></div></header>
 
 <main class="wrap">
@@ -88,51 +98,60 @@ td .em { font-size: 12px; color: var(--muted); }
       <label class="sr" for="campaign">Campaign</label>
       <select id="campaign">
         <option value="sh039">SH039 · Magnanime · Don't Wait For Me</option>
-        <option value="relaunch">Relaunch announcement</option>
+        <option value="relaunch">Relaunch announcement (Gmail mail merge)</option>
       </select>
       <a class="btn small" href="../new/">New campaign</a>
-      <a class="btn small" href="#" data-mock="Opens the recipient list: import, tag, opt-outs and bounces.">Recipients</a>
+      <a class="btn small" href="#" data-mock="Opens your Siteholder Promo List 2026 Sheet. That's where you add people and mark them Opted In.">Open promo list</a>
     </div>
   </div>
   <p class="muted" id="sentline" style="margin-top:6px;font-size:14px"></p>
 
   <section class="tiles" id="tiles" aria-label="Campaign totals"></section>
 
-  <div class="grid2">
-    <section class="panel"><div class="ph"><h2 id="pA">Plays per track</h2><span class="muted" style="font-size:12px">unique listeners</span></div><div class="bars" id="plays"></div></section>
-    <section class="panel"><div class="ph"><h2 id="pB">Favourite track</h2><span class="muted" style="font-size:12px">from feedback</span></div><div class="bars" id="favs"></div></section>
-    <section class="panel"><div class="ph"><h2 id="pC">Ratings</h2><span class="muted" style="font-size:12px">responses</span></div><div class="bars" id="ratings"></div></section>
-  </div>
+  <div id="promoOnly">
+    <div class="grid3">
+      <section class="panel"><div class="ph"><h2>Plays per track</h2><span class="muted">listeners</span></div><div class="bars" id="plays"></div></section>
+      <section class="panel"><div class="ph"><h2>Favourite track</h2><span class="muted">from feedback</span></div><div class="bars" id="favs"></div></section>
+      <section class="panel"><div class="ph"><h2>Ratings</h2><span class="muted">responses</span></div><div class="bars" id="ratings"></div></section>
+    </div>
 
-  <div class="grid2" style="grid-template-columns:1fr" id="exports">
-    <div class="grid2" style="margin-top:0;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))">
+    <div class="gridA">
       <section class="panel">
-        <div class="ph"><h2>Quotes for social</h2><span class="muted" style="font-size:12px">rated 4+ and OK to quote</span></div>
+        <div class="ph"><h2>Quotes for social</h2><span class="muted">rated 4+ and OK to quote</span></div>
         <ul class="quotes" id="quotes"></ul>
         <div class="actions"><button class="btn small solid" id="copyQ" type="button">Copy selected quotes</button><a class="btn small" href="#" data-mock="Makes Instagram-sized quote cards with the release artwork, using the Reel &amp; Image Maker.">Make quote cards</a></div>
       </section>
       <section class="panel">
-        <div class="ph"><h2>Supported by</h2><span class="muted" style="font-size:12px" id="suppN"></span></div>
+        <div class="ph"><h2>Supported by</h2><span class="muted" id="suppN"></span></div>
         <p class="supp" id="supp"></p>
-        <div class="actions"><button class="btn small solid" id="copyS" type="button">Copy list</button><button class="btn small" id="csv" type="button">Export all feedback (CSV)</button></div>
+        <div class="actions"><button class="btn small solid" id="copyS" type="button">Copy list</button><button class="btn small" id="csv" type="button">Export feedback (CSV)</button></div>
+      </section>
+      <section class="panel">
+        <div class="ph"><h2>Written to the promo list</h2><span class="muted">column D</span></div>
+        <ul class="wb" id="wb"></ul>
+        <p class="note" style="margin-top:10px">Unsubscribes become <b>Opted Out</b> and bounces become <b>Bounced</b> in Siteholder Promo List 2026, so the next send skips them. Nothing else in the Sheet is changed.</p>
       </section>
     </div>
+
+    <section class="panel" style="margin-top:16px" aria-labelledby="h-rec">
+      <div class="ph"><h2 id="h-rec">Recipients</h2><span class="muted">everyone marked Opted In when it was sent</span></div>
+      <div class="filters">
+        <label class="sr" for="q">Search</label><input type="search" id="q" placeholder="Search name or email">
+        <label class="sr" for="st">Show</label>
+        <select id="st"><option value="">Everyone</option><option value="fb">Left feedback</option><option value="nofb">Opened, no feedback yet</option><option value="unopened">Not opened</option><option value="out">Unsubscribed or bounced</option></select>
+      </div>
+      <div class="scroll"><table>
+        <thead><tr><th>Recipient</th><th>Promo list</th><th>Opened</th><th>Played</th><th>Rating</th><th>Favourite</th><th>Support</th><th>Downloaded</th><th>Comment</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table></div>
+      <p class="count" id="count"></p>
+    </section>
   </div>
 
-  <section class="panel tablebox" aria-labelledby="h-rec">
-    <div class="ph"><h2 id="h-rec">Recipients</h2></div>
-    <div class="filters">
-      <label class="sr" for="q">Search</label><input type="search" id="q" placeholder="Search name or email">
-      <label class="sr" for="tag">Tag</label>
-      <select id="tag"><option value="">All tags</option><option>DJ</option><option>Press</option><option>Radio</option><option>Label</option><option>Old guard</option></select>
-      <label class="sr" for="st">Status</label>
-      <select id="st"><option value="">Everyone</option><option value="fb">Left feedback</option><option value="nofb">Opened, no feedback</option><option value="unopened">Not opened</option><option value="bounced">Bounced</option></select>
-    </div>
-    <div class="scroll"><table>
-      <thead><tr><th>Recipient</th><th>Tags</th><th>Opened</th><th>Played</th><th>Rating</th><th>Favourite</th><th>Support</th><th>Downloaded</th><th>Comment</th></tr></thead>
-      <tbody id="rows"></tbody>
-    </table></div>
-    <p class="count" id="count"></p>
+  <section class="panel" id="relaunchOnly" style="margin-top:16px" hidden>
+    <div class="ph"><h2>About this one</h2></div>
+    <p style="font-size:15px;max-width:720px">The relaunch announcement went out from Gmail with the mail-merge script in your promo list Sheet, before the promo pool existed. These numbers are the real counts from that Sheet's Summary tab. Opens and plays weren't tracked for it.</p>
+    <p class="note" style="margin-top:10px">Everyone who replied to opt in is now marked <b>Opted In</b>, so they get every promo from here on.</p>
   </section>
 </main>
 
@@ -142,53 +161,30 @@ td .em { font-size: 12px; color: var(--muted); }
 
 <script>
 var TRACKS = ["Don't Wait For Me (Original Mix)", "Don't Wait For Me (Akufen Remix)", "Don't Wait For Me (Brian Ffar Remix)", "Rytm & Cheese"];
-var FIRST = ['Alex', 'Jordan', 'Sam', 'Nico', 'Mara', 'Theo', 'Ines', 'Luca', 'Rene', 'Kai', 'Petra', 'Omar', 'Lena', 'Felix', 'Ada', 'Marco', 'Yuki', 'Sven', 'Clara', 'Dario', 'Elif', 'Hugo', 'Noor', 'Tomas'];
-var LAST = ['Mercer', 'Vale', 'Okafor', 'Brandt', 'Lindqvist', 'Moreau', 'Castell', 'Reyes', 'Haas', 'Novak', 'Ferro', 'Kowal', 'Dunmore', 'Strand', 'Ivers', 'Pallas', 'Quint', 'Sorel'];
-var COMMENTS = [
-  'The Akufen remix is a proper weapon. Straight into my Saturday set.',
-  'Love the stripped-back groove on the original. Perfect for warm-up hours.',
-  'Classic Siteholder sound, great to have you back.',
-  'Rytm & Cheese is the sleeper here. Hypnotic.',
-  'Brian Ffar remix does the job late night. Will play.',
-  'Solid package, the original is my pick.',
-  'Not quite my sound these days but well made.',
-  'Akufen doing what Akufen does. Huge.',
-  'Tight, minimal and funky. Supporting on the radio show.',
-  'Great to hear this again. Will feature it in next month\'s mix.',
-  'Bit long for me but the groove is there.',
-  'That bassline on the original! Played it twice in a row.'
+/* the same 11 made-up opted-in people as the New campaign mock-up */
+function P(n, o) { var p = n.split(' '); o.name = n; o.email = p[0].toLowerCase() + '@' + p[1].toLowerCase() + '.example'; return o; }
+var PEOPLE = [
+  P('Alex Mercer', {opened: 1, plays: [0, 1, 2, 3], rating: 5, fav: 1, support: 1, dl: 1, quote: 1, comment: 'The Akufen remix is a proper weapon. Straight into my Saturday set.'}),
+  P('Jordan Vale', {opened: 1, plays: [0, 1], rating: 4, fav: 0, support: 1, dl: 1, quote: 1, comment: 'Love the stripped-back groove on the original. Perfect for warm-up hours.'}),
+  P('Nico Brandt', {opened: 1, plays: [1, 3], rating: 5, fav: 3, support: 1, dl: 1, quote: 1, comment: 'Rytm & Cheese is the sleeper here. Hypnotic.'}),
+  P('Mara Lindqvist', {opened: 1, plays: [0, 1, 2], rating: 4, fav: 2, support: 1, dl: 1, quote: 1, comment: 'Brian Ffar remix does the job late night. Will play.'}),
+  P('Theo Moreau', {opened: 1, plays: [0]}),
+  P('Ines Castell', {opened: 1, plays: [0, 1, 2, 3], rating: 5, fav: 1, support: 1, dl: 1, quote: 1, comment: 'Tight, minimal and funky. Supporting on the radio show.'}),
+  P('Luca Reyes', {opened: 0, plays: []}),
+  P('Petra Novak', {opened: 1, plays: [0, 1], rating: 3, fav: 0, support: 0, dl: 1, quote: 1, comment: 'Not quite my sound these days but well made.'}),
+  P('Omar Ferro', {opened: 1, plays: [], unsub: '12 Nov, 14:02'}),
+  P('Lena Kowal', {opened: 1, plays: [1], rating: 4, fav: 1, support: 1, dl: 1, quote: 0, comment: 'Classic Siteholder sound, great to have you back.'}),
+  P('Felix Strand', {opened: 0, plays: []})
 ];
-var TAGS = ['DJ', 'DJ', 'DJ', 'DJ', 'Press', 'Radio', 'Label', 'Old guard'];
+PEOPLE.forEach(function (o) { o.fb = !!o.rating; o.played = o.plays.length > 0; });
+/* real counts from the Summary tab of Siteholder Promo List 2026 (13 Nov 2026) */
+var RELAUNCH = {total: 146, optedIn: 11, optedOut: 1, noReply: 134, bounced: 0};
 
-function rng(seed) { return function () { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; }; }
-function build(campaign) {
-  var r = rng(campaign === 'sh039' ? 39 : 7), out = [], used = {}, ci = 0;
-  for (var i = 0; i < 96; i++) {
-    var f = FIRST[Math.floor(r() * FIRST.length)], l = LAST[Math.floor(r() * LAST.length)], nm = f + ' ' + l;
-    if (used[nm]) continue; used[nm] = 1;
-    var tags = [TAGS[Math.floor(r() * TAGS.length)]]; if (r() < .25) tags.push('Old guard'); tags = tags.filter(function (t, j) { return tags.indexOf(t) === j; });
-    var o = {name: nm, email: f.toLowerCase() + '@' + l.toLowerCase() + '.example', tags: tags};
-    o.bounced = r() < .08; o.opened = !o.bounced && r() < .62; o.played = o.opened && r() < .78;
-    o.fb = o.played && r() < (campaign === 'sh039' ? .7 : 0);
-    if (campaign === 'relaunch') { o.keep = o.opened ? (r() < .82 ? 'yes' : 'no') : ''; }
-    if (o.fb) {
-      o.rating = Math.min(5, Math.max(2, Math.round(3.4 + r() * 2.2 - (r() < .12 ? 1.6 : 0))));
-      o.fav = r() < .45 ? 1 : r() < .55 ? 0 : r() < .6 ? 2 : 3;
-      o.support = o.rating >= 4 ? (r() < .9) : (r() < .3);
-      o.comment = r() < .75 ? COMMENTS[(ci++) % COMMENTS.length] : '';
-      o.quoteOk = r() < .85; o.dl = r() < .93;
-    }
-    o.plays = o.played ? [0, 1, 2, 3].filter(function () { return r() < .7; }) : [];
-    if (o.played && !o.plays.length) o.plays = [0];
-    out.push(o);
-  }
-  return out;
-}
-
-var data = [], camp = 'sh039';
+var data = PEOPLE, camp = 'sh039';
 function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]; }); }
 function pct(a, b) { return b ? Math.round(a / b * 100) + '%' : '0%'; }
 function count(f) { return data.filter(f).length; }
+function $(id) { return document.getElementById(id); }
 
 function bars(el, items, unit) {
   var max = Math.max.apply(null, items.map(function (x) { return x.v; }).concat([1]));
@@ -196,69 +192,72 @@ function bars(el, items, unit) {
     return '<div class="brow" data-tip="' + esc(x.l + ': ' + x.v + ' ' + unit) + '"><span class="lb">' + esc(x.l) + '</span><span class="tr"><b style="width:' + (x.v / max * 100) + '%"></b></span><span class="n">' + x.v + '</span></div>';
   }).join('');
 }
+function tiles(T) { $('tiles').innerHTML = T.map(function (t) { return '<div class="tile"><div class="k">' + t[0] + '</div><div class="v">' + t[1] + '</div><div class="s">' + (t[2] || '&nbsp;') + '</div></div>'; }).join(''); }
 
 function render() {
-  data = build(camp);
-  var sent = data.length, bounced = count(function (o) { return o.bounced; }), deliv = sent - bounced, opened = count(function (o) { return o.opened; }),
-      played = count(function (o) { return o.played; }), fb = data.filter(function (o) { return o.fb; }), dl = count(function (o) { return o.dl; });
-  var avg = fb.length ? (fb.reduce(function (s, o) { return s + o.rating; }, 0) / fb.length).toFixed(1) : '–', supp = fb.filter(function (o) { return o.support; });
-  document.getElementById('sentline').textContent = camp === 'sh039' ? 'Sent 12 Nov 2026, 10:00 to tags DJ, Press, Radio, Label, Old guard' : 'Sent 5 Nov 2026 to the full imported list · asks "Keep receiving promos?"';
-  var T = camp === 'sh039' ? [
-    ['Sent', sent, ''], ['Delivered', deliv, bounced + ' bounced'], ['Opened', opened, pct(opened, deliv)], ['Played', played, pct(played, deliv)],
-    ['Feedback', fb.length, pct(fb.length, opened) + ' of opens'], ['Avg rating', avg, 'out of 5'], ['Will support', supp.length, pct(supp.length, fb.length) + ' of feedback'], ['Downloads', dl, 'WAV or MP3']
-  ] : [
-    ['Sent', sent, ''], ['Delivered', deliv, bounced + ' bounced'], ['Opened', opened, pct(opened, deliv)], ['Keep promos', count(function (o) { return o.keep === 'yes'; }), 'said yes'],
-    ['Opted out', count(function (o) { return o.keep === 'no'; }), 'removed'], ['No answer', deliv - opened, 'stay on list'], ['Bounced', bounced, 'removed'], ['Clean list', deliv, 'for SH039']
-  ];
-  document.getElementById('tiles').innerHTML = T.map(function (t) { return '<div class="tile"><div class="k">' + t[0] + '</div><div class="v">' + t[1] + '</div><div class="s">' + (t[2] || '&nbsp;') + '</div></div>'; }).join('');
-
-  var trackOK = camp === 'sh039';
-  document.querySelectorAll('.grid2')[0].hidden = !trackOK; document.getElementById('exports').hidden = !trackOK;
-  if (trackOK) {
-    bars(document.getElementById('plays'), TRACKS.map(function (t, i) { return {l: t, v: count(function (o) { return o.plays.indexOf(i) > -1; })}; }), 'listeners');
-    bars(document.getElementById('favs'), TRACKS.map(function (t, i) { return {l: t, v: fb.filter(function (o) { return o.fav === i; }).length}; }), 'picked it');
-    bars(document.getElementById('ratings'), [5, 4, 3, 2, 1].map(function (n) { return {l: n + ' / 5', v: fb.filter(function (o) { return o.rating === n; }).length}; }), 'responses');
-    var seen = {}, qs = fb.filter(function (o) { if (!o.comment || o.rating < 4 || !o.quoteOk || seen[o.comment]) return false; return (seen[o.comment] = 1); });
-    document.getElementById('quotes').innerHTML = qs.map(function (o, i) { return '<li><label><input type="checkbox" value="' + i + '"' + (i < 3 ? ' checked' : '') + '><span><q>' + esc(o.comment) + '</q><span class="who">' + esc(o.name) + ' · ' + o.tags.join(', ') + ' · ' + o.rating + '/5</span></span></label></li>'; }).join('');
-    document.getElementById('quotes').dataset.q = JSON.stringify(qs.map(function (o) { return '"' + o.comment + '" ' + o.name; }));
-    document.getElementById('supp').textContent = supp.map(function (o) { return o.name; }).join(' · ');
-    document.getElementById('suppN').textContent = supp.length + ' said yes';
+  var promo = camp === 'sh039';
+  $('promoOnly').hidden = !promo; $('relaunchOnly').hidden = promo;
+  if (!promo) {
+    $('sentline').textContent = 'Sent from Gmail with the mail-merge script · asked "Do you want to keep receiving Siteholder promos?"';
+    tiles([
+      ['Emailed', RELAUNCH.total, 'old promo list'], ['Opted in', RELAUNCH.optedIn, (RELAUNCH.optedIn / RELAUNCH.total * 100).toFixed(1) + '% of list'], ['Opted out', RELAUNCH.optedOut, 'removed'], ['No reply yet', RELAUNCH.noReply, 'not sent promos'],
+      ['Bounced', RELAUNCH.bounced, ''], ['Promo list', RELAUNCH.optedIn, 'get the next promo'], ['Opens', '–', 'not tracked in Gmail'], ['Plays', '–', 'not tracked in Gmail']
+    ]);
+    return;
   }
+  var sent = data.length, opened = count(function (o) { return o.opened; }), played = count(function (o) { return o.played; }),
+      fb = data.filter(function (o) { return o.fb; }), dl = count(function (o) { return o.dl; }), unsub = count(function (o) { return o.unsub; }), supp = fb.filter(function (o) { return o.support; });
+  var avg = fb.length ? (fb.reduce(function (s, o) { return s + o.rating; }, 0) / fb.length).toFixed(1) : '–';
+  $('sentline').textContent = 'Sample campaign · sent 12 Nov 2026, 10:00 to the ' + sent + ' people marked Opted In on Siteholder Promo List 2026';
+  tiles([
+    ['Sent', sent, '0 bounced'], ['Opened', opened, pct(opened, sent)], ['Played', played, pct(played, sent)], ['Feedback', fb.length, pct(fb.length, opened) + ' of opens'],
+    ['Avg rating', avg, 'out of 5'], ['Will support', supp.length, 'of ' + fb.length + ' replies'], ['Downloads', dl, 'WAV or MP3'], ['Unsubscribed', unsub, 'marked Opted Out']
+  ]);
+  bars($('plays'), TRACKS.map(function (t, i) { return {l: t, v: count(function (o) { return o.plays.indexOf(i) > -1; })}; }), 'listeners');
+  bars($('favs'), TRACKS.map(function (t, i) { return {l: t, v: fb.filter(function (o) { return o.fav === i; }).length}; }), 'picked it');
+  bars($('ratings'), [5, 4, 3, 2, 1].map(function (n) { return {l: n + ' / 5', v: fb.filter(function (o) { return o.rating === n; }).length}; }), 'responses');
+  var qs = fb.filter(function (o) { return o.comment && o.rating >= 4 && o.quote; });
+  $('quotes').innerHTML = qs.map(function (o, i) { return '<li><label><input type="checkbox" value="' + i + '"' + (i < 3 ? ' checked' : '') + '><span><q>' + esc(o.comment) + '</q><span class="who">' + esc(o.name) + ' · ' + o.rating + '/5</span></span></label></li>'; }).join('');
+  $('quotes').dataset.q = JSON.stringify(qs.map(function (o) { return '"' + o.comment + '" ' + o.name; }));
+  $('supp').textContent = supp.map(function (o) { return o.name; }).join(' · ');
+  $('suppN').textContent = supp.length + ' said yes';
+  var changes = data.filter(function (o) { return o.unsub || o.bounced; });
+  $('wb').innerHTML = changes.length ? changes.map(function (o) {
+    return '<li><span><b>' + esc(o.name) + '</b></span><span class="chip out">' + (o.unsub ? 'Opted Out' : 'Bounced') + '</span><span class="when">' + (o.unsub ? 'Clicked unsubscribe · ' + o.unsub : 'Address bounced') + '</span></li>';
+  }).join('') : '<li><span class="muted">No changes from this campaign.</span></li>';
   table();
 }
 
 function table() {
-  var q = document.getElementById('q').value.toLowerCase(), tag = document.getElementById('tag').value, st = document.getElementById('st').value;
+  var q = $('q').value.toLowerCase(), st = $('st').value;
   var rows = data.filter(function (o) {
     if (q && (o.name + ' ' + o.email).toLowerCase().indexOf(q) < 0) return false;
-    if (tag && o.tags.indexOf(tag) < 0) return false;
     if (st === 'fb' && !o.fb) return false;
     if (st === 'nofb' && !(o.opened && !o.fb)) return false;
-    if (st === 'unopened' && (o.opened || o.bounced)) return false;
-    if (st === 'bounced' && !o.bounced) return false;
+    if (st === 'unopened' && o.opened) return false;
+    if (st === 'out' && !(o.unsub || o.bounced)) return false;
     return true;
   });
-  rows.sort(function (a, b) { return (b.fb ? b.rating + 10 : b.opened ? 5 : b.bounced ? -1 : 0) - (a.fb ? a.rating + 10 : a.opened ? 5 : a.bounced ? -1 : 0); });
+  function score(o) { return o.fb ? o.rating + 10 : o.unsub ? -1 : o.opened ? 5 : 0; }
+  rows.sort(function (a, b) { return score(b) - score(a); });
   function dot(v, label) { return '<span class="dot' + (v ? '' : ' off') + '" role="img" aria-label="' + (v ? label : 'no') + '"></span>'; }
-  var rel = camp === 'relaunch';
-  document.getElementById('rows').innerHTML = rows.map(function (o) {
+  $('rows').innerHTML = rows.map(function (o) {
     return '<tr><td><div class="nm">' + esc(o.name) + '</div><div class="em">' + esc(o.email) + '</div></td>' +
-      '<td>' + o.tags.map(function (t) { return '<span class="chip">' + t + '</span>'; }).join('') + '</td>' +
-      (o.bounced ? '<td colspan="7" class="bounce">Bounced: address no longer exists. Removed from future sends.</td>' :
-      '<td class="c">' + dot(o.opened, 'opened') + '</td><td class="c">' + (rel ? '–' : dot(o.played, 'played')) + '</td>' +
+      '<td>' + (o.unsub ? '<span class="chip out">Opted Out</span>' : '<span class="chip in">Opted In</span>') + '</td>' +
+      '<td class="c">' + dot(o.opened, 'opened') + '</td><td class="c">' + dot(o.played, 'played') + '</td>' +
       '<td class="mono">' + (o.fb ? o.rating + '/5' : '') + '</td>' +
       '<td>' + (o.fb ? esc(TRACKS[o.fav].replace("Don't Wait For Me ", '')) : '') + '</td>' +
-      '<td>' + (rel ? (o.keep ? '<span class="' + (o.keep === 'yes' ? 'yes">Keep' : 'no">Opted out') + '</span>' : '') : o.fb ? (o.support ? '<span class="yes">Yes</span>' : '<span class="no">No</span>') : '') + '</td>' +
-      '<td class="c">' + (rel ? '–' : o.fb ? dot(o.dl, 'downloaded') : '') + '</td>' +
-      '<td class="cm">' + (o.comment ? esc(o.comment) : '') + '</td>') + '</tr>';
+      '<td>' + (o.fb ? (o.support ? '<span class="yes">Yes</span>' : '<span class="no">No</span>') : '') + '</td>' +
+      '<td class="c">' + (o.fb ? dot(o.dl, 'downloaded') : '') + '</td>' +
+      '<td class="cm">' + (o.unsub ? 'Unsubscribed ' + esc(o.unsub) : o.comment ? esc(o.comment) : '') + '</td></tr>';
   }).join('');
-  document.getElementById('count').textContent = 'Showing ' + rows.length + ' of ' + data.length + ' recipients';
+  $('count').textContent = 'Showing ' + rows.length + ' of ' + data.length + ' recipients';
 }
 
 /* interactions */
-document.getElementById('campaign').addEventListener('change', function (e) { camp = e.target.value; render(); });
-['q', 'tag', 'st'].forEach(function (id) { document.getElementById(id).addEventListener('input', table); });
-var tip = document.getElementById('tip');
+$('campaign').addEventListener('change', function (e) { camp = e.target.value; render(); });
+['q', 'st'].forEach(function (id) { $(id).addEventListener('input', table); });
+var tip = $('tip');
 document.addEventListener('mousemove', function (e) {
   var b = e.target.closest && e.target.closest('[data-tip]');
   if (!b) { tip.hidden = true; return; }
@@ -266,19 +265,19 @@ document.addEventListener('mousemove', function (e) {
   tip.style.left = Math.min(e.clientX + 14, innerWidth - tip.offsetWidth - 8) + 'px'; tip.style.top = (e.clientY + 16) + 'px';
 });
 var toastT;
-function toast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(function () { t.hidden = true; }, 3200); }
+function toast(msg) { var t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(function () { t.hidden = true; }, 3200); }
 function copy(text, msg) { (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(function () { toast(msg); }, function () { toast('Copy failed. Select the text and copy it by hand.'); }); }
-document.getElementById('copyQ').addEventListener('click', function () {
-  var all = JSON.parse(document.getElementById('quotes').dataset.q || '[]');
+$('copyQ').addEventListener('click', function () {
+  var all = JSON.parse($('quotes').dataset.q || '[]');
   var pick = [].map.call(document.querySelectorAll('#quotes input:checked'), function (c) { return all[+c.value]; });
   if (!pick.length) return toast('Tick at least one quote first.');
   copy(pick.join('\n\n'), 'Copied ' + pick.length + ' quote' + (pick.length > 1 ? 's' : '') + '. Paste into your caption.');
 });
-document.getElementById('copyS').addEventListener('click', function () { copy('Supported by: ' + document.getElementById('supp').textContent, 'Copied the "Supported by" list.'); });
-document.getElementById('csv').addEventListener('click', function () {
-  var head = ['name', 'email', 'tags', 'opened', 'played', 'rating', 'favourite', 'support', 'downloaded', 'comment'];
+$('copyS').addEventListener('click', function () { copy('Supported by: ' + $('supp').textContent, 'Copied the "Supported by" list.'); });
+$('csv').addEventListener('click', function () {
+  var head = ['name', 'email', 'promo list', 'opened', 'played', 'rating', 'favourite', 'support', 'downloaded', 'comment'];
   var lines = [head.join(',')].concat(data.map(function (o) {
-    return [o.name, o.email, o.tags.join(' '), o.opened, o.played, o.rating || '', o.fb ? TRACKS[o.fav] : '', o.fb ? o.support : '', o.dl || '', o.comment || '']
+    return [o.name, o.email, o.unsub ? 'Opted Out' : 'Opted In', !!o.opened, o.played, o.rating || '', o.fb ? TRACKS[o.fav] : '', o.fb ? !!o.support : '', o.fb ? !!o.dl : '', o.comment || '']
       .map(function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(',');
   }));
   var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([lines.join('\n')], {type: 'text/csv'})); a.download = 'sh039-feedback-sample.csv'; a.click();
