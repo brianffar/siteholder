@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>New Campaign · Siteholder Admin</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../mock.css">
+<style>
+.wrap { max-width: 1240px; }
+.crumbs { font-size: 14px; color: var(--muted); }
+.crumbs a { text-decoration: none; }
+h1 { font-size: clamp(28px, 4vw, 40px); font-weight: 800; font-stretch: 92%; line-height: 1.05; margin-top: 6px; }
+.layout { display: grid; gap: 20px; margin-top: 24px; grid-template-columns: 1fr; align-items: start; }
+@media (min-width: 980px) { .layout { grid-template-columns: minmax(0, 1fr) 340px; } .side { position: sticky; top: 20px; } }
+.step { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: clamp(18px, 3vw, 26px); }
+.step + .step { margin-top: 16px; }
+.step > h2 { display: flex; gap: 12px; align-items: baseline; font-size: 19px; font-weight: 700; }
+.step > h2 .n { font-family: var(--mono); font-size: 13px; color: var(--accent); }
+.step > p.why { color: var(--muted); font-size: 14px; margin-top: 4px; }
+.body { margin-top: 18px; display: grid; gap: 16px; }
+label.f { display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
+label.f small { font-weight: 400; color: var(--muted); }
+input[type=text], input[type=date], input[type=email], select, textarea { width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 2px; background: var(--bg); font-weight: 400; }
+input:focus, select:focus, textarea:focus { border-color: var(--ink); outline: none; }
+textarea { min-height: 130px; resize: vertical; line-height: 1.5; }
+.row2 { display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .row2 { grid-template-columns: 1fr 1fr; } }
+.seg { display: inline-flex; border: 1.5px solid var(--ink); border-radius: 2px; overflow: hidden; flex-wrap: wrap; }
+.seg button { border: 0; background: transparent; padding: 9px 14px; font-weight: 600; font-size: 14px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); }
+.picked { display: grid; grid-template-columns: 88px 1fr; gap: 16px; align-items: center; padding: 14px; border: 1px solid var(--line); border-radius: 3px; }
+.picked img, .picked .ph { width: 88px; height: 88px; border-radius: 50%; object-fit: cover; background: var(--line); box-shadow: 0 2px 8px var(--vshadow); }
+.picked .t { font-weight: 700; font-size: 17px; line-height: 1.2; }
+.picked .a { color: var(--muted); font-size: 14px; }
+.drop { border: 1.5px dashed var(--line); border-radius: 3px; padding: 22px; text-align: center; color: var(--muted); font-size: 14px; cursor: pointer; }
+.drop:hover { border-color: var(--ink); color: var(--ink); }
+.drop strong { color: var(--ink); display: block; font-size: 15px; margin-bottom: 2px; }
+.files { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.files li { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.files .num { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.files .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.files .st { display: flex; gap: 6px; flex-wrap: wrap; }
+@media (max-width: 640px) { .files li { grid-template-columns: 26px minmax(0, 1fr); } .files .nm { white-space: normal; } .files .st { grid-column: 2; } .prog { grid-column: 2; } }
+.badge { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; border: 1px solid var(--line); border-radius: 99px; padding: 2px 8px; color: var(--muted); white-space: nowrap; }
+.badge.ok { border-color: var(--good); color: var(--good); }
+.badge.wait { border-style: dashed; }
+.prog { grid-column: 2 / 4; height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.prog b { display: block; height: 100%; width: 0; background: var(--ink); transition: width .25s linear; }
+.tags { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.tags label { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 11px 14px; border: 1.5px solid var(--line); border-radius: 2px; cursor: pointer; font-weight: 600; }
+.tags label:has(input:checked) { border-color: var(--ink); }
+.tags label span.c { font-family: var(--mono); font-size: 12px; color: var(--muted); font-weight: 400; }
+.tags input { margin-right: 8px; accent-color: var(--ink); }
+.note { font-size: 13px; color: var(--muted); }
+.check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
+.check input { margin-top: 4px; accent-color: var(--ink); }
+.side .step h2 { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+.sum { list-style: none; margin: 14px 0 0; padding: 0; font-size: 14px; }
+.sum li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line); }
+.sum li span:first-child { color: var(--muted); }
+.sum li span:last-child { text-align: right; font-weight: 600; }
+.sum .done { color: var(--good); }
+.sum .todo { color: var(--muted); font-weight: 400; }
+.side .btn { width: 100%; margin-top: 10px; }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: var(--on-ink); padding: 12px 18px; border-radius: 3px; font-size: 14px; max-width: calc(100% - 32px); z-index: 20; }
+dialog { border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); padding: 26px; max-width: min(460px, calc(100% - 32px)); }
+dialog::backdrop { background: rgba(0,0,0,.55); }
+dialog h3 { font-size: 20px; }
+dialog p { margin-top: 10px; color: var(--muted); }
+dialog .acts { display: flex; gap: 8px; justify-content: flex-end; margin-top: 22px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="wrap mockbar"><span>MOCK-UP · how you or Billy set up a new promo in /admin · nothing is uploaded or sent</span><a href="../">All mock-ups</a></div>
+<header class="top"><div class="wrap"><a href="/" aria-label="Siteholder Records"><span class="logo"></span></a><span class="tag">Admin</span></div></header>
+
+<main class="wrap">
+  <p class="crumbs"><a href="../dashboard/">Promo pool</a> / New campaign</p>
+  <h1>New campaign</h1>
+
+  <div class="layout">
+    <div>
+      <!-- 1 release -->
+      <section class="step" aria-labelledby="s1">
+        <h2 id="s1"><span class="n">01</span>Release</h2>
+        <p class="why">Pick a catalog release, or enter a new one that isn't on the site yet.</p>
+        <div class="body">
+          <div class="seg" role="group" aria-label="Release source">
+            <button type="button" aria-pressed="true" data-src="cat">From the catalog</button>
+            <button type="button" aria-pressed="false" data-src="new">New release (not on the site yet)</button>
+          </div>
+          <div id="srcCat">
+            <label class="f" for="rel">Release<select id="rel"><option>Loading catalog…</option></select></label>
+          </div>
+          <div id="srcNew" hidden>
+            <div class="row2">
+              <label class="f">Catalog number<input type="text" id="nCat" value="SH040"></label>
+              <label class="f">Release date<input type="date" id="nDate" value="2027-01-22"></label>
+            </div>
+            <div class="row2" style="margin-top:14px">
+              <label class="f">Title<input type="text" id="nTitle" value="Night Shift EP"></label>
+              <label class="f">Artist <small>from the shared artist list</small><input type="text" id="nArtist" value="Billy Dalessandro" list="artists"></label>
+            </div>
+            <datalist id="artists"></datalist>
+            <div class="drop" style="margin-top:14px" data-mock="Choose the cover or label artwork (JPG or PNG, square)."><strong>Artwork</strong>Drop a square JPG or PNG here</div>
+            <p class="note" style="margin-top:8px">This stays private. It only appears on the public site once you add it to the catalog.</p>
+          </div>
+          <div class="picked" id="picked"></div>
+        </div>
+      </section>
+
+      <!-- 2 files -->
+      <section class="step" aria-labelledby="s2">
+        <h2 id="s2"><span class="n">02</span>Tracks &amp; files</h2>
+        <p class="why">Upload the masters. They go to private storage, separate from the public previews and your personal media.</p>
+        <div class="body">
+          <div class="drop" id="drop" role="button" tabindex="0"><strong>Drop WAVs here, or click to choose</strong>MP3s are made automatically if you don't add your own. Files are matched to tracks by name.</div>
+          <ul class="files" id="files"></ul>
+          <label class="check"><input type="checkbox" id="streamOnly"> <span><b>Stream only.</b> Don't offer downloads for this one, even after feedback.</span></label>
+        </div>
+      </section>
+
+      <!-- 3 recipients -->
+      <section class="step" aria-labelledby="s3">
+        <h2 id="s3"><span class="n">03</span>Recipients</h2>
+        <p class="why">Choose by tag. Anyone who opted out or bounced is skipped automatically.</p>
+        <div class="body">
+          <div class="tags" id="tags"></div>
+          <p class="note" id="reach"></p>
+        </div>
+      </section>
+
+      <!-- 4 email -->
+      <section class="step" aria-labelledby="s4">
+        <h2 id="s4"><span class="n">04</span>Email</h2>
+        <p class="why">Each recipient's first name and private link are filled in for them.</p>
+        <div class="body">
+          <label class="f">Subject<input type="text" id="subj"></label>
+          <label class="f">Message <small>{first name} is replaced for each person</small><textarea id="msg"></textarea></label>
+          <div class="row2">
+            <label class="f">Feedback deadline <small>optional, shown on the page</small><input type="date" id="deadline" value="2027-01-15"></label>
+            <label class="f">Download links last<select id="expiry"><option>7 days</option><option>14 days</option><option>30 days</option></select></label>
+          </div>
+          <div><a class="btn small" href="../email/" target="_blank" rel="noopener">Preview email</a> <a class="btn small" href="../listen/" target="_blank" rel="noopener">Preview promo page</a></div>
+        </div>
+      </section>
+
+      <!-- 5 test & send -->
+      <section class="step" aria-labelledby="s5">
+        <h2 id="s5"><span class="n">05</span>Test, then send</h2>
+        <p class="why">Send it to yourself first. The Send button only unlocks after a test.</p>
+        <div class="body">
+          <label class="f">Send a test to<input type="email" id="testTo" value="info@siteholderrecords.com"></label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" type="button" id="testBtn">Send test</button><button class="btn" type="button" data-mock="Saves everything as a draft. Billy can open it and pick up where you left off.">Save draft</button></div>
+          <p class="note" id="testNote">No test sent yet.</p>
+          <label class="check"><input type="checkbox" id="schedule"> <span>Schedule for later instead of sending now</span></label>
+          <input type="date" id="schedDate" value="2026-11-20" hidden>
+        </div>
+      </section>
+    </div>
+
+    <aside class="side">
+      <section class="step" aria-labelledby="sum">
+        <h2 id="sum">Summary</h2>
+        <ul class="sum" id="summary"></ul>
+        <button class="btn solid" type="button" id="sendBtn" disabled>Send to 0 recipients</button>
+        <p class="note" style="margin-top:10px" id="sendHint">Send a test first.</p>
+      </section>
+    </aside>
+  </div>
+</main>
+
+<dialog id="confirm">
+  <h3 id="cTitle">Send to 0 recipients?</h3>
+  <p id="cBody"></p>
+  <div class="acts"><button class="btn" type="button" id="cNo">Cancel</button><button class="btn solid" type="button" id="cYes">Yes, send now</button></div>
+</dialog>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+var TAGS = [['DJ', 142], ['Press', 23], ['Radio', 18], ['Label', 31], ['Old guard', 64]];
+var OVERLAP = 41; /* people with more than one tag, counted once */
+var releases = [], src = 'cat', tested = false, uploaded = {}, upTimer;
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]; }); }
+function $(id) { return document.getElementById(id); }
+var toastT;
+function toast(m) { var t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(function () { t.hidden = true; }, 3400); }
+
+/* the real catalog, read from the site itself */
+fetch('/').then(function (r) { return r.text(); }).then(function (html) {
+  var m = html.match(/<script type="application\/json" id="releases">([\s\S]*?)<\/script>/);
+  releases = m ? JSON.parse(m[1]) : [];
+}).catch(function () { releases = []; }).then(function () {
+  if (!releases.length) releases = [{cat: 'SH039', title: "Don't Wait For Me", artist: 'Magnanime', labelImg: 'images/labels/don-t-wait-for-me.png', date: '2015-02-24', tracks: [{t: "Don't Wait For Me", m: 'Original Mix'}, {t: "Don't Wait For Me", m: 'Akufen Remix'}, {t: "Don't Wait For Me", m: 'Brian Ffar Remix'}, {t: 'Rytm & Cheese'}]}];
+  releases.sort(function (a, b) { return (b.date || '').localeCompare(a.date || ''); });
+  $('rel').innerHTML = releases.map(function (r, i) { return '<option value="' + i + '"' + (r.cat === 'SH039' ? ' selected' : '') + '>' + esc(r.cat + ' · ' + r.artist + ' · ' + r.title) + '</option>'; }).join('');
+  var names = {}; releases.forEach(function (r) { (r.artists || [r.artist]).forEach(function (a) { names[a] = 1; }); });
+  $('artists').innerHTML = Object.keys(names).sort().map(function (a) { return '<option value="' + esc(a) + '">'; }).join('');
+  pick();
+});
+
+function current() {
+  if (src === 'new') return {cat: $('nCat').value || 'SH040', title: $('nTitle').value || 'Untitled', artist: $('nArtist').value || 'Artist', date: $('nDate').value, img: '', tracks: [{t: $('nTitle').value.replace(/ EP$/, '') || 'Track 1', m: 'Original Mix'}, {t: 'Track 2'}, {t: 'Track 3'}], isNew: true};
+  var r = releases[+$('rel').value] || releases[0];
+  if (!r) return {cat: '…', title: 'Loading', artist: '', date: '', img: '', tracks: []};
+  return {cat: r.cat, title: r.title, artist: r.artist, date: r.date, img: r.labelImg ? '/' + r.labelImg : '/images/' + r.id + '.jpg', tracks: r.tracks || []};
+}
+function full(t) { return t.t + (t.m ? ' (' + t.m + ')' : ''); }
+function pick() {
+  var r = current();
+  $('picked').innerHTML = (r.img ? '<img src="' + esc(r.img) + '" alt="" onerror="this.outerHTML=\'<span class=ph></span>\'">' : '<span class="ph"></span>') +
+    '<div><p class="cat">' + esc(r.cat) + (r.isNew ? ' · NEW, NOT ON SITE' : ' · ' + esc((r.date || '').slice(0, 4))) + '</p><p class="t">' + esc(r.title) + '</p><p class="a">' + esc(r.artist) + ' · ' + r.tracks.length + ' tracks</p></div>';
+  uploaded = {}; clearInterval(upTimer);
+  $('files').innerHTML = r.tracks.map(function (t, i) {
+    return '<li data-i="' + i + '"><span class="num">' + String(i + 1).padStart(2, '0') + '</span><span class="nm">' + esc(full(t)) + '</span><span class="st"><span class="badge wait">WAV needed</span></span><span class="prog" hidden><b></b></span></li>';
+  }).join('');
+  $('subj').value = 'Promo: ' + r.artist + ' · ' + r.title + ' [' + r.cat + ']';
+  $('msg').value = 'Hi {first name},\n\nHere\'s the next one from Siteholder: ' + r.title + ' by ' + r.artist + '. Your private link has every track to stream. Leave a quick rating and the WAVs and MP3s are yours to download.\n\nBrian & Billy';
+  tested = false; summary();
+}
+
+/* fake upload */
+function fakeUpload() {
+  var lis = [].slice.call($('files').children), i = 0;
+  if (!lis.length) return;
+  clearInterval(upTimer);
+  lis.forEach(function (li) { li.querySelector('.prog').hidden = false; li.querySelector('.prog b').style.width = '0'; li.querySelector('.st').innerHTML = '<span class="badge">Uploading</span>'; });
+  var pct = 0;
+  upTimer = setInterval(function () {
+    pct += 20; var li = lis[i]; li.querySelector('.prog b').style.width = pct + '%';
+    if (pct >= 100) {
+      li.querySelector('.prog').hidden = true;
+      li.querySelector('.st').innerHTML = '<span class="badge ok">WAV 24-bit</span><span class="badge ok">MP3 320</span>';
+      uploaded[i] = 1; i++; pct = 0; summary();
+      if (i >= lis.length) { clearInterval(upTimer); toast('All files matched to tracks. MP3s made from the WAVs.'); }
+    }
+  }, 90);
+}
+$('drop').addEventListener('click', fakeUpload);
+$('drop').addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fakeUpload(); } });
+
+/* tags */
+$('tags').innerHTML = TAGS.map(function (t) { return '<label><span><input type="checkbox" value="' + t[0] + '"' + (t[0] !== 'Label' ? ' checked' : '') + '>' + t[0] + '</span><span class="c">' + t[1] + '</span></label>'; }).join('');
+function reach() {
+  var sel = [].slice.call(document.querySelectorAll('#tags input:checked')), sum = sel.reduce(function (s, c) { return s + TAGS.filter(function (t) { return t[0] === c.value; })[0][1]; }, 0);
+  return Math.max(0, sum - (sel.length > 1 ? Math.round(OVERLAP * (sel.length - 1) / 4) : 0));
+}
+
+/* summary + send */
+function summary() {
+  var r = current(), n = reach(), files = Object.keys(uploaded).length, total = r.tracks.length;
+  $('reach').textContent = n + ' people will get it. Anyone with more than one tag gets it once. 12 opted out and 6 bounced addresses are skipped.';
+  var sched = $('schedule').checked;
+  $('summary').innerHTML = [
+    ['Release', esc(r.cat + ' · ' + r.title)],
+    ['Files', files === total ? '<span class="done">' + total + ' of ' + total + ' ready</span>' : '<span class="todo">' + files + ' of ' + total + ' uploaded</span>'],
+    ['Downloads', $('streamOnly').checked ? 'Stream only' : 'After feedback, ' + $('expiry').value],
+    ['Recipients', n],
+    ['Test', tested ? '<span class="done">Sent to ' + esc($('testTo').value) + '</span>' : '<span class="todo">Not yet</span>'],
+    ['When', sched ? esc($('schedDate').value) + ', 10:00' : 'Now']
+  ].map(function (x) { return '<li><span>' + x[0] + '</span><span>' + x[1] + '</span></li>'; }).join('');
+  var ready = tested && files === total && n > 0;
+  $('sendBtn').disabled = !ready;
+  $('sendBtn').textContent = (sched ? 'Schedule for ' : 'Send to ') + n + ' recipients';
+  $('sendHint').textContent = files < total ? 'Upload the files first.' : !tested ? 'Send a test first.' : n === 0 ? 'Pick at least one tag.' : 'Ready. You\'ll be asked to confirm.';
+}
+document.querySelectorAll('.seg button').forEach(function (b) {
+  b.addEventListener('click', function () {
+    src = b.dataset.src; document.querySelectorAll('.seg button').forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
+    $('srcCat').hidden = src !== 'cat'; $('srcNew').hidden = src !== 'new'; pick();
+  });
+});
+$('rel').addEventListener('change', pick);
+['nCat', 'nTitle', 'nArtist', 'nDate'].forEach(function (id) { $(id).addEventListener('change', pick); });
+['streamOnly', 'expiry', 'schedDate'].forEach(function (id) { $(id).addEventListener('change', summary); });
+$('tags').addEventListener('change', summary);
+$('schedule').addEventListener('change', function () { $('schedDate').hidden = !this.checked; summary(); });
+$('testBtn').addEventListener('click', function () { tested = true; $('testNote').textContent = 'Test sent to ' + $('testTo').value + '. Check it on your phone too.'; toast('Mock-up: nothing was actually sent.'); summary(); });
+$('sendBtn').addEventListener('click', function () {
+  var r = current(), n = reach(), sched = $('schedule').checked;
+  $('cTitle').textContent = (sched ? 'Schedule ' : 'Send ') + r.cat + ' to ' + n + ' recipients?';
+  $('cBody').textContent = (sched ? 'It goes out on ' + $('schedDate').value + ' at 10:00. You can cancel until then.' : 'It goes out right away and can\'t be unsent.') + ' Every person gets their own private link.';
+  $('cYes').textContent = sched ? 'Yes, schedule it' : 'Yes, send now';
+  $('confirm').showModal();
+});
+$('cNo').addEventListener('click', function () { $('confirm').close(); });
+$('cYes').addEventListener('click', function () { $('confirm').close(); toast('Mock-up: nothing was sent. The real one takes you to this campaign\'s dashboard.'); });
+document.addEventListener('click', function (e) { var a = e.target.closest('[data-mock]'); if (!a) return; e.preventDefault(); toast('Mock-up: ' + a.dataset.mock); });
+summary();
+</script>
+</body>
+</html>
