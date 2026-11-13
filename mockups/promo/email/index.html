@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Promo Email · Siteholder Records</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../mock.css">
+<style>
+.inbox { max-width: 640px; margin: 32px auto 0; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.hdr { padding: 16px 20px; border-bottom: 1px solid var(--line); display: grid; gap: 4px; font-size: 14px; }
+.hdr .subj { font-size: 18px; font-weight: 700; }
+.hdr .k { color: var(--muted); display: inline-block; min-width: 54px; }
+/* the email body is always light, like most mail apps render it */
+.mail { background: #ffffff; color: #0e0f11; padding: 32px clamp(18px, 5vw, 40px) 28px; }
+.mail .logo { background-color: #0e0f11; height: 40px; margin: 0 auto 28px; }
+.mail img { display: block; width: 220px; height: 220px; margin: 0 auto; border-radius: 50%; box-shadow: 0 4px 14px rgba(0,0,0,.3); }
+.mail .cat { color: #2536ff; text-align: center; margin-top: 24px; }
+.mail h1 { text-align: center; font-size: 30px; font-weight: 800; line-height: 1.1; margin-top: 6px; }
+.mail .by { text-align: center; font-size: 18px; font-weight: 600; margin-top: 4px; }
+.mail .sub { text-align: center; color: #5b5f66; margin-top: 2px; }
+.mail p.body { margin-top: 22px; font-size: 15px; }
+.mail .cta { display: block; width: max-content; margin: 26px auto 0; background: #0e0f11; color: #fff; padding: 14px 28px; font-weight: 700; text-decoration: none; border-radius: 2px; }
+.mail .tl { margin: 24px 0 0; padding: 0; list-style: none; border-top: 1px solid #d8dadd; font-size: 14px; }
+.mail .tl li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #d8dadd; }
+.mail .tl span { color: #5b5f66; font-family: var(--mono); font-size: 12px; }
+.mail .foot { margin-top: 28px; font-size: 12px; color: #5b5f66; text-align: center; line-height: 1.6; }
+.mail .foot a { color: #5b5f66; }
+.notes { max-width: 640px; margin: 24px auto 0; font-size: 14px; color: var(--muted); }
+.notes li { margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="wrap mockbar"><span>MOCK-UP · the email a DJ receives · sample data</span><a href="../">All mock-ups</a></div>
+
+<div class="inbox">
+  <div class="hdr">
+    <div class="subj">Promo: Magnanime · Don't Wait For Me [SH039]</div>
+    <div><span class="k">From</span>Siteholder Records &lt;info@siteholderrecords.com&gt;</div>
+    <div><span class="k">To</span>Alex Mercer</div>
+  </div>
+  <div class="mail">
+    <span class="logo"></span>
+    <img src="/images/labels/don-t-wait-for-me.png" alt="Don't Wait For Me vinyl label">
+    <p class="cat">SH039 · SITEHOLDER</p>
+    <h1>Don't Wait For Me</h1>
+    <p class="by">Magnanime</p>
+    <p class="sub">With remixes from Akufen and Brian Ffar</p>
+    <p class="body">Hi Alex,<br><br>Here's the next one from Siteholder. Your private link has all four tracks to stream. Leave a quick rating and the WAVs and MP3s are yours to download.<br><br>Brian &amp; Billy</p>
+    <a class="cta" href="../listen/">Listen &amp; download</a>
+    <ul class="tl">
+      <li>Don't Wait For Me (Original Mix)<span>5:52</span></li>
+      <li>Don't Wait For Me (Akufen Remix)<span>6:52</span></li>
+      <li>Don't Wait For Me (Brian Ffar Remix)<span>6:18</span></li>
+      <li>Rytm &amp; Cheese<span>6:32</span></li>
+    </ul>
+    <p class="foot">This link is just for you. Please don't forward it.<br>You're receiving this because you're on the Siteholder Records promo list.<br><a href="#">Unsubscribe</a> · Siteholder Records · siteholderrecords.com</p>
+  </div>
+</div>
+
+<ul class="notes">
+  <li>Each recipient's button opens their own private link. No login needed.</li>
+  <li>Sent from info@siteholderrecords.com through the email service, with an unsubscribe button built into Gmail and Apple Mail.</li>
+  <li>Opens and clicks are tracked. Bounced addresses are flagged automatically.</li>
+</ul>
+<div style="height:48px"></div>
+</body>
+</html>

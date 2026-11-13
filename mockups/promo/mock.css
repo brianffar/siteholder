@@ -1,0 +1,65 @@
+/* Promo pool mock-ups. Same tokens as the main site (index.html). */
+:root {
+  --bg: #f2f3f4; --surface: #ffffff; --ink: #0e0f11; --muted: #5b5f66; --line: #d8dadd;
+  --accent: #2536ff; --on-ink: #ffffff; --good: #0f7a3d; --bad: #b42318;
+  --vring: rgba(0,0,0,.16); --vshadow: rgba(0,0,0,.38);
+  --display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+  --gutter: clamp(16px, 4vw, 40px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e0f11; --surface: #17181b; --ink: #f1f2f3; --muted: #9b9fa7; --line: #2b2d32;
+    --accent: #8a95ff; --on-ink: #0e0f11; --good: #4cc38a; --bad: #ff8a80; color-scheme: dark;
+    --vring: rgba(255,255,255,.30); --vshadow: rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e0f11; --surface: #17181b; --ink: #f1f2f3; --muted: #9b9fa7; --line: #2b2d32;
+  --accent: #8a95ff; --on-ink: #0e0f11; --good: #4cc38a; --bad: #ff8a80; color-scheme: dark;
+  --vring: rgba(255,255,255,.30); --vshadow: rgba(0,0,0,.9);
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--display); font-size: 16px; line-height: 1.5; padding-inline: var(--gutter); }
+a { color: inherit; }
+h1, h2, h3, p { margin: 0; }
+h1, h2 { text-wrap: balance; }
+button, input, textarea, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.wrap { max-width: 1080px; margin-inline: auto; }
+.narrow { max-width: 760px; }
+
+/* mock-up banner */
+.mockbar { font-family: var(--mono); font-size: 12px; color: var(--muted); padding: 10px 0; border-bottom: 1px dashed var(--line); display: flex; gap: 8px 18px; flex-wrap: wrap; justify-content: space-between; }
+.mockbar a { color: var(--accent); }
+
+/* header */
+.top { border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 14px; }
+.logo { display: block; height: 44px; aspect-ratio: 480 / 272; background-color: var(--ink); -webkit-mask: url(/tools/logo.png) no-repeat center / contain; mask: url(/tools/logo.png) no-repeat center / contain; }
+.top .tag { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+main { padding-block: 36px 72px; }
+
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.cat { font-family: var(--mono); font-size: 12px; color: var(--accent); letter-spacing: .04em; }
+.muted { color: var(--muted); }
+.mono { font-family: var(--mono); }
+.sec-title { font-size: 15px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; font-weight: 600; padding: 11px 18px; border: 1.5px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; border-radius: 2px; text-decoration: none; }
+.btn:hover { background: var(--ink); color: var(--on-ink); }
+.btn.solid { background: var(--ink); color: var(--on-ink); }
+.btn.solid:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.small { padding: 7px 12px; font-size: 13px; }
+.btn[disabled] { opacity: .4; cursor: not-allowed; }
+.btn[disabled]:hover { background: transparent; color: var(--ink); }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: clamp(18px, 3vw, 28px); }
+.rl { display: block; width: 100%; height: auto; overflow: visible; }
+
+.footer { border-top: 1px solid var(--line); padding-block: 24px 40px; font-size: 13px; color: var(--muted); }
+.footer .wrap { display: flex; gap: 8px 24px; flex-wrap: wrap; justify-content: space-between; }
+
+.icon { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
