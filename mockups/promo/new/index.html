@@ -65,6 +65,20 @@ textarea { min-height: 130px; resize: vertical; line-height: 1.5; }
   .ted li input[data-k="m"] { grid-column: 2; grid-row: 2; }
   .ted .ops { grid-column: 3; grid-row: 1 / 3; flex-direction: column; }
 }
+.src { display: flex; justify-content: space-between; align-items: center; gap: 10px 16px; flex-wrap: wrap; padding: 12px 14px; border: 1px solid var(--line); border-radius: 3px; }
+.srcname { font-weight: 600; font-size: 14px; }
+.counts { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+.counts div { padding: 10px 12px; border: 1px solid var(--line); border-radius: 3px; }
+.counts div.go { border-color: var(--ink); }
+.counts b { display: block; font-size: 24px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.counts span { display: block; font-size: 12px; line-height: 1.35; color: var(--muted); margin-top: 2px; }
+.who { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); }
+.who label { display: flex; gap: 10px; align-items: center; padding: 8px 12px; border: 1px solid var(--line); border-radius: 2px; cursor: pointer; font-size: 14px; min-width: 0; }
+.who label:has(input:not(:checked)) { opacity: .55; }
+.who input { accent-color: var(--ink); flex: none; }
+.who .nm { font-weight: 600; white-space: nowrap; }
+.who .em { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.who .new { font-family: var(--mono); font-size: 10px; text-transform: uppercase; color: var(--accent); margin-left: auto; flex: none; }
 .tags { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
 .tags label { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 11px 14px; border: 1.5px solid var(--line); border-radius: 2px; cursor: pointer; font-weight: 600; }
 .tags label:has(input:checked) { border-color: var(--ink); }
@@ -148,10 +162,18 @@ dialog .acts { display: flex; gap: 8px; justify-content: flex-end; margin-top: 2
       <!-- 3 recipients -->
       <section class="step" aria-labelledby="s3">
         <h2 id="s3"><span class="n">03</span>Recipients</h2>
-        <p class="why">Choose by tag. Anyone who opted out or bounced is skipped automatically.</p>
+        <p class="why">Only people marked <b>Opted In</b> in column D of your promo list get it. The list is checked again at the moment it sends.</p>
         <div class="body">
-          <div class="tags" id="tags"></div>
-          <p class="note" id="reach"></p>
+          <div class="src">
+            <div><p class="srcname">Siteholder Promo List 2026 · Contacts tab</p><p class="note" id="checked">Checked just now</p></div>
+            <button class="btn small" type="button" id="refresh">Check the Sheet again</button>
+          </div>
+          <div class="counts" id="counts"></div>
+          <div>
+            <p class="lbl" style="font-weight:600;font-size:14px">Opted in <span class="note" style="font-weight:400">· untick anyone to leave them out of this one release</span></p>
+            <ul class="who" id="who"></ul>
+          </div>
+          <p class="note">To add people: mark them <b>Opted In</b> in the Sheet, then click <b>Check the Sheet again</b>. Unsubscribes and bounces are written back to column D as <b>Opted Out</b> or <b>Bounced</b>, so they're skipped next time.</p>
         </div>
       </section>
 
@@ -203,8 +225,6 @@ dialog .acts { display: flex; gap: 8px; justify-content: flex-end; margin-top: 2
 <div class="toast" id="toast" hidden role="status"></div>
 
 <script>
-var TAGS = [['DJ', 142], ['Press', 23], ['Radio', 18], ['Label', 31], ['Old guard', 64]];
-var OVERLAP = 41; /* people with more than one tag, counted once */
 var releases = [], src = 'cat', tested = false, uploaded = {}, upTimer;
 function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]; }); }
 function $(id) { return document.getElementById(id); }
@@ -308,30 +328,49 @@ function fakeUpload() {
 $('drop').addEventListener('click', fakeUpload);
 $('drop').addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fakeUpload(); } });
 
-/* tags */
-$('tags').innerHTML = TAGS.map(function (t) { return '<label><span><input type="checkbox" value="' + t[0] + '"' + (t[0] !== 'Label' ? ' checked' : '') + '>' + t[0] + '</span><span class="c">' + t[1] + '</span></label>'; }).join('');
-function reach() {
-  var sel = [].slice.call(document.querySelectorAll('#tags input:checked')), sum = sel.reduce(function (s, c) { return s + TAGS.filter(function (t) { return t[0] === c.value; })[0][1]; }, 0);
-  return Math.max(0, sum - (sel.length > 1 ? Math.round(OVERLAP * (sel.length - 1) / 4) : 0));
+/* recipients: read from the promo list Sheet, column D = "Opted In" (made-up people; the real counts are 11 / 134 / 1) */
+var OPTED = [['Alex', 'Mercer'], ['Jordan', 'Vale'], ['Nico', 'Brandt'], ['Mara', 'Lindqvist'], ['Theo', 'Moreau'], ['Ines', 'Castell'], ['Luca', 'Reyes'], ['Petra', 'Novak'], ['Omar', 'Ferro'], ['Lena', 'Kowal'], ['Felix', 'Strand']];
+var LATE = [['Ada', 'Pallas'], ['Hugo', 'Quint']];
+var people = OPTED.map(function (p) { return {n: p[0] + ' ' + p[1], e: p[0].toLowerCase() + '@' + p[1].toLowerCase() + '.example', on: true}; });
+var SHEET = {sent: 134, out: 1, bounced: 0};
+function renderWho() {
+  $('who').innerHTML = people.map(function (p, i) {
+    return '<li><label><input type="checkbox" data-i="' + i + '"' + (p.on ? ' checked' : '') + '><span style="min-width:0"><span class="nm">' + esc(p.n) + '</span><br><span class="em">' + esc(p.e) + '</span></span>' + (p.fresh ? '<span class="new">New</span>' : '') + '</label></li>';
+  }).join('');
+  var skipped = SHEET.sent + SHEET.out + SHEET.bounced;
+  $('counts').innerHTML = '<div class="go"><b>' + reach() + '</b><span>will get it</span></div><div><b>' + people.length + '</b><span>Opted In</span></div>' +
+    '<div><b>' + SHEET.sent + '</b><span>Sent, no reply yet: skipped</span></div><div><b>' + (SHEET.out + SHEET.bounced) + '</b><span>Opted Out or Bounced: skipped</span></div>';
 }
+function reach() { return people.filter(function (p) { return p.on; }).length; }
+$('who').addEventListener('change', function (e) { var i = e.target.dataset.i; if (i == null) return; people[+i].on = e.target.checked; renderWho(); summary(); });
+$('refresh').addEventListener('click', function () {
+  var b = this; b.disabled = true; b.textContent = 'Checking…';
+  setTimeout(function () {
+    var add = LATE.shift();
+    if (add) { people.push({n: add[0] + ' ' + add[1], e: add[0].toLowerCase() + '@' + add[1].toLowerCase() + '.example', on: true, fresh: true}); SHEET.sent--; }
+    $('checked').textContent = 'Checked just now' + (add ? ' · 1 new opt-in found' : ' · no changes');
+    b.disabled = false; b.textContent = 'Check the Sheet again'; renderWho(); summary();
+    toast(add ? 'Mock-up: ' + add[0] + ' ' + add[1] + ' was marked Opted In in the Sheet, so they\'re added.' : 'Mock-up: no changes in the Sheet.');
+  }, 700);
+});
+renderWho();
 
 /* summary + send */
 function summary() {
   var r = current(), n = reach(), files = Object.keys(uploaded).length, total = r.tracks.length;
-  $('reach').textContent = n + ' people will get it. Anyone with more than one tag gets it once. 12 opted out and 6 bounced addresses are skipped.';
   var sched = $('schedule').checked;
   $('summary').innerHTML = [
     ['Release', esc(r.cat + ' · ' + r.title)],
     ['Files', files === total ? '<span class="done">' + total + ' of ' + total + ' ready</span>' : '<span class="todo">' + files + ' of ' + total + ' uploaded</span>'],
     ['Downloads', $('streamOnly').checked ? 'Stream only' : 'After feedback, ' + $('expiry').value],
-    ['Recipients', n],
+    ['Recipients', n + ' opted in'],
     ['Test', tested ? '<span class="done">Sent to ' + esc($('testTo').value) + '</span>' : '<span class="todo">Not yet</span>'],
     ['When', sched ? esc($('schedDate').value) + ', 10:00' : 'Now']
   ].map(function (x) { return '<li><span>' + x[0] + '</span><span>' + x[1] + '</span></li>'; }).join('');
   var ready = tested && files === total && n > 0;
   $('sendBtn').disabled = !ready;
   $('sendBtn').textContent = (sched ? 'Schedule for ' : 'Send to ') + n + ' recipients';
-  $('sendHint').textContent = files < total ? 'Upload the files first.' : !tested ? 'Send a test first.' : n === 0 ? 'Pick at least one tag.' : 'Ready. You\'ll be asked to confirm.';
+  $('sendHint').textContent = files < total ? 'Upload the files first.' : !tested ? 'Send a test first.' : n === 0 ? 'No one is ticked. Mark people Opted In in the Sheet.' : 'Ready. You\'ll be asked to confirm.';
 }
 document.querySelectorAll('.seg button').forEach(function (b) {
   b.addEventListener('click', function () {
@@ -342,13 +381,12 @@ document.querySelectorAll('.seg button').forEach(function (b) {
 $('rel').addEventListener('change', pick);
 ['nCat', 'nTitle', 'nArtist', 'nDate'].forEach(function (id) { $(id).addEventListener('change', function () { pick(true); }); });
 ['streamOnly', 'expiry', 'schedDate'].forEach(function (id) { $(id).addEventListener('change', summary); });
-$('tags').addEventListener('change', summary);
 $('schedule').addEventListener('change', function () { $('schedDate').hidden = !this.checked; summary(); });
 $('testBtn').addEventListener('click', function () { tested = true; $('testNote').textContent = 'Test sent to ' + $('testTo').value + '. Check it on your phone too.'; toast('Mock-up: nothing was actually sent.'); summary(); });
 $('sendBtn').addEventListener('click', function () {
   var r = current(), n = reach(), sched = $('schedule').checked;
   $('cTitle').textContent = (sched ? 'Schedule ' : 'Send ') + r.cat + ' to ' + n + ' recipients?';
-  $('cBody').textContent = (sched ? 'It goes out on ' + $('schedDate').value + ' at 10:00. You can cancel until then.' : 'It goes out right away and can\'t be unsent.') + ' Every person gets their own private link.';
+  $('cBody').textContent = (sched ? 'It goes out on ' + $('schedDate').value + ' at 10:00. You can cancel until then.' : 'It goes out right away and can\'t be unsent.') + ' Every person gets their own private link. Column D is checked once more right before sending, so anyone who opted out since is skipped.';
   $('cYes').textContent = sched ? 'Yes, schedule it' : 'Yes, send now';
   $('confirm').showModal();
 });
