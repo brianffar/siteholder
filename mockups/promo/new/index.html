@@ -52,6 +52,19 @@ textarea { min-height: 130px; resize: vertical; line-height: 1.5; }
 .badge.wait { border-style: dashed; }
 .prog { grid-column: 2 / 4; height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; }
 .prog b { display: block; height: 100%; width: 0; background: var(--ink); transition: width .25s linear; }
+.ted { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
+.ted li { display: grid; grid-template-columns: 26px minmax(0, 1.3fr) minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.ted .num { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.ted input { padding: 9px 11px; }
+.ted .ops { display: flex; gap: 2px; }
+.ic { width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid transparent; background: none; border-radius: 2px; cursor: pointer; color: var(--muted); }
+.ic:hover:not([disabled]) { border-color: var(--line); color: var(--ink); }
+.ic[disabled] { opacity: .3; cursor: default; }
+@media (max-width: 640px) {
+  .ted li { grid-template-columns: 26px minmax(0, 1fr) auto; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+  .ted li input[data-k="m"] { grid-column: 2; grid-row: 2; }
+  .ted .ops { grid-column: 3; grid-row: 1 / 3; flex-direction: column; }
+}
 .tags { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
 .tags label { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 11px 14px; border: 1.5px solid var(--line); border-radius: 2px; cursor: pointer; font-weight: 600; }
 .tags label:has(input:checked) { border-color: var(--ink); }
@@ -120,6 +133,12 @@ dialog .acts { display: flex; gap: 8px; justify-content: flex-end; margin-top: 2
         <h2 id="s2"><span class="n">02</span>Tracks &amp; files</h2>
         <p class="why">Upload the masters. They go to private storage, separate from the public previews and your personal media.</p>
         <div class="body">
+          <div>
+            <p class="lbl" style="font-weight:600;font-size:14px">Track list</p>
+            <p class="note" id="trackNote" style="margin-top:2px"></p>
+            <ol class="ted" id="trackEd"></ol>
+            <button class="btn small" type="button" id="addTrack" style="margin-top:10px">+ Add track</button>
+          </div>
           <div class="drop" id="drop" role="button" tabindex="0"><strong>Drop WAVs here, or click to choose</strong>MP3s are made automatically if you don't add your own. Files are matched to tracks by name.</div>
           <ul class="files" id="files"></ul>
           <label class="check"><input type="checkbox" id="streamOnly"> <span><b>Stream only.</b> Don't offer downloads for this one, even after feedback.</span></label>
@@ -205,21 +224,65 @@ fetch('/').then(function (r) { return r.text(); }).then(function (html) {
   pick();
 });
 
+/* the promo's own track list: starts from the catalog (or a blank new release) and can be edited by hand */
+var tracks = [];
 function current() {
-  if (src === 'new') return {cat: $('nCat').value || 'SH040', title: $('nTitle').value || 'Untitled', artist: $('nArtist').value || 'Artist', date: $('nDate').value, img: '', tracks: [{t: $('nTitle').value.replace(/ EP$/, '') || 'Track 1', m: 'Original Mix'}, {t: 'Track 2'}, {t: 'Track 3'}], isNew: true};
+  var named = tracks.filter(function (t) { return t.t.trim(); });
+  if (src === 'new') return {cat: $('nCat').value || 'SH040', title: $('nTitle').value || 'Untitled', artist: $('nArtist').value || 'Artist', date: $('nDate').value, img: '', tracks: named, isNew: true};
   var r = releases[+$('rel').value] || releases[0];
   if (!r) return {cat: '…', title: 'Loading', artist: '', date: '', img: '', tracks: []};
-  return {cat: r.cat, title: r.title, artist: r.artist, date: r.date, img: r.labelImg ? '/' + r.labelImg : '/images/' + r.id + '.jpg', tracks: r.tracks || []};
+  return {cat: r.cat, title: r.title, artist: r.artist, date: r.date, img: r.labelImg ? '/' + r.labelImg : '/images/' + r.id + '.jpg', tracks: named};
 }
 function full(t) { return t.t + (t.m ? ' (' + t.m + ')' : ''); }
-function pick() {
+function loadTracks() {
+  if (src === 'new') { var base = ($('nTitle').value || '').replace(/ EP$/i, ''); tracks = [{t: base || '', m: 'Original Mix'}, {t: '', m: ''}, {t: '', m: ''}]; return; }
+  var r = releases[+$('rel').value] || releases[0];
+  tracks = r && r.tracks ? r.tracks.map(function (t) { return {t: t.t, m: t.m || ''}; }) : [];
+}
+var UP = '<svg class="icon" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>', DOWN = '<svg class="icon" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>', DEL = '<svg class="icon" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+function renderEditor() {
+  $('trackEd').innerHTML = tracks.map(function (t, i) {
+    return '<li data-i="' + i + '"><span class="num">' + String(i + 1).padStart(2, '0') + '</span>' +
+      '<label class="sr" for="tt' + i + '">Track ' + (i + 1) + ' title</label><input type="text" id="tt' + i + '" data-k="t" value="' + esc(t.t) + '" placeholder="Track title">' +
+      '<label class="sr" for="tm' + i + '">Track ' + (i + 1) + ' mix or version</label><input type="text" id="tm' + i + '" data-k="m" value="' + esc(t.m) + '" placeholder="Mix (optional)">' +
+      '<span class="ops"><button type="button" class="ic" data-op="up" aria-label="Move track ' + (i + 1) + ' up"' + (i ? '' : ' disabled') + '>' + UP + '</button>' +
+      '<button type="button" class="ic" data-op="down" aria-label="Move track ' + (i + 1) + ' down"' + (i < tracks.length - 1 ? '' : ' disabled') + '>' + DOWN + '</button>' +
+      '<button type="button" class="ic" data-op="del" aria-label="Remove track ' + (i + 1) + '">' + DEL + '</button></span></li>';
+  }).join('');
+}
+function renderFiles() {
+  var r = current();
+  $('files').innerHTML = r.tracks.map(function (t, i) {
+    var st = uploaded[i] ? '<span class="badge ok">WAV 24-bit</span><span class="badge ok">MP3 320</span>' : '<span class="badge wait">WAV needed</span>';
+    return '<li data-i="' + i + '"><span class="num">' + String(i + 1).padStart(2, '0') + '</span><span class="nm">' + esc(full(t)) + '</span><span class="st">' + st + '</span><span class="prog" hidden><b></b></span></li>';
+  }).join('') || '<li><span></span><span class="nm muted">Add at least one track above.</span></li>';
+  $('picked').querySelector('.a') && ($('picked').querySelector('.a').textContent = r.artist + ' · ' + r.tracks.length + ' track' + (r.tracks.length === 1 ? '' : 's'));
+}
+$('trackEd').addEventListener('input', function (e) {
+  var li = e.target.closest('li'); if (!li || !e.target.dataset.k) return;
+  tracks[+li.dataset.i][e.target.dataset.k] = e.target.value; renderFiles(); summary();
+});
+$('trackEd').addEventListener('click', function (e) {
+  var b = e.target.closest('button[data-op]'); if (!b) return;
+  var i = +b.closest('li').dataset.i, op = b.dataset.op, j = op === 'up' ? i - 1 : i + 1;
+  if (op === 'del') { tracks.splice(i, 1); uploaded = {}; }
+  else { var x = tracks[i]; tracks[i] = tracks[j]; tracks[j] = x; var u = uploaded[i]; uploaded[i] = uploaded[j]; uploaded[j] = u; }
+  renderEditor(); renderFiles(); summary();
+  var f = $('trackEd').querySelector('li[data-i="' + (op === 'del' ? Math.max(0, i - 1) : j) + '"] [data-op="' + op + '"]') || $('trackEd').querySelector('input');
+  if (f && !f.disabled) f.focus();
+});
+$('addTrack').addEventListener('click', function () {
+  tracks.push({t: '', m: ''}); renderEditor(); renderFiles(); summary();
+  $('tt' + (tracks.length - 1)).focus();
+});
+function pick(keep) {
+  if (keep !== true) { loadTracks(); uploaded = {}; }
   var r = current();
   $('picked').innerHTML = (r.img ? '<img src="' + esc(r.img) + '" alt="" onerror="this.outerHTML=\'<span class=ph></span>\'">' : '<span class="ph"></span>') +
-    '<div><p class="cat">' + esc(r.cat) + (r.isNew ? ' · NEW, NOT ON SITE' : ' · ' + esc((r.date || '').slice(0, 4))) + '</p><p class="t">' + esc(r.title) + '</p><p class="a">' + esc(r.artist) + ' · ' + r.tracks.length + ' tracks</p></div>';
-  uploaded = {}; clearInterval(upTimer);
-  $('files').innerHTML = r.tracks.map(function (t, i) {
-    return '<li data-i="' + i + '"><span class="num">' + String(i + 1).padStart(2, '0') + '</span><span class="nm">' + esc(full(t)) + '</span><span class="st"><span class="badge wait">WAV needed</span></span><span class="prog" hidden><b></b></span></li>';
-  }).join('');
+    '<div><p class="cat">' + esc(r.cat) + (r.isNew ? ' · NEW, NOT ON SITE' : ' · ' + esc((r.date || '').slice(0, 4))) + '</p><p class="t">' + esc(r.title) + '</p><p class="a"></p></div>';
+  clearInterval(upTimer);
+  $('trackNote').textContent = src === 'new' ? 'Type each track in the order it should play. You can also drop the WAVs first and the names are filled in from the file names.' : 'Filled in from the catalog. Change anything for this promo only; the public catalog stays as it is.';
+  renderEditor(); renderFiles();
   $('subj').value = 'Promo: ' + r.artist + ' · ' + r.title + ' [' + r.cat + ']';
   $('msg').value = 'Hi {first name},\n\nHere\'s the next one from Siteholder: ' + r.title + ' by ' + r.artist + '. Your private link has every track to stream. Leave a quick rating and the WAVs and MP3s are yours to download.\n\nBrian & Billy';
   tested = false; summary();
@@ -227,8 +290,8 @@ function pick() {
 
 /* fake upload */
 function fakeUpload() {
+  if (!current().tracks.length) { toast('Add the track names first, or drop the WAVs to fill them in.'); return; }
   var lis = [].slice.call($('files').children), i = 0;
-  if (!lis.length) return;
   clearInterval(upTimer);
   lis.forEach(function (li) { li.querySelector('.prog').hidden = false; li.querySelector('.prog b').style.width = '0'; li.querySelector('.st').innerHTML = '<span class="badge">Uploading</span>'; });
   var pct = 0;
@@ -277,7 +340,7 @@ document.querySelectorAll('.seg button').forEach(function (b) {
   });
 });
 $('rel').addEventListener('change', pick);
-['nCat', 'nTitle', 'nArtist', 'nDate'].forEach(function (id) { $(id).addEventListener('change', pick); });
+['nCat', 'nTitle', 'nArtist', 'nDate'].forEach(function (id) { $(id).addEventListener('change', function () { pick(true); }); });
 ['streamOnly', 'expiry', 'schedDate'].forEach(function (id) { $(id).addEventListener('change', summary); });
 $('tags').addEventListener('change', summary);
 $('schedule').addEventListener('change', function () { $('schedDate').hidden = !this.checked; summary(); });
